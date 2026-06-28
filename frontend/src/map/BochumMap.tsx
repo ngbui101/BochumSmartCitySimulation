@@ -1,39 +1,118 @@
-import React, { useState } from 'react';
-import { MapContainer, TileLayer, GeoJSON, useMapEvents } from 'react-leaflet';
+import React, { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, GeoJSON, useMap, useMapEvents } from 'react-leaflet';
 import { bochumBounds, minZoom, maxZoom } from './mapBounds';
-import bochumZonesGeoJsonRaw from '../data/bochumZones.geojson?raw';
-const bochumZonesGeoJson = JSON.parse(bochumZonesGeoJsonRaw);
-import type { PlayerAsset, ExistingAsset } from '../types/assets';
-import type { PathOptions } from 'leaflet';
+import { bochumZonesGeoJson } from '../data/bochumZones';
+import type { ItemType, LatLngPosition, PlayerAsset, ExistingAsset } from '../types/assets';
+import type { ZoneId } from '../types/zones';
+import L, { type PathOptions } from 'leaflet';
 import { AssetMarkers } from './AssetMarkers';
+
+export type ZoneFeedback = {
+  zoneId: ZoneId;
+  status: 'allowed' | 'blocked';
+  message: string;
+};
+
+export type PlacementFeedback = {
+  status: 'allowed' | 'blocked';
+  message: string;
+};
 
 export interface BochumMapProps {
   playerAssets: PlayerAsset[];
   existingAssets: ExistingAsset[];
   selectedAssetId?: string;
   onSelectAsset: (id: string | undefined) => void;
-  zoneFeedback?: { zoneId: string; status: 'allowed' | 'blocked'; message: string };
-  onDropAsset?: (position: { lat: number; lng: number }) => void;
+  zoneFeedback?: ZoneFeedback;
+  placementFeedback?: PlacementFeedback;
+  draggedItemType?: ItemType | null;
+  onDragPosition?: (position: LatLngPosition) => void;
+  onDropAsset?: (position: LatLngPosition) => void;
+  onDragLeave?: () => void;
 }
 
 interface MapEventsHandlerProps {
   onSelectAsset: (id: string | undefined) => void;
-  onDropAsset?: (position: { lat: number; lng: number }) => void;
 }
 
 const MapEventsHandler: React.FC<MapEventsHandlerProps> = ({
-  onSelectAsset,
-  onDropAsset
+  onSelectAsset
 }) => {
   useMapEvents({
     click: (e) => {
-      // Clear selection when map background is clicked
       onSelectAsset(undefined);
-      if (onDropAsset) {
-        onDropAsset({ lat: e.latlng.lat, lng: e.latlng.lng });
-      }
     }
   });
+  return null;
+};
+
+interface DragDropHandlerProps {
+  draggedItemType?: ItemType | null;
+  onDragPosition?: (position: LatLngPosition) => void;
+  onDropAsset?: (position: LatLngPosition) => void;
+  onDragLeave?: () => void;
+}
+
+const DragDropHandler: React.FC<DragDropHandlerProps> = ({
+  draggedItemType,
+  onDragPosition,
+  onDropAsset,
+  onDragLeave
+}) => {
+  const map = useMap();
+
+  useEffect(() => {
+    const container = map.getContainer();
+
+    const eventToLatLng = (event: DragEvent): LatLngPosition => {
+      const rect = container.getBoundingClientRect();
+      const point = L.point(event.clientX - rect.left, event.clientY - rect.top);
+      const latLng = map.containerPointToLatLng(point);
+
+      return {
+        lat: latLng.lat,
+        lng: latLng.lng
+      };
+    };
+
+    const handleDragOver = (event: DragEvent) => {
+      if (!draggedItemType) {
+        return;
+      }
+
+      event.preventDefault();
+
+      if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = 'copy';
+      }
+
+      onDragPosition?.(eventToLatLng(event));
+    };
+
+    const handleDrop = (event: DragEvent) => {
+      if (!draggedItemType) {
+        return;
+      }
+
+      event.preventDefault();
+      onDropAsset?.(eventToLatLng(event));
+    };
+
+    const handleDragLeave = () => {
+      onDragLeave?.();
+    };
+
+    container.addEventListener('dragover', handleDragOver);
+    container.addEventListener('drop', handleDrop);
+    container.addEventListener('dragleave', handleDragLeave);
+
+    return () => {
+      container.removeEventListener('dragover', handleDragOver);
+      container.removeEventListener('drop', handleDrop);
+      container.removeEventListener('dragleave', handleDragLeave);
+    };
+  }, [draggedItemType, map, onDragLeave, onDragPosition, onDropAsset]);
+
   return null;
 };
 
@@ -43,7 +122,11 @@ export const BochumMap: React.FC<BochumMapProps> = ({
   selectedAssetId,
   onSelectAsset,
   zoneFeedback,
-  onDropAsset
+  placementFeedback,
+  draggedItemType,
+  onDragPosition,
+  onDropAsset,
+  onDragLeave
 }) => {
   const [hoveredZoneId, setHoveredZoneId] = useState<string | null>(null);
 
@@ -76,8 +159,12 @@ export const BochumMap: React.FC<BochumMapProps> = ({
   const onEachFeature = (feature: any, layer: any) => {
     const zoneId = feature.properties?.zoneId;
     const label = feature.properties?.label || zoneId;
+    const tooltipText =
+      zoneFeedback && zoneFeedback.zoneId === zoneId
+        ? `${label}\n${zoneFeedback.message}`
+        : label;
 
-    layer.bindTooltip(label, {
+    layer.bindTooltip(tooltipText, {
       sticky: true,
       direction: 'center',
       className: 'zone-tooltip'
@@ -121,11 +208,23 @@ export const BochumMap: React.FC<BochumMapProps> = ({
           selectedAssetId={selectedAssetId}
           onSelectAsset={onSelectAsset}
         />
-        <MapEventsHandler
-          onSelectAsset={onSelectAsset}
+        <MapEventsHandler onSelectAsset={onSelectAsset} />
+        <DragDropHandler
+          draggedItemType={draggedItemType}
+          onDragPosition={onDragPosition}
           onDropAsset={onDropAsset}
+          onDragLeave={onDragLeave}
         />
       </MapContainer>
+      {placementFeedback && (
+        <div
+          className={`placement-feedback placement-feedback-${placementFeedback.status}`}
+          data-testid="placement-feedback"
+          role="status"
+        >
+          {placementFeedback.message}
+        </div>
+      )}
     </div>
   );
 };

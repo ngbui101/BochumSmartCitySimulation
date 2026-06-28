@@ -12,6 +12,7 @@ interface MockLayer {
 
 let lastGeoJsonProps: any = null;
 const registeredLayers: { feature: any; layer: MockLayer }[] = [];
+const mockMapDomEvents: Record<string, EventListener> = {};
 
 // Mock react-leaflet to prevent JSDOM rendering issues with real Leaflet
 vi.mock('react-leaflet', () => {
@@ -60,7 +61,23 @@ vi.mock('react-leaflet', () => {
     useMapEvents: (events: any) => {
       (globalThis as any).mockMapEvents = events;
       return null;
-    }
+    },
+    useMap: () => ({
+      getContainer: () => ({
+        addEventListener: vi.fn((eventName: string, handler: EventListener) => {
+          mockMapDomEvents[eventName] = handler;
+        }),
+        removeEventListener: vi.fn(),
+        getBoundingClientRect: () => ({
+          left: 0,
+          top: 0
+        })
+      }),
+      containerPointToLatLng: (point: { x: number; y: number }) => ({
+        lat: 51 + point.y / 1000,
+        lng: 7 + point.x / 1000
+      })
+    })
   };
 });
 
@@ -75,6 +92,9 @@ describe('BochumMap component', () => {
   beforeEach(() => {
     lastGeoJsonProps = null;
     registeredLayers.length = 0;
+    Object.keys(mockMapDomEvents).forEach((key) => {
+      delete mockMapDomEvents[key];
+    });
     (globalThis as any).mockMapEvents = null;
     vi.clearAllMocks();
   });
@@ -137,7 +157,7 @@ describe('BochumMap component', () => {
 
   it('highlights the zone in green if feedback status is allowed', () => {
     const feedback = {
-      zoneId: 'innenstadt',
+      zoneId: 'innenstadt' as const,
       status: 'allowed' as const,
       message: 'Zone permits this asset type'
     };
@@ -156,7 +176,7 @@ describe('BochumMap component', () => {
 
   it('highlights the zone in red if feedback status is blocked', () => {
     const feedback = {
-      zoneId: 'wattenscheid',
+      zoneId: 'wattenscheid' as const,
       status: 'blocked' as const,
       message: 'Zone is blocked'
     };
@@ -173,7 +193,7 @@ describe('BochumMap component', () => {
     expect(style.fillColor).toBe('#ef4444');
   });
 
-  it('handles map click by calling onSelectAsset(undefined) and onDropAsset', () => {
+  it('handles map click by clearing selection without dispatching a drop', () => {
     const onSelectAsset = vi.fn();
     const onDropAsset = vi.fn();
     render(
@@ -193,6 +213,40 @@ describe('BochumMap component', () => {
     });
 
     expect(onSelectAsset).toHaveBeenCalledWith(undefined);
+    expect(onDropAsset).not.toHaveBeenCalled();
+  });
+
+  it('translates drag positions and drops into map lat/lng coordinates', () => {
+    const onDragPosition = vi.fn();
+    const onDropAsset = vi.fn();
+
+    render(
+      <BochumMap
+        {...defaultProps}
+        draggedItemType="solar"
+        onDragPosition={onDragPosition}
+        onDropAsset={onDropAsset}
+      />
+    );
+
+    expect(mockMapDomEvents.dragover).toBeDefined();
+    expect(mockMapDomEvents.drop).toBeDefined();
+
+    const dragEvent = {
+      clientX: 220,
+      clientY: 480,
+      preventDefault: vi.fn(),
+      dataTransfer: {
+        dropEffect: 'none'
+      }
+    } as unknown as DragEvent;
+
+    mockMapDomEvents.dragover(dragEvent);
+    expect(dragEvent.preventDefault).toHaveBeenCalled();
+    expect(onDragPosition).toHaveBeenCalledWith({ lat: 51.48, lng: 7.22 });
+    expect(dragEvent.dataTransfer?.dropEffect).toBe('copy');
+
+    mockMapDomEvents.drop(dragEvent);
     expect(onDropAsset).toHaveBeenCalledWith({ lat: 51.48, lng: 7.22 });
   });
 });

@@ -1,17 +1,17 @@
 import type { LatLngPosition } from '../types/assets';
 import type { ZoneId } from '../types/zones';
 
-type GeoJsonPolygon = {
+export type GeoJsonPolygon = {
   type: 'Polygon';
   coordinates: readonly (readonly (readonly number[])[])[];
 };
 
-type GeoJsonMultiPolygon = {
+export type GeoJsonMultiPolygon = {
   type: 'MultiPolygon';
   coordinates: readonly (readonly (readonly (readonly number[])[])[])[];
 };
 
-type ZoneFeature = {
+export type ZoneFeature = {
   type: 'Feature';
   properties?: {
     zoneId?: string;
@@ -19,7 +19,7 @@ type ZoneFeature = {
   geometry?: GeoJsonPolygon | GeoJsonMultiPolygon | null;
 };
 
-type ZoneFeatureCollection = {
+export type ZoneFeatureCollection = {
   type: 'FeatureCollection';
   features: readonly ZoneFeature[];
 };
