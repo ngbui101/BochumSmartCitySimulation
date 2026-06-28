@@ -1,0 +1,90 @@
+{
+  "type": "FeatureCollection",
+  "name": "bochum-mvp-game-zones",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "zoneId": "innenstadt",
+        "label": "Innenstadt",
+        "dataConfidence": "mvp-simplified-game-zone"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[7.185, 51.492], [7.235, 51.492], [7.238, 51.465], [7.188, 51.462], [7.185, 51.492]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zoneId": "wattenscheid",
+        "label": "Wattenscheid",
+        "dataConfidence": "mvp-simplified-game-zone"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[7.105, 51.505], [7.18, 51.5], [7.18, 51.462], [7.105, 51.458], [7.105, 51.505]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zoneId": "querenburg",
+        "label": "Querenburg",
+        "dataConfidence": "mvp-simplified-game-zone"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[7.225, 51.465], [7.285, 51.46], [7.29, 51.425], [7.22, 51.42], [7.225, 51.465]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zoneId": "langendreer",
+        "label": "Langendreer",
+        "dataConfidence": "mvp-simplified-game-zone"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[7.27, 51.495], [7.34, 51.49], [7.345, 51.452], [7.285, 51.445], [7.27, 51.495]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zoneId": "gerthe_harpen",
+        "label": "Gerthe / Harpen",
+        "dataConfidence": "mvp-simplified-game-zone"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[7.22, 51.54], [7.305, 51.538], [7.31, 51.495], [7.235, 51.492], [7.22, 51.54]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zoneId": "weitmar_linden",
+        "label": "Weitmar / Linden",
+        "dataConfidence": "mvp-simplified-game-zone"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[7.145, 51.462], [7.22, 51.462], [7.218, 51.425], [7.14, 51.42], [7.145, 51.462]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zoneId": "stiepel",
+        "label": "Stiepel",
+        "dataConfidence": "mvp-simplified-game-zone"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[7.19, 51.425], [7.285, 51.425], [7.285, 51.39], [7.19, 51.39], [7.19, 51.425]]]
+      }
+    }
+  ]
+}
