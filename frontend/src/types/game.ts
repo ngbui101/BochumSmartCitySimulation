@@ -37,6 +37,19 @@ export type GameAction =
   | { type: 'SELECT_ASSET'; assetId: string }
   | { type: 'CLEAR_SELECTION' };
 
+export type UndoEntry =
+  | {
+      type: 'placed_asset';
+      description: string;
+      asset: PlayerAsset;
+    }
+  | {
+      type: 'sold_asset';
+      description: string;
+      asset: PlayerAsset;
+      refundAmount: number;
+    };
+
 export type MonthlySnapshot = {
   monthIndex: number;
   budget: number;
@@ -50,7 +63,7 @@ export type GameState = {
   kpis: GameKpis;
   playerAssets: PlayerAsset[];
   existingAssets: ExistingAsset[];
-  undoStack: GameAction[];
+  undoStack: UndoEntry[];
   monthlyHistory: MonthlySnapshot[];
   forecast: WeatherForecastMonth[];
   status: GameStatus;
