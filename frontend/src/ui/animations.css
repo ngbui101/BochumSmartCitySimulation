@@ -32,3 +32,75 @@
     opacity: 0.35;
   }
 }
+
+@keyframes delta-improve-slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes delta-worsen-slide-up {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-2px);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.delta-improve {
+  color: #22c55e;
+  animation: delta-improve-slide-up 1.5s ease-out forwards;
+}
+
+.delta-worsen {
+  color: #ef4444;
+  animation: delta-worsen-slide-up 1.5s ease-out forwards;
+}
+
+.kpi-bar-container.delta-active-improve {
+  border-color: #22c55e !important;
+  box-shadow: 0 0 0 1px #22c55e;
+}
+.kpi-bar-container.delta-active-improve .kpi-label,
+.kpi-bar-container.delta-active-improve .kpi-value {
+  color: #22c55e !important;
+}
+.kpi-bar-container.delta-active-improve .kpi-progress-fill {
+  background-color: #22c55e !important;
+}
+
+.kpi-bar-container.delta-active-worsen {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 1px #ef4444;
+}
+.kpi-bar-container.delta-active-worsen .kpi-label,
+.kpi-bar-container.delta-active-worsen .kpi-value {
+  color: #ef4444 !important;
+}
+.kpi-bar-container.delta-active-worsen .kpi-progress-fill {
+  background-color: #ef4444 !important;
+}
