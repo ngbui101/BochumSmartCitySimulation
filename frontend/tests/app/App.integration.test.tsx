@@ -57,19 +57,6 @@ vi.mock('../../src/map/BochumMap', async () => {
   };
 });
 
-function createDragDataTransfer(): DataTransfer {
-  return {
-    setData: vi.fn(),
-    getData: vi.fn(),
-    clearData: vi.fn(),
-    dropEffect: 'move',
-    effectAllowed: 'all',
-    files: [] as unknown as FileList,
-    items: [] as unknown as DataTransferItemList,
-    types: []
-  } as unknown as DataTransfer;
-}
-
 function storedState(): GameState | null {
   const stored = localStorage.getItem(GAME_STATE_STORAGE_KEY);
   if (!stored) {
@@ -122,8 +109,9 @@ describe('App integrated game flow', () => {
     expect(screen.getByText('Energieautarkie')).toBeInTheDocument();
     expect(screen.getByTestId('dev-mock-harness')).toHaveTextContent('Real-State');
 
-    fireEvent.dragStart(screen.getByTestId('buyable-item-solar'), {
-      dataTransfer: createDragDataTransfer()
+    fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
+      clientX: 24,
+      clientY: 48
     });
     fireEvent.click(screen.getByRole('button', { name: 'drop innenstadt' }));
 
@@ -136,8 +124,9 @@ describe('App integrated game flow', () => {
     vi.useFakeTimers();
     render(<App />);
 
-    fireEvent.dragStart(screen.getByTestId('buyable-item-solar'), {
-      dataTransfer: createDragDataTransfer()
+    fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
+      clientX: 24,
+      clientY: 48
     });
     fireEvent.click(screen.getByRole('button', { name: 'drop innenstadt' }));
 
@@ -163,8 +152,9 @@ describe('App integrated game flow', () => {
   it('validates drag placement with zone detection and placement rules before dispatching', () => {
     render(<App />);
 
-    fireEvent.dragStart(screen.getByTestId('buyable-item-wind'), {
-      dataTransfer: createDragDataTransfer()
+    fireEvent.pointerDown(screen.getByTestId('buyable-item-wind'), {
+      clientX: 24,
+      clientY: 48
     });
     fireEvent.click(screen.getByRole('button', { name: 'hover innenstadt' }));
 
@@ -174,8 +164,9 @@ describe('App integrated game flow', () => {
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('0');
     expect(screen.getByTestId('budget-value')).toHaveTextContent('18.000.000 Euro');
 
-    fireEvent.dragStart(screen.getByTestId('buyable-item-solar'), {
-      dataTransfer: createDragDataTransfer()
+    fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
+      clientX: 24,
+      clientY: 48
     });
     fireEvent.click(screen.getByRole('button', { name: 'drop outside' }));
 
@@ -193,8 +184,9 @@ describe('App integrated game flow', () => {
     fireEvent.click(screen.getByRole('button', { name: 'clear selection' }));
     expect(screen.queryByTestId('asset-title')).not.toBeInTheDocument();
 
-    fireEvent.dragStart(screen.getByTestId('buyable-item-solar'), {
-      dataTransfer: createDragDataTransfer()
+    fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
+      clientX: 24,
+      clientY: 48
     });
     fireEvent.click(screen.getByRole('button', { name: 'drop innenstadt' }));
     fireEvent.click(screen.getByRole('button', { name: 'select player' }));

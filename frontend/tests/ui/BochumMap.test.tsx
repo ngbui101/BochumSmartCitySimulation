@@ -12,7 +12,7 @@ interface MockLayer {
 
 let lastGeoJsonProps: any = null;
 const registeredLayers: { feature: any; layer: MockLayer }[] = [];
-const mockMapDomEvents: Record<string, EventListener> = {};
+const mockWindowEvents: Record<string, EventListener> = {};
 
 // Mock react-leaflet to prevent JSDOM rendering issues with real Leaflet
 vi.mock('react-leaflet', () => {
@@ -64,13 +64,13 @@ vi.mock('react-leaflet', () => {
     },
     useMap: () => ({
       getContainer: () => ({
-        addEventListener: vi.fn((eventName: string, handler: EventListener) => {
-          mockMapDomEvents[eventName] = handler;
-        }),
-        removeEventListener: vi.fn(),
         getBoundingClientRect: () => ({
           left: 0,
-          top: 0
+          top: 0,
+          right: 1000,
+          bottom: 1000,
+          width: 1000,
+          height: 1000
         })
       }),
       containerPointToLatLng: (point: { x: number; y: number }) => ({
@@ -92,11 +92,18 @@ describe('BochumMap component', () => {
   beforeEach(() => {
     lastGeoJsonProps = null;
     registeredLayers.length = 0;
-    Object.keys(mockMapDomEvents).forEach((key) => {
-      delete mockMapDomEvents[key];
+    Object.keys(mockWindowEvents).forEach((key) => {
+      delete mockWindowEvents[key];
     });
     (globalThis as any).mockMapEvents = null;
     vi.clearAllMocks();
+  });
+
+  beforeEach(() => {
+    vi.spyOn(window, 'addEventListener').mockImplementation((eventName, handler) => {
+      mockWindowEvents[eventName] = handler as EventListener;
+    });
+    vi.spyOn(window, 'removeEventListener').mockImplementation(() => undefined);
   });
 
   it('renders MapContainer with correct bounds and zoom limits', () => {
@@ -216,37 +223,47 @@ describe('BochumMap component', () => {
     expect(onDropAsset).not.toHaveBeenCalled();
   });
 
-  it('translates drag positions and drops into map lat/lng coordinates', () => {
+  it('translates pointer drag positions and drops into map lat/lng coordinates', () => {
     const onDragPosition = vi.fn();
     const onDropAsset = vi.fn();
 
     render(
       <BochumMap
         {...defaultProps}
-        draggedItemType="solar"
+        placementDrag={{ itemType: 'solar', clientX: 100, clientY: 100 }}
         onDragPosition={onDragPosition}
         onDropAsset={onDropAsset}
       />
     );
 
-    expect(mockMapDomEvents.dragover).toBeDefined();
-    expect(mockMapDomEvents.drop).toBeDefined();
+    expect(mockWindowEvents.pointermove).toBeDefined();
+    expect(mockWindowEvents.pointerup).toBeDefined();
 
-    const dragEvent = {
+    const pointerEvent = {
       clientX: 220,
-      clientY: 480,
-      preventDefault: vi.fn(),
-      dataTransfer: {
-        dropEffect: 'none'
-      }
-    } as unknown as DragEvent;
+      clientY: 480
+    } as PointerEvent;
 
-    mockMapDomEvents.dragover(dragEvent);
-    expect(dragEvent.preventDefault).toHaveBeenCalled();
+    mockWindowEvents.pointermove(pointerEvent);
     expect(onDragPosition).toHaveBeenCalledWith({ lat: 51.48, lng: 7.22 });
-    expect(dragEvent.dataTransfer?.dropEffect).toBe('copy');
 
-    mockMapDomEvents.drop(dragEvent);
+    mockWindowEvents.pointerup(pointerEvent);
     expect(onDropAsset).toHaveBeenCalledWith({ lat: 51.48, lng: 7.22 });
+  });
+
+  it('clears placement feedback when pointer drag leaves the map container', () => {
+    const onDragLeave = vi.fn();
+
+    render(
+      <BochumMap
+        {...defaultProps}
+        placementDrag={{ itemType: 'solar', clientX: 100, clientY: 100 }}
+        onDragLeave={onDragLeave}
+      />
+    );
+
+    mockWindowEvents.pointermove({ clientX: 1200, clientY: 1200 } as PointerEvent);
+
+    expect(onDragLeave).toHaveBeenCalled();
   });
 });

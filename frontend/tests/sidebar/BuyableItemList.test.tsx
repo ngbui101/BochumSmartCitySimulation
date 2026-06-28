@@ -19,9 +19,9 @@ describe('BuyableItemList component', () => {
     expect(windCard).not.toHaveClass('disabled');
     expect(storageCard).not.toHaveClass('disabled');
 
-    expect(solarCard).toHaveAttribute('draggable', 'true');
-    expect(windCard).toHaveAttribute('draggable', 'true');
-    expect(storageCard).toHaveAttribute('draggable', 'true');
+    expect(solarCard).not.toHaveAttribute('draggable');
+    expect(windCard).not.toHaveAttribute('draggable');
+    expect(storageCard).not.toHaveAttribute('draggable');
   });
 
   it('correctly disables items costing more than the available budget', () => {
@@ -39,9 +39,9 @@ describe('BuyableItemList component', () => {
     expect(windCard).toHaveClass('disabled');
     expect(storageCard).toHaveClass('disabled');
 
-    expect(solarCard).toHaveAttribute('draggable', 'true');
-    expect(windCard).toHaveAttribute('draggable', 'false');
-    expect(storageCard).toHaveAttribute('draggable', 'false');
+    expect(solarCard).not.toHaveAttribute('draggable');
+    expect(windCard).not.toHaveAttribute('draggable');
+    expect(storageCard).not.toHaveAttribute('draggable');
   });
 
   it('displays the correct tooltip text when hovering over disabled items', () => {
@@ -63,33 +63,22 @@ describe('BuyableItemList component', () => {
     expect(solarCard).not.toHaveAttribute('title');
   });
 
-  it('triggers onDragStart only for enabled/active items', () => {
-    const onDragStart = vi.fn();
-    render(<BuyableItemList budget={1500000} onDragStart={onDragStart} />);
+  it('triggers onPointerDragStart only for enabled/active items', () => {
+    const onPointerDragStart = vi.fn();
+    render(<BuyableItemList budget={1500000} onPointerDragStart={onPointerDragStart} />);
 
     const solarCard = screen.getByTestId('buyable-item-solar');
     const windCard = screen.getByTestId('buyable-item-wind');
 
-    // Drag enabled item using createEvent
-    const dragEventSolar = createEvent.dragStart(solarCard);
-    // mock dataTransfer
-    Object.defineProperty(dragEventSolar, 'dataTransfer', {
-      value: {
-        setData: vi.fn(),
-      },
-    });
-    
-    fireEvent(solarCard, dragEventSolar);
-    expect(onDragStart).toHaveBeenCalledWith('solar');
-    expect((dragEventSolar as any).dataTransfer.setData).toHaveBeenCalledWith('text/plain', 'solar');
+    const solarPointerEvent = createEvent.pointerDown(solarCard);
+    Object.defineProperty(solarPointerEvent, 'clientX', { value: 20 });
+    Object.defineProperty(solarPointerEvent, 'clientY', { value: 30 });
 
-    // Drag disabled item
-    onDragStart.mockClear();
-    const dragEventWind = createEvent.dragStart(windCard);
-    const preventDefaultSpy = vi.spyOn(dragEventWind, 'preventDefault');
+    fireEvent(solarCard, solarPointerEvent);
+    expect(onPointerDragStart).toHaveBeenCalledWith('solar', { clientX: 20, clientY: 30 });
 
-    fireEvent(windCard, dragEventWind);
-    expect(onDragStart).not.toHaveBeenCalled();
-    expect(preventDefaultSpy).toHaveBeenCalled();
+    onPointerDragStart.mockClear();
+    fireEvent.pointerDown(windCard);
+    expect(onPointerDragStart).not.toHaveBeenCalled();
   });
 });

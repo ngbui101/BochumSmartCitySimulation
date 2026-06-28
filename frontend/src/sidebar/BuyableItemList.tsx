@@ -5,7 +5,13 @@ import type { ItemType } from '../types/assets';
 
 export interface BuyableItemListProps {
   budget: number;
-  onDragStart?: (itemType: ItemType) => void;
+  onPointerDragStart?: (
+    itemType: ItemType,
+    pointer: {
+      clientX: number;
+      clientY: number;
+    }
+  ) => void;
 }
 
 const itemIcons: Record<ItemType, React.ReactNode> = {
@@ -23,14 +29,14 @@ const friendlyLabels: Record<ItemType, string> = {
 
 export const BuyableItemList: React.FC<BuyableItemListProps> = ({
   budget,
-  onDragStart,
+  onPointerDragStart,
 }) => {
-  const handleDragStart = (e: React.DragEvent, itemType: ItemType) => {
-    // Set standard drag data just in case
-    e.dataTransfer.setData('text/plain', itemType);
-    if (onDragStart) {
-      onDragStart(itemType);
-    }
+  const handlePointerDown = (event: React.PointerEvent, itemType: ItemType) => {
+    event.preventDefault();
+    onPointerDragStart?.(itemType, {
+      clientX: event.clientX,
+      clientY: event.clientY
+    });
   };
 
   return (
@@ -74,12 +80,9 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
               key={item.itemType}
               className={`buyable-item-card ${isDisabled ? 'disabled' : 'active'}`}
               data-testid={`buyable-item-${item.itemType}`}
-              draggable={!isDisabled}
-              onDragStart={(e) => {
+              onPointerDown={(event) => {
                 if (!isDisabled) {
-                  handleDragStart(e, item.itemType);
-                } else {
-                  e.preventDefault();
+                  handlePointerDown(event, item.itemType);
                 }
               }}
               title={tooltipText}

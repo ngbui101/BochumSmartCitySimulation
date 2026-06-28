@@ -19,7 +19,13 @@ export interface SidebarProps {
   forecast: WeatherForecastMonth[];
   selectedAsset?: PlayerAsset | ExistingAsset;
   onSellAsset?: (id: string) => void;
-  onDragStart?: (itemType: ItemType) => void;
+  onPointerDragStart?: (
+    itemType: ItemType,
+    pointer: {
+      clientX: number;
+      clientY: number;
+    }
+  ) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -30,7 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   forecast,
   selectedAsset,
   onSellAsset,
-  onDragStart,
+  onPointerDragStart,
 }) => {
   const monthNum = currentMonthIndex + 1;
   const year = Math.floor(currentMonthIndex / 12) + 1;
@@ -96,7 +102,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       <WeatherForecast forecast={forecast} />
 
-      <BuyableItemList budget={budget} onDragStart={onDragStart} />
+      <BuyableItemList budget={budget} onPointerDragStart={onPointerDragStart} />
 
       <AssetDetailsPanel selectedAsset={selectedAsset} onSell={onSellAsset} />
     </aside>

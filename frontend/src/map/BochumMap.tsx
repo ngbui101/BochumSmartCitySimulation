@@ -25,7 +25,11 @@ export interface BochumMapProps {
   onSelectAsset: (id: string | undefined) => void;
   zoneFeedback?: ZoneFeedback;
   placementFeedback?: PlacementFeedback;
-  draggedItemType?: ItemType | null;
+  placementDrag?: {
+    itemType: ItemType;
+    clientX: number;
+    clientY: number;
+  } | null;
   onDragPosition?: (position: LatLngPosition) => void;
   onDropAsset?: (position: LatLngPosition) => void;
   onDragLeave?: () => void;
@@ -47,14 +51,18 @@ const MapEventsHandler: React.FC<MapEventsHandlerProps> = ({
 };
 
 interface DragDropHandlerProps {
-  draggedItemType?: ItemType | null;
+  placementDrag?: {
+    itemType: ItemType;
+    clientX: number;
+    clientY: number;
+  } | null;
   onDragPosition?: (position: LatLngPosition) => void;
   onDropAsset?: (position: LatLngPosition) => void;
   onDragLeave?: () => void;
 }
 
-const DragDropHandler: React.FC<DragDropHandlerProps> = ({
-  draggedItemType,
+const PointerPlacementHandler: React.FC<DragDropHandlerProps> = ({
+  placementDrag,
   onDragPosition,
   onDropAsset,
   onDragLeave
@@ -62,9 +70,24 @@ const DragDropHandler: React.FC<DragDropHandlerProps> = ({
   const map = useMap();
 
   useEffect(() => {
+    if (!placementDrag) {
+      return undefined;
+    }
+
     const container = map.getContainer();
 
-    const eventToLatLng = (event: DragEvent): LatLngPosition => {
+    const isPointerInsideMap = (event: PointerEvent): boolean => {
+      const rect = container.getBoundingClientRect();
+
+      return (
+        event.clientX >= rect.left &&
+        event.clientX <= rect.right &&
+        event.clientY >= rect.top &&
+        event.clientY <= rect.bottom
+      );
+    };
+
+    const eventToLatLng = (event: PointerEvent): LatLngPosition => {
       const rect = container.getBoundingClientRect();
       const point = L.point(event.clientX - rect.left, event.clientY - rect.top);
       const latLng = map.containerPointToLatLng(point);
@@ -75,43 +98,32 @@ const DragDropHandler: React.FC<DragDropHandlerProps> = ({
       };
     };
 
-    const handleDragOver = (event: DragEvent) => {
-      if (!draggedItemType) {
+    const handlePointerMove = (event: PointerEvent) => {
+      if (!isPointerInsideMap(event)) {
+        onDragLeave?.();
         return;
-      }
-
-      event.preventDefault();
-
-      if (event.dataTransfer) {
-        event.dataTransfer.dropEffect = 'copy';
       }
 
       onDragPosition?.(eventToLatLng(event));
     };
 
-    const handleDrop = (event: DragEvent) => {
-      if (!draggedItemType) {
+    const handlePointerUp = (event: PointerEvent) => {
+      if (!isPointerInsideMap(event)) {
+        onDragLeave?.();
         return;
       }
 
-      event.preventDefault();
       onDropAsset?.(eventToLatLng(event));
     };
 
-    const handleDragLeave = () => {
-      onDragLeave?.();
-    };
-
-    container.addEventListener('dragover', handleDragOver);
-    container.addEventListener('drop', handleDrop);
-    container.addEventListener('dragleave', handleDragLeave);
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
 
     return () => {
-      container.removeEventListener('dragover', handleDragOver);
-      container.removeEventListener('drop', handleDrop);
-      container.removeEventListener('dragleave', handleDragLeave);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
     };
-  }, [draggedItemType, map, onDragLeave, onDragPosition, onDropAsset]);
+  }, [placementDrag, map, onDragLeave, onDragPosition, onDropAsset]);
 
   return null;
 };
@@ -123,7 +135,7 @@ export const BochumMap: React.FC<BochumMapProps> = ({
   onSelectAsset,
   zoneFeedback,
   placementFeedback,
-  draggedItemType,
+  placementDrag,
   onDragPosition,
   onDropAsset,
   onDragLeave
@@ -209,8 +221,8 @@ export const BochumMap: React.FC<BochumMapProps> = ({
           onSelectAsset={onSelectAsset}
         />
         <MapEventsHandler onSelectAsset={onSelectAsset} />
-        <DragDropHandler
-          draggedItemType={draggedItemType}
+        <PointerPlacementHandler
+          placementDrag={placementDrag}
           onDragPosition={onDragPosition}
           onDropAsset={onDropAsset}
           onDragLeave={onDragLeave}

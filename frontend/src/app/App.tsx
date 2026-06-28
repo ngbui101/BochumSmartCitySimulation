@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { BochumMap } from '../map/BochumMap';
 import { BottomControls } from '../components/BottomControls';
@@ -12,12 +12,22 @@ import { canPlaceItem } from '../simulation/placementRules';
 import { calculateFinalScore } from '../simulation/scoring';
 import { findZoneForPoint } from '../simulation/zoneDetection';
 import { useAppState } from './appState';
+import { SolarIcon, StorageIcon, WindIcon } from '../ui/icons';
 import type { ItemType, LatLngPosition } from '../types/assets';
 import type { GameAction, GameKpis, GameState } from '../types/game';
 import type { ZoneId } from '../types/zones';
 import type { PlacementFeedback, ZoneFeedback } from '../map/BochumMap';
 
 type DevStateMode = 'real' | 'initial' | 'midgame' | 'finished';
+
+type PlacementDragState = {
+  itemType: ItemType;
+  clientX: number;
+  clientY: number;
+  currentLatLng?: LatLngPosition;
+  currentZoneId?: ZoneId | null;
+  placementResult?: ReturnType<typeof canPlaceItem>;
+};
 
 const mockStates: Record<Exclude<DevStateMode, 'real'>, GameState> = {
   initial: initialMockState,
@@ -51,6 +61,18 @@ function getKpiDeltas(state: GameState):
 
 function getItemLabel(itemType: ItemType): string {
   return itemDefinitions.find((item) => item.itemType === itemType)?.label ?? itemType;
+}
+
+function getItemIcon(itemType: ItemType): React.ReactNode {
+  if (itemType === 'solar') {
+    return <SolarIcon size={22} />;
+  }
+
+  if (itemType === 'wind') {
+    return <WindIcon size={22} />;
+  }
+
+  return <StorageIcon size={22} />;
 }
 
 function getPlacementMessage(itemType: ItemType, result: ReturnType<typeof canPlaceItem>): string {
@@ -107,7 +129,7 @@ export function App() {
   const { state: realState, dispatch: realDispatch, resetGame } = useAppState();
   const [devStateMode, setDevStateMode] = useState<DevStateMode>('real');
   const [mockState, setMockState] = useState<GameState>(initialMockState);
-  const [draggedItemType, setDraggedItemType] = useState<ItemType | null>(null);
+  const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(null);
   const [zoneFeedback, setZoneFeedback] = useState<ZoneFeedback | undefined>(undefined);
   const [placementFeedback, setPlacementFeedback] = useState<PlacementFeedback | undefined>(
     undefined
@@ -122,7 +144,7 @@ export function App() {
     setDevStateMode(value);
     setZoneFeedback(undefined);
     setPlacementFeedback(undefined);
-    setDraggedItemType(null);
+    setPlacementDrag(null);
 
     if (isMockStateMode(value)) {
       setMockState(mockStates[value]);
@@ -159,34 +181,58 @@ export function App() {
 
   const handleNextMonth = () => {
     clearPlacementFeedback();
-    setDraggedItemType(null);
+    setPlacementDrag(null);
     dispatchToActiveState({ type: 'ADVANCE_MONTH' });
   };
 
-  const handleDragStart = (itemType: ItemType) => {
-    setDraggedItemType(itemType);
+  const handlePointerDragStart = (
+    itemType: ItemType,
+    pointer: {
+      clientX: number;
+      clientY: number;
+    }
+  ) => {
+    setPlacementDrag({
+      itemType,
+      clientX: pointer.clientX,
+      clientY: pointer.clientY
+    });
     clearPlacementFeedback();
   };
 
   const handleDragPosition = (position: LatLngPosition) => {
-    if (!draggedItemType) {
+    if (!placementDrag) {
       return;
     }
 
-    const validation = validateDropPosition(state, draggedItemType, position);
+    const validation = validateDropPosition(state, placementDrag.itemType, position);
     setZoneFeedback(validation.zoneFeedback);
     setPlacementFeedback(validation.placementFeedback);
+    setPlacementDrag((currentDrag) =>
+      currentDrag
+        ? {
+            ...currentDrag,
+            currentLatLng: position,
+            currentZoneId: validation.zoneId,
+            placementResult:
+              validation.zoneId === null
+                ? undefined
+                : canPlaceItem(state, currentDrag.itemType, validation.zoneId)
+          }
+        : null
+    );
   };
 
   const handleDropAsset = (position: LatLngPosition) => {
-    if (!draggedItemType) {
+    if (!placementDrag) {
       return;
     }
 
-    const validation = validateDropPosition(state, draggedItemType, position);
+    const itemType = placementDrag.itemType;
+    const validation = validateDropPosition(state, itemType, position);
     setZoneFeedback(validation.zoneFeedback);
     setPlacementFeedback(validation.placementFeedback);
-    setDraggedItemType(null);
+    setPlacementDrag(null);
 
     if (!validation.zoneId || validation.placementFeedback.status === 'blocked') {
       return;
@@ -194,7 +240,7 @@ export function App() {
 
     dispatchToActiveState({
       type: 'PLACE_ASSET',
-      itemType: draggedItemType,
+      itemType,
       zoneId: validation.zoneId,
       position
     });
@@ -202,7 +248,7 @@ export function App() {
 
   const handleRestart = () => {
     clearPlacementFeedback();
-    setDraggedItemType(null);
+    setPlacementDrag(null);
 
     if (isRealStateMode) {
       resetGame();
@@ -212,6 +258,57 @@ export function App() {
     setDevStateMode('initial');
     setMockState(initialMockState);
   };
+
+  const handleDragLeave = () => {
+    setZoneFeedback(undefined);
+
+    if (placementDrag) {
+      setPlacementFeedback({
+        status: 'blocked',
+        message: 'Keine Bochumer Zone an dieser Position.'
+      });
+      setPlacementDrag((currentDrag) =>
+        currentDrag
+          ? {
+              ...currentDrag,
+              currentLatLng: undefined,
+              currentZoneId: null,
+              placementResult: undefined
+            }
+          : null
+      );
+    }
+  };
+
+  useEffect(() => {
+    if (!placementDrag) {
+      return undefined;
+    }
+
+    const handlePointerMove = (event: PointerEvent) => {
+      setPlacementDrag((currentDrag) =>
+        currentDrag
+          ? {
+              ...currentDrag,
+              clientX: event.clientX,
+              clientY: event.clientY
+            }
+          : null
+      );
+    };
+
+    const handlePointerUp = () => {
+      setPlacementDrag(null);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, [placementDrag]);
 
   const selectedAsset = useMemo(
     () =>
@@ -236,7 +333,7 @@ export function App() {
         forecast={state.forecast}
         selectedAsset={selectedAsset}
         onSellAsset={handleSellAsset}
-        onDragStart={handleDragStart}
+        onPointerDragStart={handlePointerDragStart}
       />
 
       <section className="map-stage" aria-label="Bochum-Karte">
@@ -247,10 +344,10 @@ export function App() {
           onSelectAsset={handleSelectAsset}
           zoneFeedback={zoneFeedback}
           placementFeedback={placementFeedback}
-          draggedItemType={draggedItemType}
+          placementDrag={placementDrag}
           onDragPosition={handleDragPosition}
           onDropAsset={handleDropAsset}
-          onDragLeave={clearPlacementFeedback}
+          onDragLeave={handleDragLeave}
         />
         <BottomControls
           canUndo={canUndo}
@@ -269,6 +366,21 @@ export function App() {
             <option value="midgame">Mock Preview: Midgame</option>
             <option value="finished">Mock Preview: Finished</option>
           </select>
+        </div>
+      )}
+
+      {placementDrag && (
+        <div
+          className="placement-drag-preview"
+          data-testid="placement-drag-preview"
+          style={{
+            transform: `translate(${placementDrag.clientX + 12}px, ${
+              placementDrag.clientY + 12
+            }px)`
+          }}
+        >
+          <span className="placement-drag-preview-icon">{getItemIcon(placementDrag.itemType)}</span>
+          <span>{getItemLabel(placementDrag.itemType)}</span>
         </div>
       )}
 
