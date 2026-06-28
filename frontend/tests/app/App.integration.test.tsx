@@ -93,7 +93,7 @@ function finishedState(finalScore: FinalScore): GameState {
 describe('App integrated game flow', () => {
   beforeEach(() => {
     localStorage.clear();
-    vi.useRealTimers();
+    vi.useFakeTimers();
   });
 
   afterEach(() => {
@@ -122,6 +122,9 @@ describe('App integrated game flow', () => {
       clientX: 24,
       clientY: 48
     });
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
     fireEvent.click(screen.getByRole('button', { name: 'drop innenstadt' }));
 
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('1');
@@ -130,12 +133,14 @@ describe('App integrated game flow', () => {
   });
 
   it('uses real undo and month actions from the bottom controls', () => {
-    vi.useFakeTimers();
     render(<App />);
 
     fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
       clientX: 24,
       clientY: 48
+    });
+    act(() => {
+      vi.advanceTimersByTime(200);
     });
     fireEvent.click(screen.getByRole('button', { name: 'drop innenstadt' }));
 
@@ -165,6 +170,9 @@ describe('App integrated game flow', () => {
       clientX: 24,
       clientY: 48
     });
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
     fireEvent.click(screen.getByRole('button', { name: 'hover innenstadt' }));
 
     expect(screen.getByTestId('zone-feedback')).toHaveTextContent(/nicht erlaubt/i);
@@ -176,6 +184,9 @@ describe('App integrated game flow', () => {
     fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
       clientX: 24,
       clientY: 48
+    });
+    act(() => {
+      vi.advanceTimersByTime(200);
     });
     fireEvent.click(screen.getByRole('button', { name: 'drop outside' }));
 
@@ -196,6 +207,9 @@ describe('App integrated game flow', () => {
     fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
       clientX: 24,
       clientY: 48
+    });
+    act(() => {
+      vi.advanceTimersByTime(200);
     });
     fireEvent.click(screen.getByRole('button', { name: 'drop innenstadt' }));
     fireEvent.click(screen.getByRole('button', { name: 'select player' }));

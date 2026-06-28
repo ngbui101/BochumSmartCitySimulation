@@ -24,6 +24,10 @@ type PlacementDragState = {
   itemType: ItemType;
   clientX: number;
   clientY: number;
+  startX: number;
+  startY: number;
+  startTime: number;
+  hasMoved: boolean;
   currentLatLng?: LatLngPosition;
   currentZoneId?: ZoneId | null;
   placementResult?: ReturnType<typeof canPlaceItem>;
@@ -130,6 +134,7 @@ export function App() {
   const [devStateMode, setDevStateMode] = useState<DevStateMode>('real');
   const [mockState, setMockState] = useState<GameState>(initialMockState);
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(null);
+  const [selectedItemType, setSelectedItemType] = useState<ItemType | null>(null);
   const [zoneFeedback, setZoneFeedback] = useState<ZoneFeedback | undefined>(undefined);
   const [placementFeedback, setPlacementFeedback] = useState<PlacementFeedback | undefined>(
     undefined
@@ -195,8 +200,13 @@ export function App() {
     setPlacementDrag({
       itemType,
       clientX: pointer.clientX,
-      clientY: pointer.clientY
+      clientY: pointer.clientY,
+      startX: pointer.clientX,
+      startY: pointer.clientY,
+      startTime: Date.now(),
+      hasMoved: false
     });
+    setSelectedItemType(itemType); // Show description popover instantly on click/press down
     clearPlacementFeedback();
   };
 
@@ -233,6 +243,7 @@ export function App() {
     setZoneFeedback(validation.zoneFeedback);
     setPlacementFeedback(validation.placementFeedback);
     setPlacementDrag(null);
+    setSelectedItemType(null); // Deselect the item on drop
 
     if (!validation.zoneId || validation.placementFeedback.status === 'blocked') {
       return;
@@ -286,19 +297,31 @@ export function App() {
     }
 
     const handlePointerMove = (event: PointerEvent) => {
-      setPlacementDrag((currentDrag) =>
-        currentDrag
-          ? {
-              ...currentDrag,
-              clientX: event.clientX,
-              clientY: event.clientY
-            }
-          : null
-      );
+      setPlacementDrag((currentDrag) => {
+        if (!currentDrag) return null;
+        const distance = Math.sqrt(
+          (event.clientX - currentDrag.startX) ** 2 +
+          (event.clientY - currentDrag.startY) ** 2
+        );
+        return {
+          ...currentDrag,
+          clientX: event.clientX,
+          clientY: event.clientY,
+          hasMoved: currentDrag.hasMoved || distance > 10
+        };
+      });
     };
 
     const handlePointerUp = () => {
-      setPlacementDrag(null);
+      setPlacementDrag((currentDrag) => {
+        if (currentDrag) {
+          const duration = Date.now() - currentDrag.startTime;
+          if (currentDrag.hasMoved || duration > 200) {
+            setSelectedItemType(null); // Aborted drag: deselect the option
+          }
+        }
+        return null;
+      });
     };
 
     window.addEventListener('pointermove', handlePointerMove);
@@ -345,6 +368,8 @@ export function App() {
         kpis={state.kpis}
         deltas={deltas}
         forecast={state.forecast}
+        selectedItemType={selectedItemType}
+        onSelectItemType={setSelectedItemType}
         onPointerDragStart={handlePointerDragStart}
       />
 

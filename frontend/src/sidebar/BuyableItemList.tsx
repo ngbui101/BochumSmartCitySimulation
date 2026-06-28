@@ -36,10 +36,50 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
 }) => {
   const handlePointerDown = (event: React.PointerEvent, itemType: ItemType) => {
     event.preventDefault();
-    onPointerDragStart?.(itemType, {
-      clientX: event.clientX,
-      clientY: event.clientY
-    });
+    const startX = event.clientX;
+    const startY = event.clientY;
+    let dragStarted = false;
+
+    // Start a timeout of 180ms. If the user keeps the pointer down, it counts as a hold-to-drag.
+    const timeoutId = setTimeout(() => {
+      startDrag();
+    }, 180);
+
+    const startDrag = () => {
+      if (dragStarted) return;
+      dragStarted = true;
+      clearTimeout(timeoutId);
+      onPointerDragStart?.(itemType, {
+        clientX: startX,
+        clientY: startY,
+      });
+    };
+
+    const handlePointerMove = (moveEvent: PointerEvent) => {
+      if (dragStarted) return;
+      const distance = Math.sqrt(
+        (moveEvent.clientX - startX) ** 2 +
+        (moveEvent.clientY - startY) ** 2
+      );
+      // If moved more than 6px, start drag immediately
+      if (distance > 6) {
+        startDrag();
+      }
+    };
+
+    const handlePointerUp = () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+
+      if (!dragStarted) {
+        // Quick click: toggle selected item type
+        onSelectItemType(itemType);
+      }
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
   };
 
   // Define 6 slots total (3 items, 3 empty slots for visual RPG inventory grid style)
@@ -117,8 +157,9 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
               className={`inventory-slot ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : 'active'}`}
               data-testid={`buyable-item-${item.itemType}`}
               onPointerDown={(event) => {
-                onSelectItemType(item.itemType);
-                if (!isDisabled) {
+                if (isDisabled) {
+                  onSelectItemType(item.itemType); // Disabled item can only show info, not be dragged
+                } else {
                   handlePointerDown(event, item.itemType);
                 }
               }}
@@ -135,7 +176,7 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
                   ? '1.5px solid #cbd8d0' 
                   : '1.5px solid #cbd8d0',
                 borderRadius: '6px',
-                opacity: isDisabled ? 0.5 : 1,
+                opacity: isDisabled ? 0.6 : 1,
                 cursor: isDisabled ? 'not-allowed' : 'grab',
                 transition: 'all 0.15s ease',
                 color: isDisabled ? '#9ca3af' : '#3d6f5a',

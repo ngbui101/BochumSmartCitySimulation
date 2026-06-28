@@ -1,6 +1,6 @@
 import React from 'react';
-import { describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent, createEvent } from '@testing-library/react';
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
+import { render, screen, fireEvent, createEvent, act } from '@testing-library/react';
 import { BuyableItemList } from '../../src/sidebar/BuyableItemList';
 
 describe('BuyableItemList component', () => {
@@ -10,6 +10,15 @@ describe('BuyableItemList component', () => {
     onSelectItemType: vi.fn(),
     onPointerDragStart: vi.fn(),
   };
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
 
   it('renders all buyable items (Solar, Wind, Storage) in a grid layout', () => {
     render(<BuyableItemList {...defaultProps} />);
@@ -58,7 +67,7 @@ describe('BuyableItemList component', () => {
     expect(solarCard).toHaveAttribute('title', 'Solaranlage');
   });
 
-  it('triggers onPointerDragStart and onSelectItemType only for enabled/active items', () => {
+  it('handles quick clicks for selection and hold-delay for dragging', () => {
     const onPointerDragStart = vi.fn();
     const onSelectItemType = vi.fn();
     render(
@@ -71,21 +80,24 @@ describe('BuyableItemList component', () => {
     );
 
     const solarCard = screen.getByTestId('buyable-item-solar');
-    const windCard = screen.getByTestId('buyable-item-wind');
 
-    const solarPointerEvent = createEvent.pointerDown(solarCard);
-    Object.defineProperty(solarPointerEvent, 'clientX', { value: 20 });
-    Object.defineProperty(solarPointerEvent, 'clientY', { value: 30 });
+    // 1. Quick click: down and up immediately (without time advance)
+    fireEvent.pointerDown(solarCard);
+    fireEvent.pointerUp(solarCard);
 
-    fireEvent(solarCard, solarPointerEvent);
     expect(onSelectItemType).toHaveBeenCalledWith('solar');
-    expect(onPointerDragStart).toHaveBeenCalledWith('solar', { clientX: 20, clientY: 30 });
+    expect(onPointerDragStart).not.toHaveBeenCalled();
 
-    onPointerDragStart.mockClear();
     onSelectItemType.mockClear();
+    onPointerDragStart.mockClear();
 
-    fireEvent.pointerDown(windCard);
-    expect(onSelectItemType).toHaveBeenCalledWith('wind'); // Clicking disabled item still selects to show info
-    expect(onPointerDragStart).not.toHaveBeenCalled(); // But does not trigger placement drag!
+    // 2. Click and hold: down and advance time by 200ms
+    fireEvent.pointerDown(solarCard);
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+
+    expect(onPointerDragStart).toHaveBeenCalledWith('solar', expect.any(Object));
+    expect(onSelectItemType).not.toHaveBeenCalled(); // No selection trigger when drag starts
   });
 });

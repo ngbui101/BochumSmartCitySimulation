@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import type { ItemType } from '../types/assets';
 import type { GameKpis } from '../types/game';
 import type { WeatherForecastMonth } from '../types/weather';
@@ -17,6 +17,8 @@ export interface SidebarProps {
     supplySecurity?: number;
   };
   forecast: WeatherForecastMonth[];
+  selectedItemType?: ItemType | null;
+  onSelectItemType?: (itemType: ItemType | null) => void;
   onPointerDragStart?: (
     itemType: ItemType,
     pointer: {
@@ -32,10 +34,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
   kpis,
   deltas,
   forecast,
+  selectedItemType,
+  onSelectItemType,
   onPointerDragStart,
 }) => {
-  const [selectedItemType, setSelectedItemType] = useState<ItemType | null>(null);
-
   const monthNum = currentMonthIndex + 1;
   const year = Math.floor(currentMonthIndex / 12) + 1;
   const monthInYear = (currentMonthIndex % 12) + 1;
@@ -47,8 +49,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
     itemType: ItemType,
     pointer: { clientX: number; clientY: number }
   ) => {
-    setSelectedItemType(null); // Close the detail popover when starting a drag placement
+    onSelectItemType?.(null); // Close the detail popover when starting a drag placement
     onPointerDragStart?.(itemType, pointer);
+  };
+
+  const handleSelectItemTypeWrapper = (itemType: ItemType) => {
+    if (onSelectItemType) {
+      // Toggle selection: if already selected, deselect it
+      if (selectedItemType === itemType) {
+        onSelectItemType(null);
+      } else {
+        onSelectItemType(itemType);
+      }
+    }
   };
 
   return (
@@ -118,8 +131,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       <BuyableItemList
         budget={budget}
-        selectedItemType={selectedItemType}
-        onSelectItemType={setSelectedItemType}
+        selectedItemType={selectedItemType ?? null}
+        onSelectItemType={handleSelectItemTypeWrapper}
         onPointerDragStart={handlePointerDragStartWrapper}
       />
 
@@ -172,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 : 'Energiespeicher'}
             </h4>
             <button
-              onClick={() => setSelectedItemType(null)}
+              onClick={() => onSelectItemType?.(null)}
               aria-label="Details schließen"
               style={{
                 background: 'none',
