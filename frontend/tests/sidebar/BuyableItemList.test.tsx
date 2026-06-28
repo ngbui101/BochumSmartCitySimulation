@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
-import { render, screen, fireEvent, createEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, act } from '@testing-library/react';
 import { BuyableItemList } from '../../src/sidebar/BuyableItemList';
 
 describe('BuyableItemList component', () => {
@@ -67,7 +67,7 @@ describe('BuyableItemList component', () => {
     expect(solarCard).toHaveAttribute('title', 'Solaranlage');
   });
 
-  it('handles quick clicks for selection and hold-delay for dragging', () => {
+  it('handles quick clicks (ignored), double clicks (selects info), and hold-delay (dragging)', () => {
     const onPointerDragStart = vi.fn();
     const onSelectItemType = vi.fn();
     render(
@@ -81,17 +81,22 @@ describe('BuyableItemList component', () => {
 
     const solarCard = screen.getByTestId('buyable-item-solar');
 
-    // 1. Quick click: down and up immediately (without time advance)
+    // 1. Quick single click: down and up immediately (should NOT call onSelectItemType)
     fireEvent.pointerDown(solarCard);
     fireEvent.pointerUp(solarCard);
 
+    expect(onSelectItemType).not.toHaveBeenCalled();
+    expect(onPointerDragStart).not.toHaveBeenCalled();
+
+    // 2. Double click: triggers details popover
+    fireEvent.doubleClick(solarCard);
     expect(onSelectItemType).toHaveBeenCalledWith('solar');
     expect(onPointerDragStart).not.toHaveBeenCalled();
 
     onSelectItemType.mockClear();
     onPointerDragStart.mockClear();
 
-    // 2. Click and hold: down and advance time by 200ms
+    // 3. Click and hold: down and advance time by 200ms
     fireEvent.pointerDown(solarCard);
     act(() => {
       vi.advanceTimersByTime(200);

@@ -71,11 +71,6 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
       clearTimeout(timeoutId);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
-
-      if (!dragStarted) {
-        // Quick click: toggle selected item type
-        onSelectItemType(itemType);
-      }
     };
 
     window.addEventListener('pointermove', handlePointerMove);
@@ -157,11 +152,12 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
               className={`inventory-slot ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : 'active'}`}
               data-testid={`buyable-item-${item.itemType}`}
               onPointerDown={(event) => {
-                if (isDisabled) {
-                  onSelectItemType(item.itemType); // Disabled item can only show info, not be dragged
-                } else {
+                if (!isDisabled) {
                   handlePointerDown(event, item.itemType);
                 }
+              }}
+              onDoubleClick={() => {
+                onSelectItemType(item.itemType);
               }}
               title={tooltipText}
               style={{
