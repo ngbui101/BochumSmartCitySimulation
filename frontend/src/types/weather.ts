@@ -15,4 +15,6 @@ export type WeatherForecastMonth = {
   monthOfYear: number;
   weatherType: WeatherType;
   confidence: ForecastConfidence;
+  solarFactor: number;
+  windFactor: number;
 };
