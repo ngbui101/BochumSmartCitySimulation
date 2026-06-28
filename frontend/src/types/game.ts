@@ -1,4 +1,6 @@
 import type { ExistingAsset, PlayerAsset } from './assets';
+import type { ItemType, LatLngPosition } from './assets';
+import type { ZoneId } from './zones';
 import type { WeatherForecastMonth } from './weather';
 
 export type GameStatus = 'running' | 'finished';
@@ -23,11 +25,16 @@ export type FinalScore = {
 };
 
 export type GameAction =
-  | { type: 'PLACE_ASSET' }
-  | { type: 'SELL_ASSET' }
+  | {
+      type: 'PLACE_ASSET';
+      itemType: ItemType;
+      zoneId: ZoneId;
+      position: LatLngPosition;
+    }
+  | { type: 'SELL_ASSET'; assetId: string }
   | { type: 'UNDO_LAST_ACTION' }
   | { type: 'ADVANCE_MONTH' }
-  | { type: 'SELECT_ASSET' }
+  | { type: 'SELECT_ASSET'; assetId: string }
   | { type: 'CLEAR_SELECTION' };
 
 export type MonthlySnapshot = {
@@ -47,5 +54,6 @@ export type GameState = {
   monthlyHistory: MonthlySnapshot[];
   forecast: WeatherForecastMonth[];
   status: GameStatus;
+  selectedAssetId?: string;
   finalScore?: FinalScore;
 };
