@@ -34,6 +34,7 @@ export interface BochumMapProps {
   onDropAsset?: (position: LatLngPosition) => void;
   onDragLeave?: () => void;
   onSell?: (id: string) => void;
+  placeableZones?: Record<string, boolean> | null;
 }
 
 interface MapEventsHandlerProps {
@@ -140,7 +141,8 @@ export const BochumMap: React.FC<BochumMapProps> = ({
   onDragPosition,
   onDropAsset,
   onDragLeave,
-  onSell
+  onSell,
+  placeableZones
 }) => {
   const [hoveredZoneId, setHoveredZoneId] = useState<string | null>(null);
 
@@ -158,6 +160,18 @@ export const BochumMap: React.FC<BochumMapProps> = ({
         color: color,
         weight: 3,
         opacity: 0.8
+      };
+    }
+
+    if (placeableZones) {
+      const isAllowed = placeableZones[zoneId];
+      const color = isAllowed ? '#22c55e' : '#ef4444';
+      return {
+        fillColor: color,
+        fillOpacity: isHovered ? 0.35 : 0.15,
+        color: color,
+        weight: isHovered ? 2.5 : 1.5,
+        opacity: 0.6
       };
     }
 
@@ -211,7 +225,7 @@ export const BochumMap: React.FC<BochumMapProps> = ({
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
         />
         <GeoJSON
-          key={JSON.stringify(zoneFeedback) + (hoveredZoneId || '')}
+          key={JSON.stringify(zoneFeedback) + JSON.stringify(placeableZones) + (hoveredZoneId || '')}
           data={bochumZonesGeoJson}
           style={getZoneStyle}
           onEachFeature={onEachFeature}

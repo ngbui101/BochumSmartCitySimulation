@@ -4,32 +4,31 @@ import { render, screen, fireEvent, createEvent } from '@testing-library/react';
 import { BuyableItemList } from '../../src/sidebar/BuyableItemList';
 
 describe('BuyableItemList component', () => {
-  it('renders all buyable items (Solar, Wind, Storage) when budget is sufficient', () => {
-    render(<BuyableItemList budget={5000000} />);
+  const defaultProps = {
+    budget: 5000000,
+    selectedItemType: null,
+    onSelectItemType: vi.fn(),
+    onPointerDragStart: vi.fn(),
+  };
 
-    expect(screen.getByText('Solaranlage')).toBeInTheDocument();
-    expect(screen.getByText('Windmühle')).toBeInTheDocument();
-    expect(screen.getByText('Energiespeicher')).toBeInTheDocument();
+  it('renders all buyable items (Solar, Wind, Storage) in a grid layout', () => {
+    render(<BuyableItemList {...defaultProps} />);
 
     const solarCard = screen.getByTestId('buyable-item-solar');
     const windCard = screen.getByTestId('buyable-item-wind');
     const storageCard = screen.getByTestId('buyable-item-storage');
 
+    expect(solarCard).toHaveAttribute('title', 'Solaranlage');
+    expect(windCard).toHaveAttribute('title', 'Windmühle');
+    expect(storageCard).toHaveAttribute('title', 'Energiespeicher');
+
     expect(solarCard).not.toHaveClass('disabled');
     expect(windCard).not.toHaveClass('disabled');
     expect(storageCard).not.toHaveClass('disabled');
-
-    expect(solarCard).not.toHaveAttribute('draggable');
-    expect(windCard).not.toHaveAttribute('draggable');
-    expect(storageCard).not.toHaveAttribute('draggable');
   });
 
   it('correctly disables items costing more than the available budget', () => {
-    // Budget is 1,500,000
-    // Solaranlage cost: 1,200,000 (enabled)
-    // Energiespeicher cost: 1,700,000 (disabled)
-    // Windmühle cost: 2,800,000 (disabled)
-    render(<BuyableItemList budget={1500000} />);
+    render(<BuyableItemList {...defaultProps} budget={1500000} />);
 
     const solarCard = screen.getByTestId('buyable-item-solar');
     const windCard = screen.getByTestId('buyable-item-wind');
@@ -38,14 +37,10 @@ describe('BuyableItemList component', () => {
     expect(solarCard).not.toHaveClass('disabled');
     expect(windCard).toHaveClass('disabled');
     expect(storageCard).toHaveClass('disabled');
-
-    expect(solarCard).not.toHaveAttribute('draggable');
-    expect(windCard).not.toHaveAttribute('draggable');
-    expect(storageCard).not.toHaveAttribute('draggable');
   });
 
   it('displays the correct tooltip text when hovering over disabled items', () => {
-    render(<BuyableItemList budget={1500000} />);
+    render(<BuyableItemList {...defaultProps} budget={1500000} />);
 
     const windCard = screen.getByTestId('buyable-item-wind');
     const storageCard = screen.getByTestId('buyable-item-storage');
@@ -60,12 +55,20 @@ describe('BuyableItemList component', () => {
     );
 
     const solarCard = screen.getByTestId('buyable-item-solar');
-    expect(solarCard).not.toHaveAttribute('title');
+    expect(solarCard).toHaveAttribute('title', 'Solaranlage');
   });
 
-  it('triggers onPointerDragStart only for enabled/active items', () => {
+  it('triggers onPointerDragStart and onSelectItemType only for enabled/active items', () => {
     const onPointerDragStart = vi.fn();
-    render(<BuyableItemList budget={1500000} onPointerDragStart={onPointerDragStart} />);
+    const onSelectItemType = vi.fn();
+    render(
+      <BuyableItemList
+        {...defaultProps}
+        budget={1500000}
+        onPointerDragStart={onPointerDragStart}
+        onSelectItemType={onSelectItemType}
+      />
+    );
 
     const solarCard = screen.getByTestId('buyable-item-solar');
     const windCard = screen.getByTestId('buyable-item-wind');
@@ -75,10 +78,14 @@ describe('BuyableItemList component', () => {
     Object.defineProperty(solarPointerEvent, 'clientY', { value: 30 });
 
     fireEvent(solarCard, solarPointerEvent);
+    expect(onSelectItemType).toHaveBeenCalledWith('solar');
     expect(onPointerDragStart).toHaveBeenCalledWith('solar', { clientX: 20, clientY: 30 });
 
     onPointerDragStart.mockClear();
+    onSelectItemType.mockClear();
+
     fireEvent.pointerDown(windCard);
-    expect(onPointerDragStart).not.toHaveBeenCalled();
+    expect(onSelectItemType).toHaveBeenCalledWith('wind'); // Clicking disabled item still selects to show info
+    expect(onPointerDragStart).not.toHaveBeenCalled(); // But does not trigger placement drag!
   });
 });

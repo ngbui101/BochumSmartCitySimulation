@@ -323,6 +323,20 @@ export function App() {
   const finalScore =
     state.status === 'finished' ? state.finalScore ?? calculateFinalScore(state) : undefined;
 
+  const placeableZones = useMemo(() => {
+    if (!placementDrag) {
+      return null;
+    }
+    const zones: Record<string, boolean> = {};
+    for (const feature of bochumZonesGeoJson.features) {
+      const zoneId = feature.properties?.zoneId;
+      if (zoneId) {
+        zones[zoneId] = canPlaceItem(state, placementDrag.itemType, zoneId as ZoneId).allowed;
+      }
+    }
+    return zones;
+  }, [placementDrag, state]);
+
   return (
     <main className="app-shell" aria-label="Bochum Smart City Simulation">
       <Sidebar
@@ -347,6 +361,7 @@ export function App() {
           onDragPosition={handleDragPosition}
           onDropAsset={handleDropAsset}
           onDragLeave={handleDragLeave}
+          placeableZones={placeableZones}
         />
         <BottomControls
           canUndo={canUndo}
