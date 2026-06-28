@@ -6,10 +6,10 @@ import type { WeatherForecastMonth } from '../../src/types/weather';
 
 describe('WeatherForecast component', () => {
   const mockForecast: WeatherForecastMonth[] = [
-    { monthIndex: 0, monthOfYear: 0, weatherType: 'windy', confidence: 'high' },
-    { monthIndex: 1, monthOfYear: 1, weatherType: 'mixed', confidence: 'medium' },
-    { monthIndex: 2, monthOfYear: 4, weatherType: 'sunny', confidence: 'low' },
-    { monthIndex: 3, monthOfYear: 5, weatherType: 'stormy', confidence: 'high' },
+    { monthIndex: 0, monthOfYear: 0, weatherType: 'windy', confidence: 'high', solarFactor: 0.55, windFactor: 1.25 },
+    { monthIndex: 1, monthOfYear: 1, weatherType: 'mixed', confidence: 'medium', solarFactor: 0.85, windFactor: 1.05 },
+    { monthIndex: 2, monthOfYear: 4, weatherType: 'sunny', confidence: 'low', solarFactor: 1.2, windFactor: 0.85 },
+    { monthIndex: 3, monthOfYear: 5, weatherType: 'stormy', confidence: 'high', solarFactor: 0.5, windFactor: 1.35 },
   ];
 
   it('renders exactly the first three months of forecast as cards', () => {

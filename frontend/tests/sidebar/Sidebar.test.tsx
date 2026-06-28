@@ -14,9 +14,9 @@ describe('Sidebar component', () => {
   };
 
   const mockForecast: WeatherForecastMonth[] = [
-    { monthIndex: 0, monthOfYear: 0, weatherType: 'sunny', confidence: 'high' },
-    { monthIndex: 1, monthOfYear: 1, weatherType: 'mixed', confidence: 'medium' },
-    { monthIndex: 2, monthOfYear: 2, weatherType: 'cloudy', confidence: 'low' },
+    { monthIndex: 0, monthOfYear: 0, weatherType: 'sunny', confidence: 'high', solarFactor: 1.2, windFactor: 0.85 },
+    { monthIndex: 1, monthOfYear: 1, weatherType: 'mixed', confidence: 'medium', solarFactor: 0.85, windFactor: 1.05 },
+    { monthIndex: 2, monthOfYear: 2, weatherType: 'cloudy', confidence: 'low', solarFactor: 0.8, windFactor: 1.1 },
   ];
 
   const mockAsset: PlayerAsset = {

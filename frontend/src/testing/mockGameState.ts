@@ -15,9 +15,9 @@ export const initialMockState: GameState = {
   undoStack: [],
   monthlyHistory: [],
   forecast: [
-    { monthIndex: 0, monthOfYear: 0, weatherType: 'windy', confidence: 'high' },
-    { monthIndex: 1, monthOfYear: 1, weatherType: 'windy', confidence: 'high' },
-    { monthIndex: 2, monthOfYear: 2, weatherType: 'mixed', confidence: 'high' }
+    { monthIndex: 0, monthOfYear: 0, weatherType: 'windy', confidence: 'high', solarFactor: 0.55, windFactor: 1.25 },
+    { monthIndex: 1, monthOfYear: 1, weatherType: 'windy', confidence: 'high', solarFactor: 0.65, windFactor: 1.2 },
+    { monthIndex: 2, monthOfYear: 2, weatherType: 'mixed', confidence: 'high', solarFactor: 0.85, windFactor: 1.05 }
   ],
   status: 'running'
 };
@@ -71,9 +71,9 @@ export const midgameMockState: GameState = {
     { monthIndex: 12, budget: 13800000, kpis: { energyAutarky: 29, citizenSatisfaction: 72, supplySecurity: 60 } }
   ],
   forecast: [
-    { monthIndex: 13, monthOfYear: 1, weatherType: 'windy', confidence: 'high' },
-    { monthIndex: 14, monthOfYear: 2, weatherType: 'mixed', confidence: 'high' },
-    { monthIndex: 15, monthOfYear: 3, weatherType: 'mixed', confidence: 'high' }
+    { monthIndex: 13, monthOfYear: 1, weatherType: 'windy', confidence: 'high', solarFactor: 0.65, windFactor: 1.2 },
+    { monthIndex: 14, monthOfYear: 2, weatherType: 'mixed', confidence: 'high', solarFactor: 0.85, windFactor: 1.05 },
+    { monthIndex: 15, monthOfYear: 3, weatherType: 'mixed', confidence: 'high', solarFactor: 1.0, windFactor: 0.95 }
   ],
   status: 'running'
 };
@@ -123,9 +123,9 @@ export const finishMockState: GameState = {
   undoStack: [],
   monthlyHistory: [],
   forecast: [
-    { monthIndex: 59, monthOfYear: 11, weatherType: 'stormy', confidence: 'high' },
-    { monthIndex: 60, monthOfYear: 0, weatherType: 'windy', confidence: 'medium' },
-    { monthIndex: 61, monthOfYear: 1, weatherType: 'windy', confidence: 'low' }
+    { monthIndex: 59, monthOfYear: 11, weatherType: 'stormy', confidence: 'high', solarFactor: 0.5, windFactor: 1.35 },
+    { monthIndex: 60, monthOfYear: 0, weatherType: 'windy', confidence: 'medium', solarFactor: 0.55, windFactor: 1.25 },
+    { monthIndex: 61, monthOfYear: 1, weatherType: 'windy', confidence: 'low', solarFactor: 0.65, windFactor: 1.2 }
   ],
   status: 'finished',
   finalScore: {
