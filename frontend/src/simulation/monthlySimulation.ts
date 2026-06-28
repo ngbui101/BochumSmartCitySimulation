@@ -2,6 +2,7 @@ import { itemDefinitions } from '../data/itemDefinitions';
 import { zoneRules } from '../data/zoneRules';
 import type { PlayerAsset } from '../types/assets';
 import type { GameKpis, GameState } from '../types/game';
+import { calculateFinalScore } from './scoring';
 import { createForecast, getWeatherProfileForMonth } from './weatherSimulation';
 
 const SAVINGS_PER_PRODUCTION_VALUE = 50_000;
@@ -106,8 +107,8 @@ export function advanceMonth(state: GameState): GameState {
   const nextMonthIndex = state.currentMonthIndex + 1;
   const playerAssets = activateCompletedAssets(state, nextMonthIndex);
   const activeAssets = playerAssets.filter((asset) => asset.status === 'active');
-
-  return {
+  const status = nextMonthIndex >= 60 ? 'finished' : state.status;
+  const nextState: GameState = {
     ...state,
     currentMonthIndex: nextMonthIndex,
     budget: calculateNextBudget(state, activeAssets),
@@ -123,6 +124,13 @@ export function advanceMonth(state: GameState): GameState {
       }
     ],
     forecast: createForecast(nextMonthIndex),
-    status: nextMonthIndex >= 60 ? 'finished' : state.status
+    status
   };
+
+  return status === 'finished'
+    ? {
+        ...nextState,
+        finalScore: calculateFinalScore(nextState)
+      }
+    : nextState;
 }
