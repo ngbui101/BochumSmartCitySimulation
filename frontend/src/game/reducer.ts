@@ -1,10 +1,10 @@
 import { itemDefinitions } from '../data/itemDefinitions';
+import { createInitialGameState } from './initialGameState';
+import { getPlayerAssetSellValue } from './selectors';
 import { canPlaceItem } from '../simulation/placementRules';
 import { advanceMonth } from '../simulation/monthlySimulation';
 import type { PlayerAsset } from '../types/assets';
 import type { GameAction, GameState } from '../types/game';
-
-const SELL_REFUND_RATE = 0.6;
 
 function getItemDefinition(itemType: PlayerAsset['itemType']) {
   return itemDefinitions.find((item) => item.itemType === itemType);
@@ -75,7 +75,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         return state;
       }
 
-      const refundAmount = Math.round(assetToSell.purchasePrice * SELL_REFUND_RATE);
+      const refundAmount = getPlayerAssetSellValue(assetToSell);
 
       return {
         ...state,
@@ -137,6 +137,9 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
 
     case 'ADVANCE_MONTH':
       return advanceMonth(state);
+
+    case 'RESET_GAME':
+      return createInitialGameState();
 
     default:
       return state;

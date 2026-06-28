@@ -1,15 +1,16 @@
-import { useEffect, useReducer } from 'react';
+import { useCallback, useEffect, useReducer } from 'react';
 
 import { createInitialGameState } from '../game/initialGameState';
 import { gameReducer } from '../game/reducer';
-import { loadGameState, saveGameState } from '../persistence/localStorageStore';
+import { clearGameState, loadGameState, saveGameState } from '../persistence/localStorageStore';
 import type { GameAction, GameState } from '../types/game';
 
 export type AppDispatch = (action: GameAction) => void;
 
 export type AppStateContextValue = {
-  state: GameState | null;
+  state: GameState;
   dispatch: AppDispatch;
+  resetGame: () => void;
 };
 
 export function useAppState(): AppStateContextValue {
@@ -23,8 +24,14 @@ export function useAppState(): AppStateContextValue {
     saveGameState(state);
   }, [state]);
 
+  const resetGame = useCallback(() => {
+    clearGameState();
+    dispatch({ type: 'RESET_GAME' });
+  }, []);
+
   return {
     state,
-    dispatch
+    dispatch,
+    resetGame
   };
 }

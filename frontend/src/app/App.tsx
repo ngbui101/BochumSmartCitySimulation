@@ -1,64 +1,230 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { BochumMap } from '../map/BochumMap';
 import { BottomControls } from '../components/BottomControls';
 import { EndScreen } from '../sidebar/EndScreen';
 import { initialMockState, midgameMockState, finishMockState } from '../testing/mockGameState';
-import type { GameState } from '../types/game';
+import { bochumZonesGeoJson } from '../data/bochumZones';
+import { itemDefinitions } from '../data/itemDefinitions';
+import { gameReducer } from '../game/reducer';
+import { getUndoTooltip } from '../game/selectors';
+import { canPlaceItem } from '../simulation/placementRules';
+import { calculateFinalScore } from '../simulation/scoring';
+import { findZoneForPoint } from '../simulation/zoneDetection';
+import { useAppState } from './appState';
+import type { ItemType, LatLngPosition } from '../types/assets';
+import type { GameAction, GameKpis, GameState } from '../types/game';
+import type { ZoneId } from '../types/zones';
+import type { PlacementFeedback, ZoneFeedback } from '../map/BochumMap';
+
+type DevStateMode = 'real' | 'initial' | 'midgame' | 'finished';
+
+const mockStates: Record<Exclude<DevStateMode, 'real'>, GameState> = {
+  initial: initialMockState,
+  midgame: midgameMockState,
+  finished: finishMockState
+};
+
+function isMockStateMode(value: DevStateMode): value is Exclude<DevStateMode, 'real'> {
+  return value !== 'real';
+}
+
+function getKpiDeltas(state: GameState):
+  | {
+      energyAutarky?: number;
+      citizenSatisfaction?: number;
+      supplySecurity?: number;
+    }
+  | undefined {
+  const previousMonth = state.monthlyHistory[state.monthlyHistory.length - 1];
+
+  if (!previousMonth) {
+    return undefined;
+  }
+
+  return {
+    energyAutarky: state.kpis.energyAutarky - previousMonth.kpis.energyAutarky,
+    citizenSatisfaction: state.kpis.citizenSatisfaction - previousMonth.kpis.citizenSatisfaction,
+    supplySecurity: state.kpis.supplySecurity - previousMonth.kpis.supplySecurity
+  };
+}
+
+function getItemLabel(itemType: ItemType): string {
+  return itemDefinitions.find((item) => item.itemType === itemType)?.label ?? itemType;
+}
+
+function getPlacementMessage(itemType: ItemType, result: ReturnType<typeof canPlaceItem>): string {
+  return `${getItemLabel(itemType)}: ${result.reason} Restkapazitaet: ${result.remaining}/${result.capacity}.`;
+}
+
+function validateDropPosition(
+  state: GameState,
+  itemType: ItemType,
+  position: LatLngPosition
+):
+  | {
+      zoneId: ZoneId;
+      zoneFeedback: ZoneFeedback;
+      placementFeedback: PlacementFeedback;
+    }
+  | {
+      zoneId: null;
+      zoneFeedback: undefined;
+      placementFeedback: PlacementFeedback;
+    } {
+  const zoneId = findZoneForPoint(position, bochumZonesGeoJson);
+
+  if (!zoneId) {
+    return {
+      zoneId: null,
+      zoneFeedback: undefined,
+      placementFeedback: {
+        status: 'blocked',
+        message: 'Keine Bochumer Zone an dieser Position.'
+      }
+    };
+  }
+
+  const placementResult = canPlaceItem(state, itemType, zoneId);
+  const status = placementResult.allowed ? 'allowed' : 'blocked';
+  const message = getPlacementMessage(itemType, placementResult);
+
+  return {
+    zoneId,
+    zoneFeedback: {
+      zoneId,
+      status,
+      message
+    },
+    placementFeedback: {
+      status,
+      message
+    }
+  };
+}
 
 export function App() {
-  const [state, setState] = useState<GameState>(initialMockState);
-  const [selectedAssetId, setSelectedAssetId] = useState<string | undefined>(undefined);
+  const { state: realState, dispatch: realDispatch, resetGame } = useAppState();
+  const [devStateMode, setDevStateMode] = useState<DevStateMode>('real');
+  const [mockState, setMockState] = useState<GameState>(initialMockState);
+  const [draggedItemType, setDraggedItemType] = useState<ItemType | null>(null);
+  const [zoneFeedback, setZoneFeedback] = useState<ZoneFeedback | undefined>(undefined);
+  const [placementFeedback, setPlacementFeedback] = useState<PlacementFeedback | undefined>(
+    undefined
+  );
 
-  const handleMockStateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    let newState = initialMockState;
-    if (value === 'midgame') {
-      newState = midgameMockState;
-    } else if (value === 'finished') {
-      newState = finishMockState;
+  const isRealStateMode = devStateMode === 'real';
+  const state = isRealStateMode ? realState : mockState;
+
+  const handleMockStateChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const value = event.target.value as DevStateMode;
+
+    setDevStateMode(value);
+    setZoneFeedback(undefined);
+    setPlacementFeedback(undefined);
+    setDraggedItemType(null);
+
+    if (isMockStateMode(value)) {
+      setMockState(mockStates[value]);
     }
-    setState(newState);
-    setSelectedAssetId(undefined); // Reset selection on state change
+  };
+
+  const dispatchToActiveState = (action: GameAction) => {
+    if (isRealStateMode) {
+      realDispatch(action);
+      return;
+    }
+
+    setMockState((currentState) => gameReducer(currentState, action));
+  };
+
+  const clearPlacementFeedback = () => {
+    setZoneFeedback(undefined);
+    setPlacementFeedback(undefined);
   };
 
   const handleSelectAsset = (id: string | undefined) => {
-    setSelectedAssetId(id);
+    dispatchToActiveState(id ? { type: 'SELECT_ASSET', assetId: id } : { type: 'CLEAR_SELECTION' });
   };
 
   const handleSellAsset = (id: string) => {
-    if (import.meta.env.DEV) {
-      console.debug('Sell asset callback triggered for ID:', id);
-    }
-    setSelectedAssetId(undefined);
+    clearPlacementFeedback();
+    dispatchToActiveState({ type: 'SELL_ASSET', assetId: id });
   };
 
   const handleUndo = () => {
-    if (import.meta.env.DEV) {
-      console.debug('Undo callback triggered');
-    }
+    clearPlacementFeedback();
+    dispatchToActiveState({ type: 'UNDO_LAST_ACTION' });
   };
 
   const handleNextMonth = () => {
-    if (import.meta.env.DEV) {
-      console.debug('Next month callback triggered');
+    clearPlacementFeedback();
+    setDraggedItemType(null);
+    dispatchToActiveState({ type: 'ADVANCE_MONTH' });
+  };
+
+  const handleDragStart = (itemType: ItemType) => {
+    setDraggedItemType(itemType);
+    clearPlacementFeedback();
+  };
+
+  const handleDragPosition = (position: LatLngPosition) => {
+    if (!draggedItemType) {
+      return;
     }
+
+    const validation = validateDropPosition(state, draggedItemType, position);
+    setZoneFeedback(validation.zoneFeedback);
+    setPlacementFeedback(validation.placementFeedback);
+  };
+
+  const handleDropAsset = (position: LatLngPosition) => {
+    if (!draggedItemType) {
+      return;
+    }
+
+    const validation = validateDropPosition(state, draggedItemType, position);
+    setZoneFeedback(validation.zoneFeedback);
+    setPlacementFeedback(validation.placementFeedback);
+    setDraggedItemType(null);
+
+    if (!validation.zoneId || validation.placementFeedback.status === 'blocked') {
+      return;
+    }
+
+    dispatchToActiveState({
+      type: 'PLACE_ASSET',
+      itemType: draggedItemType,
+      zoneId: validation.zoneId,
+      position
+    });
   };
 
   const handleRestart = () => {
-    setState(initialMockState);
-    setSelectedAssetId(undefined);
+    clearPlacementFeedback();
+    setDraggedItemType(null);
+
+    if (isRealStateMode) {
+      resetGame();
+      return;
+    }
+
+    setDevStateMode('initial');
+    setMockState(initialMockState);
   };
 
-  // Find the selected asset object (from player or existing assets)
-  const selectedAsset =
-    state.playerAssets.find((a) => a.id === selectedAssetId) ||
-    state.existingAssets.find((a) => a.id === selectedAssetId);
+  const selectedAsset = useMemo(
+    () =>
+      state.playerAssets.find((asset) => asset.id === state.selectedAssetId) ||
+      state.existingAssets.find((asset) => asset.id === state.selectedAssetId),
+    [state.existingAssets, state.playerAssets, state.selectedAssetId]
+  );
 
-  const canUndo = state.playerAssets.length > 0 || state.currentMonthIndex > 0;
-  const undoTooltip = canUndo
-    ? 'Letzten Schritt rückgängig machen'
-    : 'Keine Aktionen zum Rückgängig machen';
+  const canUndo = state.undoStack.length > 0;
+  const undoTooltip = getUndoTooltip(state);
+  const deltas: Partial<GameKpis> | undefined = getKpiDeltas(state);
+  const finalScore =
+    state.status === 'finished' ? state.finalScore ?? calculateFinalScore(state) : undefined;
 
   return (
     <main className="app-shell" aria-label="Bochum Smart City Simulation">
@@ -66,17 +232,25 @@ export function App() {
         budget={state.budget}
         currentMonthIndex={state.currentMonthIndex}
         kpis={state.kpis}
+        deltas={deltas}
         forecast={state.forecast}
         selectedAsset={selectedAsset}
         onSellAsset={handleSellAsset}
+        onDragStart={handleDragStart}
       />
 
       <section className="map-stage" aria-label="Bochum-Karte">
         <BochumMap
           playerAssets={state.playerAssets}
           existingAssets={state.existingAssets}
-          selectedAssetId={selectedAssetId}
+          selectedAssetId={state.selectedAssetId}
           onSelectAsset={handleSelectAsset}
+          zoneFeedback={zoneFeedback}
+          placementFeedback={placementFeedback}
+          draggedItemType={draggedItemType}
+          onDragPosition={handleDragPosition}
+          onDropAsset={handleDropAsset}
+          onDragLeave={clearPlacementFeedback}
         />
         <BottomControls
           canUndo={canUndo}
@@ -86,32 +260,19 @@ export function App() {
         />
       </section>
 
-      {/* Dev-only Mock State Harness Selector */}
       {import.meta.env.DEV && (
         <div className="dev-mock-harness" data-testid="dev-mock-harness">
-          <label htmlFor="mock-state-select">Mock State:</label>
-          <select
-            id="mock-state-select"
-            onChange={handleMockStateChange}
-            value={
-              state.gameId === 'mock-initial-game'
-                ? 'initial'
-                : state.gameId === 'mock-midgame-game'
-                ? 'midgame'
-                : 'finished'
-            }
-          >
-            <option value="initial">Mock state: Initial</option>
-            <option value="midgame">Mock state: Midgame</option>
-            <option value="finished">Mock state: Finished</option>
+          <label htmlFor="mock-state-select">State-Modus:</label>
+          <select id="mock-state-select" onChange={handleMockStateChange} value={devStateMode}>
+            <option value="real">Real-State</option>
+            <option value="initial">Mock Preview: Initial</option>
+            <option value="midgame">Mock Preview: Midgame</option>
+            <option value="finished">Mock Preview: Finished</option>
           </select>
         </div>
       )}
 
-      {/* Full-screen End Screen Overlay */}
-      {state.status === 'finished' && state.finalScore && (
-        <EndScreen finalScore={state.finalScore} onRestart={handleRestart} />
-      )}
+      {finalScore && <EndScreen finalScore={finalScore} onRestart={handleRestart} />}
     </main>
   );
 }

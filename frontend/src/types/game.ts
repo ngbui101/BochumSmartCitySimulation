@@ -34,6 +34,7 @@ export type GameAction =
   | { type: 'SELL_ASSET'; assetId: string }
   | { type: 'UNDO_LAST_ACTION' }
   | { type: 'ADVANCE_MONTH' }
+  | { type: 'RESET_GAME' }
   | { type: 'SELECT_ASSET'; assetId: string }
   | { type: 'CLEAR_SELECTION' };
 
