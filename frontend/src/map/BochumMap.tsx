@@ -5,6 +5,7 @@ import bochumZonesGeoJsonRaw from '../data/bochumZones.geojson?raw';
 const bochumZonesGeoJson = JSON.parse(bochumZonesGeoJsonRaw);
 import type { PlayerAsset, ExistingAsset } from '../types/assets';
 import type { PathOptions } from 'leaflet';
+import { AssetMarkers } from './AssetMarkers';
 
 export interface BochumMapProps {
   playerAssets: PlayerAsset[];
@@ -113,6 +114,12 @@ export const BochumMap: React.FC<BochumMapProps> = ({
           data={bochumZonesGeoJson}
           style={getZoneStyle}
           onEachFeature={onEachFeature}
+        />
+        <AssetMarkers
+          playerAssets={playerAssets}
+          existingAssets={existingAssets}
+          selectedAssetId={selectedAssetId}
+          onSelectAsset={onSelectAsset}
         />
         <MapEventsHandler
           onSelectAsset={onSelectAsset}
