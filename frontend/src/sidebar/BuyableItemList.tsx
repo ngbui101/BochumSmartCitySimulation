@@ -81,8 +81,8 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
           gap: '8px',
-          backgroundColor: '#17211b',
-          padding: '8px',
+          backgroundColor: '#ffffff',
+          padding: '12px',
           borderRadius: '8px',
           border: '1px solid #cbd8d0',
         }}
@@ -95,10 +95,10 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
                 className="inventory-slot-empty"
                 style={{
                   aspectRatio: '1 / 1',
-                  backgroundColor: '#0c120f',
-                  border: '1.5px dashed #3d6f5a',
+                  backgroundColor: '#f9fafb',
+                  border: '1.5px dashed #cbd8d0',
                   borderRadius: '6px',
-                  opacity: 0.3,
+                  opacity: 0.6,
                 }}
               />
             );
@@ -128,18 +128,19 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: isSelected ? '#3d6f5a' : isDisabled ? '#2c3531' : '#24332c',
+                backgroundColor: isSelected ? '#eef3ef' : isDisabled ? '#f3f4f6' : '#f9fafb',
                 border: isSelected 
-                  ? '2px solid #22c55e' 
+                  ? '2px solid #3d6f5a' 
                   : isDisabled 
-                  ? '1.5px solid #526259' 
+                  ? '1.5px solid #cbd8d0' 
                   : '1.5px solid #cbd8d0',
                 borderRadius: '6px',
                 opacity: isDisabled ? 0.5 : 1,
                 cursor: isDisabled ? 'not-allowed' : 'grab',
                 transition: 'all 0.15s ease',
-                color: isDisabled ? '#6b7280' : '#ffffff',
-                boxShadow: isSelected ? '0 0 8px rgba(34, 197, 94, 0.6)' : 'none',
+                color: isDisabled ? '#9ca3af' : '#3d6f5a',
+                boxShadow: isSelected ? '0 0 8px rgba(61, 111, 90, 0.4)' : 'none',
+                touchAction: 'none', // Crucial for drag gestures on all devices
               }}
             >
               {itemIcons[item.itemType]}
