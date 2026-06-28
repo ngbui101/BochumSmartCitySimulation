@@ -1,20 +1,21 @@
 import React from 'react';
 import { itemDefinitions } from '../data/itemDefinitions';
 import { SolarIcon, WindIcon, StorageIcon } from '../ui/icons';
+import type { ItemType } from '../types/assets';
 
 export interface BuyableItemListProps {
   budget: number;
-  onDragStart?: (itemType: string) => void;
+  onDragStart?: (itemType: ItemType) => void;
 }
 
-const itemIcons: Record<string, React.ReactNode> = {
+const itemIcons: Record<ItemType, React.ReactNode> = {
   solar: <SolarIcon size={24} />,
   wind: <WindIcon size={24} />,
   storage: <StorageIcon size={24} />,
 };
 
 // Friendly labels with German umlauts
-const friendlyLabels: Record<string, string> = {
+const friendlyLabels: Record<ItemType, string> = {
   solar: 'Solaranlage',
   wind: 'Windmühle',
   storage: 'Energiespeicher',
@@ -24,7 +25,7 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
   budget,
   onDragStart,
 }) => {
-  const handleDragStart = (e: React.DragEvent, itemType: string) => {
+  const handleDragStart = (e: React.DragEvent, itemType: ItemType) => {
     // Set standard drag data just in case
     e.dataTransfer.setData('text/plain', itemType);
     if (onDragStart) {

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { PlayerAsset, ExistingAsset } from '../types/assets';
+import type { ItemType, PlayerAsset, ExistingAsset } from '../types/assets';
 import type { GameKpis } from '../types/game';
 import type { WeatherForecastMonth } from '../types/weather';
 import { KpiDashboard } from './KpiDashboard';
@@ -19,7 +19,7 @@ export interface SidebarProps {
   forecast: WeatherForecastMonth[];
   selectedAsset?: PlayerAsset | ExistingAsset;
   onSellAsset?: (id: string) => void;
-  onDragStart?: (itemType: string) => void;
+  onDragStart?: (itemType: ItemType) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
