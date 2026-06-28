@@ -2,6 +2,7 @@ import React from 'react';
 import type { PlayerAsset, ExistingAsset } from '../types/assets';
 import { zoneRules } from '../data/zoneRules';
 import { itemDefinitions } from '../data/itemDefinitions';
+import { getPlayerAssetSellValue } from '../game/selectors';
 
 export interface AssetDetailsPanelProps {
   selectedAsset?: PlayerAsset | ExistingAsset;
@@ -131,7 +132,7 @@ export const AssetDetailsPanel: React.FC<AssetDetailsPanelProps> = ({
     const productionCap = def ? def.productionValue : 0;
     const storageCap = def ? def.storageValue : 0;
     const operatingCost = def ? def.operatingCost : 0;
-    const sellValue = playerAsset.purchasePrice * 0.6;
+    const sellValue = getPlayerAssetSellValue(playerAsset);
 
     return (
       <div className="asset-details-panel" style={panelStyle}>
