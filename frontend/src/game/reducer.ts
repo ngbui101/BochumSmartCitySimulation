@@ -1,5 +1,6 @@
 import { itemDefinitions } from '../data/itemDefinitions';
 import { canPlaceItem } from '../simulation/placementRules';
+import { advanceMonth } from '../simulation/monthlySimulation';
 import type { PlayerAsset } from '../types/assets';
 import type { GameAction, GameState } from '../types/game';
 
@@ -135,10 +136,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
     }
 
     case 'ADVANCE_MONTH':
-      return {
-        ...state,
-        undoStack: []
-      };
+      return advanceMonth(state);
 
     default:
       return state;
