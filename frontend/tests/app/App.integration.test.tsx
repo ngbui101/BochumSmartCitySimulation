@@ -9,10 +9,15 @@ import type { FinalScore, GameState } from '../../src/types/game';
 
 vi.mock('../../src/map/BochumMap', async () => {
   const React = await import('react');
+  const { AssetDetailsPanel } = await import('../../src/sidebar/AssetDetailsPanel');
 
   return {
-    BochumMap: (props: any) =>
-      React.createElement(
+    BochumMap: (props: any) => {
+      const selectedAsset =
+        props.playerAssets.find((a: any) => a.id === props.selectedAssetId) ||
+        props.existingAssets.find((a: any) => a.id === props.selectedAssetId);
+
+      return React.createElement(
         'div',
         { 'data-testid': 'mock-bochum-map' },
         React.createElement('span', { 'data-testid': 'player-asset-count' }, props.playerAssets.length),
@@ -52,8 +57,12 @@ vi.mock('../../src/map/BochumMap', async () => {
           'button',
           { type: 'button', onClick: () => props.onSelectAsset?.(undefined) },
           'clear selection'
-        )
-      )
+        ),
+        selectedAsset
+          ? React.createElement(AssetDetailsPanel, { selectedAsset, onSell: props.onSell })
+          : null
+      );
+    }
   };
 });
 

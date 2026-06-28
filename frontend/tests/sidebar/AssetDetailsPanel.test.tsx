@@ -54,12 +54,9 @@ describe('AssetDetailsPanel component', () => {
     vi.clearAllMocks();
   });
 
-  it('renders helper placeholder text when no asset is selected', () => {
-    render(<AssetDetailsPanel selectedAsset={undefined} />);
-    
-    expect(screen.getByText(/Wählen Sie ein Gebäude oder eine Anlage/i)).toBeInTheDocument();
-    expect(screen.queryByTestId('asset-title')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Verkaufen/i })).not.toBeInTheDocument();
+  it('renders null when no asset is selected', () => {
+    const { container } = render(<AssetDetailsPanel selectedAsset={undefined} />);
+    expect(container.firstChild).toBeNull();
   });
 
   it('renders details and "Verkaufen" button for an active player solar asset', () => {

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Marker } from 'react-leaflet';
+import { Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { renderToString } from 'react-dom/server';
 import type { PlayerAsset, ExistingAsset } from '../types/assets';
+import { AssetDetailsPanel } from '../sidebar/AssetDetailsPanel';
 import {
   SolarIcon,
   WindIcon,
@@ -17,6 +18,7 @@ export interface AssetMarkersProps {
   existingAssets: ExistingAsset[];
   selectedAssetId?: string;
   onSelectAsset: (id: string | undefined) => void;
+  onSell?: (id: string) => void;
 }
 
 // Function to render the React component structure for the asset marker
@@ -144,6 +146,7 @@ export const AssetMarkers: React.FC<AssetMarkersProps> = ({
   existingAssets,
   selectedAssetId,
   onSelectAsset,
+  onSell,
 }) => {
   // Styles for selection ring pulse
   const styleBlock = (
@@ -185,8 +188,17 @@ export const AssetMarkers: React.FC<AssetMarkersProps> = ({
             e.originalEvent?.stopPropagation();
             onSelectAsset(asset.id);
           },
+          popupclose: () => {
+            onSelectAsset(undefined);
+          }
         }}
-      />
+      >
+        <Popup>
+          <div className="popup-asset-details" style={{ minWidth: '240px', maxWidth: '300px' }} data-testid="popup-asset-details">
+            <AssetDetailsPanel selectedAsset={asset} onSell={onSell} />
+          </div>
+        </Popup>
+      </Marker>
     );
   };
 

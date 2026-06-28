@@ -15,9 +15,9 @@ export interface BuyableItemListProps {
 }
 
 const itemIcons: Record<ItemType, React.ReactNode> = {
-  solar: <SolarIcon size={24} />,
-  wind: <WindIcon size={24} />,
-  storage: <StorageIcon size={24} />,
+  solar: <SolarIcon size={20} />,
+  wind: <WindIcon size={20} />,
+  storage: <StorageIcon size={20} />,
 };
 
 // Friendly labels with German umlauts
@@ -88,8 +88,8 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
               title={tooltipText}
               style={{
                 display: 'flex',
-                gap: '12px',
-                padding: '12px',
+                gap: '8px',
+                padding: '8px',
                 backgroundColor: isDisabled ? '#f3f4f6' : '#ffffff',
                 border: isDisabled ? '1px dashed #cbd5e0' : '1px solid #d7e2da',
                 borderRadius: '8px',
@@ -105,8 +105,8 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: isDisabled ? '#9ca3af' : '#3d6f5a',
-                  width: '40px',
-                  height: '40px',
+                  width: '32px',
+                  height: '32px',
                   backgroundColor: isDisabled ? '#e5e7eb' : '#f0fdf4',
                   borderRadius: '6px',
                   flexShrink: 0,

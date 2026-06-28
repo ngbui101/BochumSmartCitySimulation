@@ -6,14 +6,14 @@ export interface WeatherForecastProps {
 }
 
 const SunnyIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-testid="icon-sunny">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-testid="icon-sunny">
     <circle cx="12" cy="12" r="4" fill="#f59e0b" fillOpacity="0.2" />
     <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
   </svg>
 );
 
 const MixedIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-testid="icon-mixed">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-testid="icon-mixed">
     <path d="M12 2v2M4.93 4.93l1.41 1.41M20 12h2M19.07 4.93l-1.41 1.41" stroke="#f59e0b" />
     <path d="M18.8 14.8A4 4 0 0 0 16 8h-1A6 6 0 1 0 5 13.6" />
     <path d="M16 12a4 4 0 0 0-4-4h-1a6 6 0 1 0 0 12h5a4 4 0 0 0 4-4z" fill="#cbd5e1" fillOpacity="0.2" />
@@ -21,20 +21,20 @@ const MixedIcon = () => (
 );
 
 const CloudyIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-testid="icon-cloudy">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-testid="icon-cloudy">
     <path d="M18.8 14.8A4 4 0 0 0 16 8h-1A6 6 0 1 0 5 13.6" />
     <path d="M16 12a4 4 0 0 0-4-4h-1a6 6 0 1 0 0 12h5a4 4 0 0 0 4-4z" fill="#cbd5e1" fillOpacity="0.2" />
   </svg>
 );
 
 const WindyIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-testid="icon-windy">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-testid="icon-windy">
     <path d="M9.59 4.59A2 2 0 1 1 11 8H2M12.59 19.59A2 2 0 1 0 14 16H2M20 12a2 2 0 1 1-2 2H2" />
   </svg>
 );
 
 const StormyIcon = () => (
-  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-testid="icon-stormy">
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" data-testid="icon-stormy">
     <path d="M18.8 14.8A4 4 0 0 0 16 8h-1a6 6 0 1 0-7.3 10.6" />
     <path d="M13 10L10 16h3l-1 6" stroke="#f59e0b" fill="#f59e0b" />
   </svg>
@@ -111,8 +111,8 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({ forecast }) =>
                 display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '8px',
+                gap: '3px',
+                padding: '6px 4px',
                 backgroundColor: '#ffffff',
                 border: '1px solid #d7e2da',
                 borderRadius: '8px',
@@ -123,48 +123,39 @@ export const WeatherForecast: React.FC<WeatherForecastProps> = ({ forecast }) =>
                 className="weather-month"
                 data-testid="weather-month"
                 style={{
-                  fontSize: '0.75rem',
+                  fontSize: '0.7rem',
                   fontWeight: 700,
                   color: '#374151',
                 }}
               >
                 {monthName}
               </span>
-              <div style={{ display: 'flex', height: '24px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', height: '20px', alignItems: 'center' }}>
                 {weatherIcons[item.weatherType]}
               </div>
               <span
                 className="weather-type"
                 data-testid="weather-type"
                 style={{
-                  fontSize: '0.75rem',
+                  fontSize: '0.7rem',
                   fontWeight: 600,
                   color: '#4b5563',
                 }}
               >
                 {weatherLabels[item.weatherType] || item.weatherType}
               </span>
-              <div
+              <span
+                className="weather-confidence"
+                data-testid="weather-confidence"
                 style={{
-                  display: 'flex',
-                  flexDirection: 'column',
                   fontSize: '0.65rem',
-                  color: '#6b7280',
+                  fontWeight: 600,
+                  color: item.confidence === 'high' ? '#059669' : item.confidence === 'medium' ? '#d97706' : '#dc2626',
                   marginTop: 'auto',
                 }}
               >
-                <span>Sicherheit</span>
-                <span
-                  className="weather-confidence"
-                  data-testid="weather-confidence"
-                  style={{
-                    fontWeight: 700,
-                    color: item.confidence === 'high' ? '#059669' : item.confidence === 'medium' ? '#d97706' : '#dc2626',
-                  }}
-                >
-                  {confidenceLabels[item.confidence] || item.confidence}
-                </span>
-              </div>
+                {confidenceLabels[item.confidence] || item.confidence}
+              </span>
             </div>
           );
         })}

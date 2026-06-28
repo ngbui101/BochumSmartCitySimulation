@@ -36,8 +36,8 @@ textarea {
 .app-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 28px 24px;
+  gap: 16px;
+  padding: 16px 20px;
   color: #17211b;
   background: #f7faf7;
   border-right: 1px solid #cbd8d0;

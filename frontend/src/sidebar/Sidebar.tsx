@@ -1,11 +1,10 @@
 import React from 'react';
-import type { ItemType, PlayerAsset, ExistingAsset } from '../types/assets';
+import type { ItemType } from '../types/assets';
 import type { GameKpis } from '../types/game';
 import type { WeatherForecastMonth } from '../types/weather';
 import { KpiDashboard } from './KpiDashboard';
 import { WeatherForecast } from './WeatherForecast';
 import { BuyableItemList } from './BuyableItemList';
-import { AssetDetailsPanel } from './AssetDetailsPanel';
 
 export interface SidebarProps {
   budget: number;
@@ -17,8 +16,6 @@ export interface SidebarProps {
     supplySecurity?: number;
   };
   forecast: WeatherForecastMonth[];
-  selectedAsset?: PlayerAsset | ExistingAsset;
-  onSellAsset?: (id: string) => void;
   onPointerDragStart?: (
     itemType: ItemType,
     pointer: {
@@ -34,8 +31,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   kpis,
   deltas,
   forecast,
-  selectedAsset,
-  onSellAsset,
   onPointerDragStart,
 }) => {
   const monthNum = currentMonthIndex + 1;
@@ -103,8 +98,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <WeatherForecast forecast={forecast} />
 
       <BuyableItemList budget={budget} onPointerDragStart={onPointerDragStart} />
-
-      <AssetDetailsPanel selectedAsset={selectedAsset} onSell={onSellAsset} />
     </aside>
   );
 };

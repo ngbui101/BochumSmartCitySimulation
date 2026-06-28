@@ -331,8 +331,6 @@ export function App() {
         kpis={state.kpis}
         deltas={deltas}
         forecast={state.forecast}
-        selectedAsset={selectedAsset}
-        onSellAsset={handleSellAsset}
         onPointerDragStart={handlePointerDragStart}
       />
 
@@ -342,6 +340,7 @@ export function App() {
           existingAssets={state.existingAssets}
           selectedAssetId={state.selectedAssetId}
           onSelectAsset={handleSelectAsset}
+          onSell={handleSellAsset}
           zoneFeedback={zoneFeedback}
           placementFeedback={placementFeedback}
           placementDrag={placementDrag}

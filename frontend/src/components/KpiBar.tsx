@@ -66,8 +66,8 @@ export const KpiBar: React.FC<KpiBarProps> = ({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '6px',
-        padding: '12px',
+        gap: '4px',
+        padding: '8px 12px',
         backgroundColor: '#ffffff',
         border: '1px solid #d7e2da',
         borderRadius: '8px',
@@ -92,7 +92,7 @@ export const KpiBar: React.FC<KpiBarProps> = ({
             className="kpi-label"
             style={{
               fontWeight: 600,
-              fontSize: '0.875rem',
+              fontSize: '0.8rem',
               color: '#374151',
               transition: 'color 0.2s ease',
             }}
@@ -105,7 +105,7 @@ export const KpiBar: React.FC<KpiBarProps> = ({
             className="kpi-value"
             style={{
               fontWeight: 700,
-              fontSize: '1rem',
+              fontSize: '0.9rem',
               color: '#111827',
               transition: 'color 0.2s ease',
             }}
@@ -138,7 +138,7 @@ export const KpiBar: React.FC<KpiBarProps> = ({
         className="kpi-progress-bg"
         style={{
           width: '100%',
-          height: '8px',
+          height: '6px',
           backgroundColor: '#e5e7eb',
           borderRadius: '4px',
           overflow: 'hidden',

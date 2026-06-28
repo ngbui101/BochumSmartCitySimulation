@@ -33,6 +33,7 @@ export interface BochumMapProps {
   onDragPosition?: (position: LatLngPosition) => void;
   onDropAsset?: (position: LatLngPosition) => void;
   onDragLeave?: () => void;
+  onSell?: (id: string) => void;
 }
 
 interface MapEventsHandlerProps {
@@ -138,7 +139,8 @@ export const BochumMap: React.FC<BochumMapProps> = ({
   placementDrag,
   onDragPosition,
   onDropAsset,
-  onDragLeave
+  onDragLeave,
+  onSell
 }) => {
   const [hoveredZoneId, setHoveredZoneId] = useState<string | null>(null);
 
@@ -219,6 +221,7 @@ export const BochumMap: React.FC<BochumMapProps> = ({
           existingAssets={existingAssets}
           selectedAssetId={selectedAssetId}
           onSelectAsset={onSelectAsset}
+          onSell={onSell}
         />
         <MapEventsHandler onSelectAsset={onSelectAsset} />
         <PointerPlacementHandler

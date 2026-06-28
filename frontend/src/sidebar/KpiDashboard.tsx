@@ -46,7 +46,7 @@ export const KpiDashboard: React.FC<KpiDashboardProps> = ({
       style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '16px',
+        gap: '8px',
       }}
     >
       <div
@@ -54,8 +54,8 @@ export const KpiDashboard: React.FC<KpiDashboardProps> = ({
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '4px',
-          padding: '12px',
+          gap: '2px',
+          padding: '8px 12px',
           backgroundColor: '#ffffff',
           border: '1px solid #d7e2da',
           borderRadius: '8px',
@@ -63,7 +63,7 @@ export const KpiDashboard: React.FC<KpiDashboardProps> = ({
       >
         <span
           style={{
-            fontSize: '0.8rem',
+            fontSize: '0.75rem',
             color: '#526259',
             fontWeight: 500,
             textTransform: 'uppercase',
@@ -75,7 +75,7 @@ export const KpiDashboard: React.FC<KpiDashboardProps> = ({
         <span
           className="budget-value"
           style={{
-            fontSize: '1.25rem',
+            fontSize: '1.15rem',
             fontWeight: 700,
             color: '#17211b',
           }}
@@ -90,7 +90,7 @@ export const KpiDashboard: React.FC<KpiDashboardProps> = ({
         style={{
           display: 'flex',
           flexDirection: 'column',
-          gap: '12px',
+          gap: '8px',
         }}
       >
         <KpiBar

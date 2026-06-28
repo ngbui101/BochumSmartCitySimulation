@@ -55,14 +55,13 @@ describe('Sidebar component', () => {
     expect(screen.getByTestId('month-display')).toHaveTextContent('Monat 14 / 60 (Jahr 2, Monat 2)');
   });
 
-  it('renders sub-components correctly: KpiDashboard, WeatherForecast, BuyableItemList, and AssetDetailsPanel placeholder', () => {
+  it('renders sub-components correctly: KpiDashboard, WeatherForecast, and BuyableItemList', () => {
     render(
       <Sidebar
         budget={8000000}
         currentMonthIndex={5}
         kpis={mockKpis}
         forecast={mockForecast}
-        selectedAsset={undefined}
       />
     );
 
@@ -77,25 +76,5 @@ describe('Sidebar component', () => {
     // BuyableItemList components
     expect(screen.getByText('Bauoptionen')).toBeInTheDocument();
     expect(screen.getByTestId('buyable-item-solar')).toBeInTheDocument();
-
-    // AssetDetailsPanel placeholder (since selectedAsset is undefined)
-    expect(screen.getByText(/Wählen Sie ein Gebäude oder eine Anlage/i)).toBeInTheDocument();
-  });
-
-  it('renders selected asset details in AssetDetailsPanel instead of placeholder', () => {
-    render(
-      <Sidebar
-        budget={8000000}
-        currentMonthIndex={5}
-        kpis={mockKpis}
-        forecast={mockForecast}
-        selectedAsset={mockAsset}
-      />
-    );
-
-    // Should render detail panel instead of placeholder
-    expect(screen.queryByText(/Wählen Sie ein Gebäude oder eine Anlage/i)).not.toBeInTheDocument();
-    expect(screen.getByTestId('asset-title')).toHaveTextContent('Solaranlage');
-    expect(screen.getByTestId('asset-zone')).toHaveTextContent('Innenstadt');
   });
 });

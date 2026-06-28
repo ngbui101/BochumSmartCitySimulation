@@ -14,22 +14,7 @@ export const AssetDetailsPanel: React.FC<AssetDetailsPanelProps> = ({
   onSell,
 }) => {
   if (!selectedAsset) {
-    return (
-      <div
-        className="asset-details-placeholder"
-        style={{
-          padding: '16px',
-          textAlign: 'center',
-          color: '#6b7280',
-          border: '1px dashed #cbd8d0',
-          borderRadius: '8px',
-          backgroundColor: '#f9fafb',
-          fontSize: '0.9rem',
-        }}
-      >
-        Wählen Sie ein Gebäude oder eine Anlage auf der Karte aus, um Details anzuzeigen.
-      </div>
-    );
+    return null;
   }
 
   // Determine if it's a player asset or existing asset

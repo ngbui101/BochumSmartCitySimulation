@@ -40,6 +40,9 @@ vi.mock('react-leaflet', () => {
           {children}
         </div>
       );
+    },
+    Popup: ({ children }: any) => {
+      return <div data-testid="mock-popup">{children}</div>;
     }
   };
 });
