@@ -34,6 +34,19 @@ describe('BuyableItemList component', () => {
     expect(solarCard).not.toHaveClass('disabled');
     expect(windCard).not.toHaveClass('disabled');
     expect(storageCard).not.toHaveClass('disabled');
+
+    expect(screen.getByRole('img', { name: 'Solaranlage' })).toHaveAttribute(
+      'src',
+      '/icons/Solaranlage.png'
+    );
+    expect(screen.getByRole('img', { name: 'Windkraftanlage' })).toHaveAttribute(
+      'src',
+      '/icons/Windkraftanlage.png'
+    );
+    expect(screen.getByRole('img', { name: 'Energiespeicher' })).toHaveAttribute(
+      'src',
+      '/icons/Energiespeicher.png'
+    );
   });
 
   it('correctly disables items costing more than the available budget', () => {
@@ -67,7 +80,38 @@ describe('BuyableItemList component', () => {
     expect(solarCard).toHaveAttribute('title', 'Solaranlage');
   });
 
-  it('handles quick clicks (ignored), double clicks (selects info), and hold-delay (dragging)', () => {
+  it('renders selected item information as an overlay inside the sidebar item list', () => {
+    render(<BuyableItemList {...defaultProps} selectedItemType="solar" />);
+
+    const itemList = screen.getByTestId('buyable-item-list');
+    const detailsCard = screen.getByTestId('buyable-item-details-card');
+
+    expect(itemList).toContainElement(detailsCard);
+    expect(detailsCard).toHaveStyle({
+      position: 'absolute',
+      bottom: 'calc(100% + 8px)',
+      zIndex: '1200'
+    });
+    expect(screen.getByTestId('selected-item-label')).toHaveTextContent('Solaranlage');
+    expect(screen.getByTestId('selected-item-cost')).toHaveTextContent('1.200.000');
+  });
+
+  it('closes selected item information when clicking outside the item list container', () => {
+    const onSelectItemType = vi.fn();
+    render(
+      <BuyableItemList
+        {...defaultProps}
+        selectedItemType="solar"
+        onSelectItemType={onSelectItemType}
+      />
+    );
+
+    fireEvent.pointerDown(document.body);
+
+    expect(onSelectItemType).toHaveBeenCalledWith(null);
+  });
+
+  it('handles single clicks for info and hold-delay for dragging', () => {
     const onPointerDragStart = vi.fn();
     const onSelectItemType = vi.fn();
     render(
@@ -81,28 +125,20 @@ describe('BuyableItemList component', () => {
 
     const solarCard = screen.getByTestId('buyable-item-solar');
 
-    // 1. Quick single click: down and up immediately (should NOT call onSelectItemType)
-    fireEvent.pointerDown(solarCard);
-    fireEvent.pointerUp(solarCard);
+    fireEvent.click(solarCard);
 
-    expect(onSelectItemType).not.toHaveBeenCalled();
-    expect(onPointerDragStart).not.toHaveBeenCalled();
-
-    // 2. Double click: triggers details popover
-    fireEvent.doubleClick(solarCard);
     expect(onSelectItemType).toHaveBeenCalledWith('solar');
     expect(onPointerDragStart).not.toHaveBeenCalled();
 
     onSelectItemType.mockClear();
     onPointerDragStart.mockClear();
 
-    // 3. Click and hold: down and advance time by 200ms
     fireEvent.pointerDown(solarCard);
     act(() => {
       vi.advanceTimersByTime(200);
     });
 
     expect(onPointerDragStart).toHaveBeenCalledWith('solar', expect.any(Object));
-    expect(onSelectItemType).not.toHaveBeenCalled(); // No selection trigger when drag starts
+    expect(onSelectItemType).toHaveBeenCalledWith('solar');
   });
 });

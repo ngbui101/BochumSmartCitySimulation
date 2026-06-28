@@ -1,6 +1,6 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { BochumMap } from '../../src/map/BochumMap';
 
 // Mock layer interface for simulating leaflet events in test
@@ -141,15 +141,17 @@ describe('BochumMap component', () => {
     });
   });
 
-  it('applies default styles to GeoJSON features', () => {
+  it('hides zone boundaries by default', () => {
     render(<BochumMap {...defaultProps} />);
     const styleFn = lastGeoJsonProps.style;
     const feature = registeredLayers[0].feature;
     const style = styleFn(feature);
     
+    expect(style.className).toBe('bochum-zone-path');
     expect(style.color).toBe('#3b82f6');
     expect(style.fillColor).toBe('#3b82f6');
-    expect(style.fillOpacity).toBe(0.05); // default hover: false
+    expect(style.fillOpacity).toBe(0);
+    expect(style.opacity).toBe(0);
   });
 
   it('handles zone hover events correctly', () => {
@@ -160,6 +162,121 @@ describe('BochumMap component', () => {
 
     expect(mouseoverHandler).toBeDefined();
     expect(mouseoutHandler).toBeDefined();
+  });
+
+  it('shows zone information when a zone is clicked and hides it on map click', () => {
+    render(<BochumMap {...defaultProps} />);
+    const querenburgLayer = registeredLayers.find(
+      (entry) => entry.feature.properties.zoneId === 'querenburg'
+    )?.layer;
+
+    expect(querenburgLayer).toBeDefined();
+
+    const clickHandler = (querenburgLayer!.on as any)._events.click;
+    expect(clickHandler).toBeDefined();
+    const originalEvent = {
+      stopPropagation: vi.fn()
+    };
+
+    act(() => {
+      clickHandler({
+        originalEvent,
+        containerPoint: { x: 120, y: 360 }
+      });
+    });
+
+    const zoneInfoCard = screen.getByTestId('zone-info-card');
+    expect(zoneInfoCard).toHaveTextContent('Querenburg');
+    expect(zoneInfoCard).toHaveTextContent('Solar');
+    expect(zoneInfoCard).toHaveTextContent('Speicher');
+    expect(zoneInfoCard).toHaveTextContent('Campus');
+    expect(zoneInfoCard).toHaveAttribute('data-placement', 'right');
+    expect(zoneInfoCard).not.toHaveStyle({ top: '24px', right: '24px' });
+
+    const mockMapEvents = (globalThis as any).mockMapEvents;
+    act(() => {
+      mockMapEvents.click({
+        originalEvent,
+        latlng: { lat: 51.48, lng: 7.22 }
+      });
+    });
+
+    expect(screen.getByTestId('zone-info-card')).toHaveTextContent('Querenburg');
+
+    act(() => {
+      mockMapEvents.click({
+        latlng: { lat: 51.48, lng: 7.22 }
+      });
+    });
+
+    expect(screen.queryByTestId('zone-info-card')).not.toBeInTheDocument();
+  });
+
+  it.each([
+    [{ x: 120, y: 500 }, 'right'],
+    [{ x: 880, y: 500 }, 'left'],
+    [{ x: 500, y: 120 }, 'bottom'],
+    [{ x: 500, y: 880 }, 'top']
+  ] as const)('places zone information %s from the selected zone anchor', (containerPoint, placement) => {
+    render(<BochumMap {...defaultProps} />);
+    const innenstadtLayer = registeredLayers.find(
+      (entry) => entry.feature.properties.zoneId === 'innenstadt'
+    )?.layer;
+
+    expect(innenstadtLayer).toBeDefined();
+
+    const clickHandler = (innenstadtLayer!.on as any)._events.click;
+
+    act(() => {
+      clickHandler({
+        originalEvent: {
+          stopPropagation: vi.fn()
+        },
+        containerPoint
+      });
+    });
+
+    expect(screen.getByTestId('zone-info-card')).toHaveTextContent('Innenstadt');
+    expect(screen.getByTestId('zone-info-card')).toHaveAttribute('data-placement', placement);
+  });
+
+  it('shows a zone profile image and closes the zone information with the close button', () => {
+    render(<BochumMap {...defaultProps} />);
+    const innenstadtLayer = registeredLayers.find(
+      (entry) => entry.feature.properties.zoneId === 'innenstadt'
+    )?.layer;
+
+    expect(innenstadtLayer).toBeDefined();
+
+    const clickHandler = (innenstadtLayer!.on as any)._events.click;
+
+    act(() => {
+      clickHandler({
+        originalEvent: {
+          stopPropagation: vi.fn()
+        },
+        containerPoint: { x: 500, y: 120 }
+      });
+    });
+
+    const profileImage = screen.getByRole('img', { name: 'Innenstadt Profilbild' });
+    expect(profileImage).toHaveAttribute('src', expect.stringContaining('data:image/svg+xml'));
+    expect(profileImage).toHaveStyle({ width: '96px', height: '72px' });
+
+    const closeButton = screen.getByRole('button', { name: 'Zone-Information schliessen' });
+    expect(closeButton).toHaveTextContent('×');
+    expect(closeButton).not.toHaveTextContent('(x)');
+    expect(closeButton).toHaveStyle({
+      background: 'none',
+      borderWidth: '0',
+      borderStyle: 'none',
+      color: '#9ca3af',
+      fontSize: '1.25rem'
+    });
+
+    fireEvent.click(closeButton);
+
+    expect(screen.queryByTestId('zone-info-card')).not.toBeInTheDocument();
   });
 
   it('highlights the zone in green if feedback status is allowed', () => {
@@ -265,5 +382,27 @@ describe('BochumMap component', () => {
     mockWindowEvents.pointermove({ clientX: 1200, clientY: 1200 } as PointerEvent);
 
     expect(onDragLeave).toHaveBeenCalled();
+  });
+
+  it('reports an outside drop when pointer is released beyond the map container', () => {
+    const onDragLeave = vi.fn();
+    const onDropOutside = vi.fn();
+    const onDropAsset = vi.fn();
+
+    render(
+      <BochumMap
+        {...defaultProps}
+        placementDrag={{ itemType: 'solar', clientX: 100, clientY: 100 }}
+        onDragLeave={onDragLeave}
+        onDropOutside={onDropOutside}
+        onDropAsset={onDropAsset}
+      />
+    );
+
+    mockWindowEvents.pointerup({ clientX: 1200, clientY: 1200 } as PointerEvent);
+
+    expect(onDropOutside).toHaveBeenCalled();
+    expect(onDropAsset).not.toHaveBeenCalled();
+    expect(onDragLeave).not.toHaveBeenCalled();
   });
 });

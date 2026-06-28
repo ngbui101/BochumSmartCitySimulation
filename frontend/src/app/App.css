@@ -98,6 +98,10 @@ textarea {
   overflow: hidden;
 }
 
+.map-stage .bochum-zone-path:focus {
+  outline: none;
+}
+
 .map-placeholder {
   position: absolute;
   inset: 0;
@@ -168,12 +172,17 @@ textarea {
 
 .placement-drag-preview-icon {
   display: grid;
-  width: 28px;
-  height: 28px;
+  width: 64px;
+  height: 64px;
   place-items: center;
-  color: #3d6f5a;
-  background: #f0fdf4;
+  background: transparent;
   border-radius: 6px;
+}
+
+.placement-drag-preview-icon img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
 }
 
 /* Bottom Controls Container & Buttons */

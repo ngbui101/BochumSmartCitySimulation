@@ -50,8 +50,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
     onPointerDragStart?.(itemType, pointer);
   };
 
-  const handleSelectItemTypeWrapper = (itemType: ItemType) => {
+  const handleSelectItemTypeWrapper = (itemType: ItemType | null) => {
     if (onSelectItemType) {
+      if (!itemType) {
+        onSelectItemType(null);
+        return;
+      }
+
       // Toggle selection: if already selected, deselect it
       if (selectedItemType === itemType) {
         onSelectItemType(null);

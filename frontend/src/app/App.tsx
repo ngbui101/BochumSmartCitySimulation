@@ -12,7 +12,7 @@ import { canPlaceItem } from '../simulation/placementRules';
 import { calculateFinalScore } from '../simulation/scoring';
 import { findZoneForPoint } from '../simulation/zoneDetection';
 import { useAppState } from './appState';
-import { SolarIcon, StorageIcon, WindIcon } from '../ui/icons';
+import { AssetIconImage } from '../ui/gameAssetIcons';
 import type { ItemType, LatLngPosition } from '../types/assets';
 import type { GameAction, GameKpis, GameState } from '../types/game';
 import type { ZoneId } from '../types/zones';
@@ -68,15 +68,7 @@ function getItemLabel(itemType: ItemType): string {
 }
 
 function getItemIcon(itemType: ItemType): React.ReactNode {
-  if (itemType === 'solar') {
-    return <SolarIcon size={22} />;
-  }
-
-  if (itemType === 'wind') {
-    return <WindIcon size={22} />;
-  }
-
-  return <StorageIcon size={22} />;
+  return <AssetIconImage itemType={itemType} size={64} />;
 }
 
 function getPlacementMessage(itemType: ItemType, result: ReturnType<typeof canPlaceItem>): string {
@@ -257,6 +249,16 @@ export function App() {
     });
   };
 
+  const handleDropOutside = () => {
+    setZoneFeedback(undefined);
+    setPlacementFeedback({
+      status: 'blocked',
+      message: 'Keine Bochumer Zone an dieser Position.'
+    });
+    setPlacementDrag(null);
+    setSelectedItemType(null);
+  };
+
   const handleRestart = () => {
     clearPlacementFeedback();
     setPlacementDrag(null);
@@ -314,11 +316,8 @@ export function App() {
 
     const handlePointerUp = () => {
       setPlacementDrag((currentDrag) => {
-        if (currentDrag) {
-          const duration = Date.now() - currentDrag.startTime;
-          if (currentDrag.hasMoved || duration > 200) {
-            setSelectedItemType(null); // Aborted drag: deselect the option
-          }
+        if (currentDrag?.hasMoved) {
+          setSelectedItemType(null); // Aborted drag: deselect the option
         }
         return null;
       });
@@ -347,23 +346,23 @@ export function App() {
     state.status === 'finished' ? state.finalScore ?? calculateFinalScore(state) : undefined;
 
   const placeableZones = useMemo(() => {
-    if (!placementDrag) {
+    const itemType = placementDrag?.itemType ?? selectedItemType;
+
+    if (!itemType) {
       return null;
     }
+
     const zones: Record<string, boolean> = {};
     for (const feature of bochumZonesGeoJson.features) {
       const zoneId = feature.properties?.zoneId;
       if (zoneId) {
-        zones[zoneId] = canPlaceItem(state, placementDrag.itemType, zoneId as ZoneId).allowed;
+        zones[zoneId] = canPlaceItem(state, itemType, zoneId as ZoneId).allowed;
       }
     }
     return zones;
-  }, [placementDrag, state]);
+  }, [placementDrag, selectedItemType, state]);
 
-  const selectedItem = useMemo(
-    () => itemDefinitions.find((d) => d.itemType === selectedItemType),
-    [selectedItemType]
-  );
+  const selectedItem: any = null;
 
   return (
     <main className="app-shell" aria-label="Bochum Smart City Simulation">
@@ -390,6 +389,7 @@ export function App() {
           placementDrag={placementDrag}
           onDragPosition={handleDragPosition}
           onDropAsset={handleDropAsset}
+          onDropOutside={handleDropOutside}
           onDragLeave={handleDragLeave}
           placeableZones={placeableZones}
         />

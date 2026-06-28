@@ -1,5 +1,5 @@
 import React from 'react';
-import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { App } from '../../src/app/App';
@@ -29,6 +29,11 @@ vi.mock('../../src/map/BochumMap', async () => {
           ? React.createElement('span', { 'data-testid': 'placement-feedback' }, props.placementFeedback.message)
           : null,
         React.createElement(
+          'span',
+          { 'data-testid': 'placeable-zones-state' },
+          props.placeableZones ? 'shown' : 'hidden'
+        ),
+        React.createElement(
           'button',
           { type: 'button', onClick: () => props.onDropAsset?.({ lat: 51.48, lng: 7.21 }) },
           'drop innenstadt'
@@ -42,6 +47,11 @@ vi.mock('../../src/map/BochumMap', async () => {
           'button',
           { type: 'button', onClick: () => props.onDropAsset?.({ lat: 51.56, lng: 7.08 }) },
           'drop outside'
+        ),
+        React.createElement(
+          'button',
+          { type: 'button', onClick: () => props.onDropOutside?.() },
+          'drop sidebar'
         ),
         React.createElement(
           'button',
@@ -125,6 +135,14 @@ describe('App integrated game flow', () => {
     act(() => {
       vi.advanceTimersByTime(200);
     });
+
+    const dragPreview = screen.getByTestId('placement-drag-preview');
+    expect(dragPreview).toBeInTheDocument();
+    expect(within(dragPreview).getByRole('img', { name: 'Solaranlage' })).toHaveAttribute(
+      'src',
+      '/icons/Solaranlage.png'
+    );
+
     fireEvent.click(screen.getByRole('button', { name: 'drop innenstadt' }));
 
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('1');
@@ -192,6 +210,60 @@ describe('App integrated game flow', () => {
 
     expect(screen.getByTestId('placement-feedback')).toHaveTextContent(/Zone/i);
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('0');
+    expect(screen.queryByTestId('buyable-item-details-card')).not.toBeInTheDocument();
+  });
+
+  it('keeps an item selected after hold-release without placement', () => {
+    render(<App />);
+
+    fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
+      clientX: 24,
+      clientY: 48
+    });
+    act(() => {
+      vi.advanceTimersByTime(250);
+    });
+
+    expect(screen.getByTestId('buyable-item-details-card')).toBeInTheDocument();
+    expect(screen.getByTestId('selected-item-label')).toHaveTextContent('Solaranlage');
+
+    act(() => {
+      fireEvent.pointerUp(window);
+    });
+
+    expect(screen.getByTestId('buyable-item-details-card')).toBeInTheDocument();
+    expect(screen.getByTestId('selected-item-label')).toHaveTextContent('Solaranlage');
+  });
+
+  it('cancels purchase and deselects item when dropped on the sidebar', () => {
+    render(<App />);
+
+    fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
+      clientX: 24,
+      clientY: 48
+    });
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+
+    expect(screen.getByTestId('buyable-item-details-card')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'drop sidebar' }));
+
+    expect(screen.getByTestId('player-asset-count')).toHaveTextContent('0');
+    expect(screen.getByTestId('budget-value')).toHaveTextContent('18.000.000 Euro');
+    expect(screen.queryByTestId('buyable-item-details-card')).not.toBeInTheDocument();
+    expect(screen.getByTestId('placement-feedback')).toHaveTextContent(/Zone/i);
+  });
+
+  it('shows placeable zone boundaries when an item is selected without dragging', () => {
+    render(<App />);
+
+    expect(screen.getByTestId('placeable-zones-state')).toHaveTextContent('hidden');
+
+    fireEvent.click(screen.getByTestId('buyable-item-solar'));
+
+    expect(screen.getByTestId('placeable-zones-state')).toHaveTextContent('shown');
   });
 
   it('selects, clears, sells, and undoes player assets while existing assets remain read-only', () => {
