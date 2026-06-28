@@ -182,7 +182,7 @@ export const AssetMarkers: React.FC<AssetMarkersProps> = ({
         eventHandlers={{
           click: (e) => {
             // Stop leaflet from propagating the click to map container
-            e.originalEvent.stopPropagation();
+            e.originalEvent?.stopPropagation();
             onSelectAsset(asset.id);
           },
         }}
