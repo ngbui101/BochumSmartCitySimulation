@@ -5,6 +5,7 @@ import { Sidebar } from '../../src/sidebar/Sidebar';
 import type { GameKpis } from '../../src/types/game';
 import type { WeatherForecastMonth } from '../../src/types/weather';
 import type { PlayerAsset } from '../../src/types/assets';
+import type { EnergyStatusProps } from '../../src/sidebar/KpiDashboard';
 
 describe('Sidebar component', () => {
   const mockKpis: GameKpis = {
@@ -18,6 +19,16 @@ describe('Sidebar component', () => {
     { monthIndex: 1, monthOfYear: 1, weatherType: 'mixed', confidence: 'medium', solarFactor: 0.85, windFactor: 1.05 },
     { monthIndex: 2, monthOfYear: 2, weatherType: 'cloudy', confidence: 'low', solarFactor: 0.8, windFactor: 1.1 },
   ];
+
+  const mockEnergyStatus: EnergyStatusProps = {
+    energySaldo: -40,
+    importCost: 2400000,
+    storedEnergy: 0,
+    storageCapacity: 0,
+    isGracePeriod: false,
+    netMonthlyDelta: -2000000,
+    revenueFromSales: 3800000
+  };
 
   const mockAsset: PlayerAsset = {
     id: 'solar-p1',
@@ -36,6 +47,7 @@ describe('Sidebar component', () => {
         budget={15000000}
         currentMonthIndex={0} // Month 1 => Year 1, Month 1
         kpis={mockKpis}
+        energyStatus={mockEnergyStatus}
         forecast={mockForecast}
       />
     );
@@ -48,6 +60,7 @@ describe('Sidebar component', () => {
         budget={15000000}
         currentMonthIndex={13} // Month 14 => Year 2, Month 2
         kpis={mockKpis}
+        energyStatus={mockEnergyStatus}
         forecast={mockForecast}
       />
     );
@@ -61,6 +74,7 @@ describe('Sidebar component', () => {
         budget={8000000}
         currentMonthIndex={5}
         kpis={mockKpis}
+        energyStatus={mockEnergyStatus}
         forecast={mockForecast}
       />
     );

@@ -3,6 +3,7 @@ import type { ItemType } from '../types/assets';
 import type { GameKpis } from '../types/game';
 import type { WeatherForecastMonth } from '../types/weather';
 import { KpiDashboard } from './KpiDashboard';
+import type { EnergyStatusProps } from './KpiDashboard';
 import { WeatherForecast } from './WeatherForecast';
 import { BuyableItemList } from './BuyableItemList';
 
@@ -10,6 +11,7 @@ export interface SidebarProps {
   budget: number;
   currentMonthIndex: number;
   kpis: GameKpis;
+  energyStatus: EnergyStatusProps;
   deltas?: {
     energyAutarky?: number;
     citizenSatisfaction?: number;
@@ -31,6 +33,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   budget,
   currentMonthIndex,
   kpis,
+  energyStatus,
   deltas,
   forecast,
   selectedItemType,
@@ -76,7 +79,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </p>
       </header>
 
-      <KpiDashboard budget={budget} kpis={kpis} deltas={deltas} />
+      <KpiDashboard budget={budget} kpis={kpis} energyStatus={energyStatus} deltas={deltas} />
 
       <WeatherForecast forecast={forecast} />
 
