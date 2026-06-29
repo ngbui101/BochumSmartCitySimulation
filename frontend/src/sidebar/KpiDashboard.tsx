@@ -41,58 +41,15 @@ export const KpiDashboard: React.FC<KpiDashboardProps> = ({
   const formattedBudget = `${budget.toLocaleString('de-DE')} Euro`;
 
   return (
-    <div
-      className="kpi-dashboard"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-      }}
-    >
-      <div
-        className="budget-display"
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '2px',
-          padding: '8px 12px',
-          backgroundColor: '#ffffff',
-          border: '1px solid #d7e2da',
-          borderRadius: '8px',
-        }}
-      >
-        <span
-          style={{
-            fontSize: '0.75rem',
-            color: '#526259',
-            fontWeight: 500,
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
-          }}
-        >
-          Budget
-        </span>
-        <span
-          className="budget-value"
-          style={{
-            fontSize: '1.15rem',
-            fontWeight: 700,
-            color: '#17211b',
-          }}
-          data-testid="budget-value"
-        >
+    <div className="kpi-dashboard">
+      <div className="budget-display">
+        <span>Budget</span>
+        <strong className="budget-value" data-testid="budget-value">
           {formattedBudget}
-        </span>
+        </strong>
       </div>
 
-      <div
-        className="kpi-bars-container"
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '8px',
-        }}
-      >
+      <div className="kpi-bars-container">
         <KpiBar
           label="Energieautarkie"
           value={kpis.energyAutarky}
@@ -101,7 +58,7 @@ export const KpiDashboard: React.FC<KpiDashboardProps> = ({
           icon={<EnergyIcon />}
         />
         <KpiBar
-          label="Bürgerzufriedenheit"
+          label="Buergerzufriedenheit"
           value={kpis.citizenSatisfaction}
           delta={deltas?.citizenSatisfaction}
           unit="%"

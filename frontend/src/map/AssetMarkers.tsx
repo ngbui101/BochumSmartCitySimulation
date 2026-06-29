@@ -4,10 +4,8 @@ import L from 'leaflet';
 import { renderToString } from 'react-dom/server';
 import type { PlayerAsset, ExistingAsset } from '../types/assets';
 import { AssetDetailsPanel } from '../sidebar/AssetDetailsPanel';
+import { AssetIconImage } from '../ui/gameAssetIcons';
 import {
-  SolarIcon,
-  WindIcon,
-  StorageIcon,
   ExistingIcon,
   ConstructionBadge,
   SelectedRing
@@ -27,77 +25,59 @@ export const AssetMarkerIcon: React.FC<{
   isSelected: boolean;
 }> = ({ asset, isSelected }) => {
   const isPlayer = 'itemType' in asset;
-  
-  // Base styles for the outer container
+  const playerAsset = isPlayer ? (asset as PlayerAsset) : null;
+  const markerSize = isPlayer ? (isSelected ? 58 : 48) : 34;
+  const iconSize = isPlayer ? (isSelected ? 52 : 42) : 30;
+  const itemClass = playerAsset ? `asset-marker--${playerAsset.itemType}` : 'asset-marker--existing';
+  const statusClass =
+    playerAsset?.status === 'under_construction' ? 'asset-marker--construction' : '';
+  const selectedClass = isSelected ? 'asset-marker--selected' : '';
+
   const containerStyle: React.CSSProperties = {
     position: 'relative',
-    width: '36px',
-    height: '36px',
+    width: `${markerSize}px`,
+    height: `${markerSize}px`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
   };
 
-  // Base styles for the icon wrapper
   const wrapperStyle: React.CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
+    width: `${iconSize}px`,
+    height: `${iconSize}px`,
+    borderRadius: isPlayer ? '16px' : '50%',
     position: 'relative',
     color: '#ffffff',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.15)',
+    backgroundColor: isPlayer ? 'rgba(255, 253, 246, 0.95)' : '#60736A',
+    border: isPlayer ? '1px solid rgba(16, 35, 27, 0.12)' : '2.5px solid #60736A',
+    boxShadow: isSelected
+      ? '0 10px 24px rgba(31, 79, 58, 0.26)'
+      : '0 8px 18px rgba(16, 35, 27, 0.18)',
     transition: 'transform 0.15s ease',
   };
 
-  let innerIcon: React.ReactNode;
-
-  if (!isPlayer) {
-    // Existing asset: render grey icon
-    innerIcon = <ExistingIcon size={18} />;
-    wrapperStyle.backgroundColor = '#6b7280'; // Tailwind gray-500
-    wrapperStyle.border = '2.5px solid #4b5563'; // Tailwind gray-600
-  } else {
-    // Player asset
-    const playerAsset = asset as PlayerAsset;
-    
-    if (playerAsset.itemType === 'solar') {
-      innerIcon = <SolarIcon size={18} />;
-      wrapperStyle.backgroundColor = '#eab308'; // Tailwind yellow-500
-      wrapperStyle.border = '2.5px solid #ca8a04'; // Tailwind yellow-600
-    } else if (playerAsset.itemType === 'wind') {
-      innerIcon = <WindIcon size={18} />;
-      wrapperStyle.backgroundColor = '#3b82f6'; // Tailwind blue-500
-      wrapperStyle.border = '2.5px solid #2563eb'; // Tailwind blue-600
-    } else {
-      innerIcon = <StorageIcon size={18} />;
-      wrapperStyle.backgroundColor = '#10b981'; // Tailwind emerald-500
-      wrapperStyle.border = '2.5px solid #059669'; // Tailwind emerald-600
-    }
-
-    if (playerAsset.status === 'under_construction') {
-      // Construction stripe pattern style (orange and yellow warning stripes)
-      wrapperStyle.background = 'repeating-linear-gradient(45deg, #f59e0b, #f59e0b 6px, #fef08a 6px, #fef08a 12px)';
-      wrapperStyle.color = '#78350f'; // Dark amber text color for icon visibility
-      wrapperStyle.border = '2.5px dashed #d97706'; // Dashed amber border
-    }
+  if (playerAsset?.status === 'under_construction') {
+    wrapperStyle.backgroundColor = 'rgba(255, 251, 235, 0.95)';
+    wrapperStyle.border = '1.5px solid #f59e0b';
   }
 
-  // Under construction overlay / badge
-  const showConstruction = isPlayer && (asset as PlayerAsset).status === 'under_construction';
+  const showConstruction = playerAsset?.status === 'under_construction';
 
   return (
-    <div style={containerStyle} className="asset-marker-container">
-      {/* Selected ring overlay */}
+    <div
+      style={containerStyle}
+      className={`asset-marker-container ${itemClass} ${statusClass} ${selectedClass}`}
+    >
       {isSelected && (
         <div
           className="selected-ring"
           style={{
             position: 'absolute',
-            width: '44px',
-            height: '44px',
+            width: `${markerSize + 8}px`,
+            height: `${markerSize + 8}px`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -105,27 +85,34 @@ export const AssetMarkerIcon: React.FC<{
             pointerEvents: 'none',
           }}
         >
-          <SelectedRing size={44} />
+          <SelectedRing size={markerSize + 8} />
         </div>
       )}
 
-      {/* Main icon wrapper */}
       <div style={wrapperStyle} className="asset-icon-wrapper">
-        {innerIcon}
-        
-        {/* Construction overlay */}
+        {playerAsset ? (
+          <AssetIconImage
+            itemType={playerAsset.itemType}
+            status={playerAsset.status}
+            isSelected={isSelected}
+            size={iconSize}
+          />
+        ) : (
+          <ExistingIcon size={18} />
+        )}
+
         {showConstruction && (
           <div
             className="construction-badge-overlay"
             style={{
               position: 'absolute',
-              top: '-4px',
-              right: '-4px',
+              top: '-2px',
+              right: '-2px',
               backgroundColor: '#d97706',
               color: '#ffffff',
               borderRadius: '50%',
-              width: '15px',
-              height: '15px',
+              width: '17px',
+              height: '17px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -133,7 +120,7 @@ export const AssetMarkerIcon: React.FC<{
               boxShadow: '0 1px 2px rgba(0,0,0,0.2)',
             }}
           >
-            <ConstructionBadge size={10} />
+            <ConstructionBadge size={11} />
           </div>
         )}
       </div>
@@ -164,6 +151,8 @@ export const AssetMarkers: React.FC<AssetMarkersProps> = ({
 
   const renderMarker = (asset: PlayerAsset | ExistingAsset) => {
     const isSelected = asset.id === selectedAssetId;
+    const markerSize = 'itemType' in asset ? (isSelected ? 58 : 48) : 34;
+    const markerAnchor = markerSize / 2;
     
     // Create Leaflet divIcon using the string representation of our React component
     const htmlContent = renderToString(
@@ -173,8 +162,8 @@ export const AssetMarkers: React.FC<AssetMarkersProps> = ({
     const icon = L.divIcon({
       html: htmlContent,
       className: `custom-asset-marker-${asset.id}`,
-      iconSize: [36, 36],
-      iconAnchor: [18, 18],
+      iconSize: [markerSize, markerSize],
+      iconAnchor: [markerAnchor, markerAnchor],
     });
 
     return (

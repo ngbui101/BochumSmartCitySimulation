@@ -143,20 +143,22 @@ describe('AssetMarkers component', () => {
     
     const solarMarker = getByAttribute('data-id', 'solar-1');
     const solarHtml = solarMarker.getAttribute('data-icon-html') || '';
-    // Solar icon has a rect element, and standard solar color #eab308 / yellow
-    expect(solarHtml).toContain('rect');
-    expect(solarHtml).toContain('#eab308');
+    expect(solarHtml).toContain('asset-marker--solar');
+    expect(solarHtml).toContain('/icons/Solaranlage.png');
+    expect(solarHtml).toContain('alt="Solaranlage"');
 
     const windMarker = getByAttribute('data-id', 'wind-1');
     const windHtml = windMarker.getAttribute('data-icon-html') || '';
-    // Wind icon has circle cx="12" cy="12" and color #3b82f6 / blue
-    expect(windHtml).toContain('circle');
-    expect(windHtml).toContain('#3b82f6');
+    expect(windHtml).toContain('asset-marker--wind');
+    expect(windHtml).toContain('asset-marker--construction');
+    expect(windHtml).toContain('/icons/Windkraftanlage_build.png');
+    expect(windHtml).toContain('alt="Windkraftanlage im Bau"');
 
     const storageMarker = getByAttribute('data-id', 'storage-1');
     const storageHtml = storageMarker.getAttribute('data-icon-html') || '';
-    // Storage icon contains rect and color #10b981 / green
-    expect(storageHtml).toContain('#10b981');
+    expect(storageHtml).toContain('asset-marker--storage');
+    expect(storageHtml).toContain('/icons/Energiespeicher.png');
+    expect(storageHtml).toContain('alt="Energiespeicher"');
   });
 
   it('correctly renders icon for existing assets', () => {
@@ -164,29 +166,31 @@ describe('AssetMarkers component', () => {
     
     const existingMarker = getByAttribute('data-id', 'existing-1');
     const existingHtml = existingMarker.getAttribute('data-icon-html') || '';
-    // Existing icon uses grey color #6b7280 and standard rect
-    expect(existingHtml).toContain('#6b7280');
+    expect(existingHtml).toContain('asset-marker--existing');
+    expect(existingHtml).toContain('#60736A');
   });
 
-  it('applies stripe pattern and construction badge overlay for assets under construction', () => {
+  it('uses build icon and construction badge overlay for assets under construction', () => {
     render(<AssetMarkers {...defaultProps} />);
     
     const activeSolarMarker = getByAttribute('data-id', 'solar-1');
     const activeSolarHtml = activeSolarMarker.getAttribute('data-icon-html') || '';
-    expect(activeSolarHtml).not.toContain('repeating-linear-gradient');
+    expect(activeSolarHtml).not.toContain('/icons/Solaranlage_build.png');
     expect(activeSolarHtml).not.toContain('construction-badge-overlay');
 
     const underConstructionMarker = getByAttribute('data-id', 'wind-1');
     const constructionHtml = underConstructionMarker.getAttribute('data-icon-html') || '';
-    expect(constructionHtml).toContain('repeating-linear-gradient');
+    expect(constructionHtml).toContain('/icons/Windkraftanlage_build.png');
     expect(constructionHtml).toContain('construction-badge-overlay');
   });
 
-  it('renders selection ring when selectedAssetId matches asset id', () => {
+  it('uses selected icon and renders selection ring when selectedAssetId matches active asset id', () => {
     render(<AssetMarkers {...defaultProps} selectedAssetId="solar-1" />);
     
     const selectedMarker = getByAttribute('data-id', 'solar-1');
     const selectedHtml = selectedMarker.getAttribute('data-icon-html') || '';
+    expect(selectedHtml).toContain('/icons/Solaranlage_selected.png');
+    expect(selectedHtml).toContain('alt="Ausgewählte Solaranlage"');
     expect(selectedHtml).toContain('selected-ring');
 
     const unselectedMarker = getByAttributeOrNull('data-id', 'wind-1');

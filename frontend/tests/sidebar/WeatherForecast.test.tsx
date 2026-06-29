@@ -26,19 +26,19 @@ describe('WeatherForecast component', () => {
     expect(screen.getByText('Januar')).toBeInTheDocument();
     expect(screen.getByTestId('icon-windy')).toBeInTheDocument();
     expect(screen.getByText('Windig')).toBeInTheDocument();
-    expect(screen.getByText('Hoch')).toBeInTheDocument();
+    expect(screen.getByText(/Hoch/)).toBeInTheDocument();
 
     // Card 2: monthOfYear = 1 (Februar), weatherType = mixed, confidence = medium
     expect(screen.getByText('Februar')).toBeInTheDocument();
     expect(screen.getByTestId('icon-mixed')).toBeInTheDocument();
     expect(screen.getByText('Wechselhaft')).toBeInTheDocument();
-    expect(screen.getByText('Mittel')).toBeInTheDocument();
+    expect(screen.getByText(/Mittel/)).toBeInTheDocument();
 
     // Card 3: monthOfYear = 4 (Mai), weatherType = sunny, confidence = low
     expect(screen.getByText('Mai')).toBeInTheDocument();
     expect(screen.getByTestId('icon-sunny')).toBeInTheDocument();
     expect(screen.getByText('Sonnig')).toBeInTheDocument();
-    expect(screen.getByText('Niedrig')).toBeInTheDocument();
+    expect(screen.getByText(/Niedrig/)).toBeInTheDocument();
 
     // Should not render the 4th card (Juni, stormy)
     expect(screen.queryByText('Juni')).not.toBeInTheDocument();

@@ -1,12 +1,12 @@
 import React from 'react';
 import { itemDefinitions } from '../data/itemDefinitions';
-import { SolarIcon, WindIcon, StorageIcon } from '../ui/icons';
+import { AssetIconImage } from '../ui/gameAssetIcons';
 import type { ItemType } from '../types/assets';
 
 export interface BuyableItemListProps {
   budget: number;
   selectedItemType: ItemType | null;
-  onSelectItemType: (itemType: ItemType) => void;
+  onSelectItemType: (itemType: ItemType | null) => void;
   onPointerDragStart?: (
     itemType: ItemType,
     pointer: {
@@ -16,17 +16,41 @@ export interface BuyableItemListProps {
   ) => void;
 }
 
-const itemIcons: Record<ItemType, React.ReactNode> = {
-  solar: <SolarIcon size={24} />,
-  wind: <WindIcon size={24} />,
-  storage: <StorageIcon size={24} />,
-};
-
 const friendlyLabels: Record<ItemType, string> = {
   solar: 'Solaranlage',
-  wind: 'Windmühle',
+  wind: 'Windkraftanlage',
   storage: 'Energiespeicher',
 };
+
+const tooltipLabels: Record<ItemType, string> = {
+  solar: 'Solaranlage',
+  wind: 'Windmuehle',
+  storage: 'Energiespeicher',
+};
+
+const shortDescriptions: Record<ItemType, string> = {
+  solar: 'Stark in sonnigen Monaten',
+  wind: 'Nicht ueberall erlaubt',
+  storage: 'Mehr Versorgungssicherheit',
+};
+
+const itemTags: Record<ItemType, string> = {
+  solar: 'Solar',
+  wind: 'Wind',
+  storage: 'Speicher',
+};
+
+function getPopoverOffset(itemType: ItemType): string {
+  if (itemType === 'solar') {
+    return '72px';
+  }
+
+  if (itemType === 'wind') {
+    return '28px';
+  }
+
+  return '12px';
+}
 
 export const BuyableItemList: React.FC<BuyableItemListProps> = ({
   budget,
@@ -34,34 +58,60 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
   onSelectItemType,
   onPointerDragStart,
 }) => {
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const selectedItem = itemDefinitions.find((item) => item.itemType === selectedItemType);
+  const items = itemDefinitions.filter((item) =>
+    ['solar', 'wind', 'storage'].includes(item.itemType)
+  );
+
+  React.useEffect(() => {
+    if (!selectedItem) {
+      return undefined;
+    }
+
+    const handleOutsidePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (target instanceof Node && containerRef.current?.contains(target)) {
+        return;
+      }
+
+      onSelectItemType(null);
+    };
+
+    window.addEventListener('pointerdown', handleOutsidePointerDown);
+
+    return () => {
+      window.removeEventListener('pointerdown', handleOutsidePointerDown);
+    };
+  }, [onSelectItemType, selectedItem]);
+
   const handlePointerDown = (event: React.PointerEvent, itemType: ItemType) => {
     event.preventDefault();
     const startX = event.clientX;
     const startY = event.clientY;
     let dragStarted = false;
 
-    // Start a timeout of 180ms. If the user keeps the pointer down, it counts as a hold-to-drag.
-    const timeoutId = setTimeout(() => {
-      startDrag();
-    }, 180);
-
     const startDrag = () => {
       if (dragStarted) return;
       dragStarted = true;
       clearTimeout(timeoutId);
+      onSelectItemType(itemType);
       onPointerDragStart?.(itemType, {
         clientX: startX,
         clientY: startY,
       });
     };
 
+    const timeoutId = setTimeout(() => {
+      startDrag();
+    }, 180);
+
     const handlePointerMove = (moveEvent: PointerEvent) => {
       if (dragStarted) return;
       const distance = Math.sqrt(
         (moveEvent.clientX - startX) ** 2 +
-        (moveEvent.clientY - startY) ** 2
+          (moveEvent.clientY - startY) ** 2
       );
-      // If moved more than 6px, start drag immediately
       if (distance > 6) {
         startDrag();
       }
@@ -77,114 +127,94 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
     window.addEventListener('pointerup', handlePointerUp);
   };
 
-  // Define 6 slots total (3 items, 3 empty slots for visual RPG inventory grid style)
-  const slots = [
-    itemDefinitions.find((d) => d.itemType === 'solar'),
-    itemDefinitions.find((d) => d.itemType === 'wind'),
-    itemDefinitions.find((d) => d.itemType === 'storage'),
-    null,
-    null,
-    null,
-  ];
-
   return (
-    <div
-      className="buyable-item-list"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-      }}
-    >
-      <h3
-        style={{
-          margin: 0,
-          fontSize: '0.875rem',
-          fontWeight: 700,
-          color: '#3d6f5a',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-        }}
-      >
-        Bauoptionen
-      </h3>
-      
-      <div
-        className="inventory-grid"
-        data-testid="inventory-grid"
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '8px',
-          backgroundColor: '#ffffff',
-          padding: '12px',
-          borderRadius: '8px',
-          border: '1px solid #cbd8d0',
-        }}
-      >
-        {slots.map((item, index) => {
-          if (!item) {
-            return (
-              <div
-                key={`empty-${index}`}
-                className="inventory-slot-empty"
-                style={{
-                  aspectRatio: '1 / 1',
-                  backgroundColor: '#f9fafb',
-                  border: '1.5px dashed #cbd8d0',
-                  borderRadius: '6px',
-                  opacity: 0.6,
-                }}
-              />
-            );
-          }
+    <div ref={containerRef} className="buyable-item-list" data-testid="buyable-item-list">
+      <h3>Bauoptionen</h3>
 
+      <div className="buyable-item-card-list" data-testid="inventory-grid">
+        {items.map((item) => {
           const isSelected = selectedItemType === item.itemType;
           const isDisabled = item.cost > budget;
-          const labelText = friendlyLabels[item.itemType] || item.label;
           const tooltipText = isDisabled
-            ? `Nicht genügend Budget (Benötigt: ${item.cost.toLocaleString('de-DE')} Euro, Vorhanden: ${budget.toLocaleString('de-DE')} Euro)`
-            : labelText;
+            ? `Nicht genÃ¼gend Budget (BenÃ¶tigt: ${item.cost.toLocaleString('de-DE')} Euro, Vorhanden: ${budget.toLocaleString('de-DE')} Euro)`
+            : tooltipLabels[item.itemType];
 
           return (
             <div
               key={item.itemType}
-              className={`inventory-slot ${isSelected ? 'selected' : ''} ${isDisabled ? 'disabled' : 'active'}`}
+              className={`buyable-item-card inventory-slot buyable-item-card--${item.itemType} ${
+                isSelected ? 'selected' : ''
+              } ${isDisabled ? 'disabled' : 'active'}`}
               data-testid={`buyable-item-${item.itemType}`}
               onPointerDown={(event) => {
                 if (!isDisabled) {
                   handlePointerDown(event, item.itemType);
                 }
               }}
-              onDoubleClick={() => {
-                onSelectItemType(item.itemType);
+              onClick={() => {
+                if (!isDisabled) {
+                  onSelectItemType(item.itemType);
+                }
               }}
               title={tooltipText}
-              style={{
-                aspectRatio: '1 / 1',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: isSelected ? '#eef3ef' : isDisabled ? '#f3f4f6' : '#f9fafb',
-                border: isSelected 
-                  ? '2px solid #3d6f5a' 
-                  : isDisabled 
-                  ? '1.5px solid #cbd8d0' 
-                  : '1.5px solid #cbd8d0',
-                borderRadius: '6px',
-                opacity: isDisabled ? 0.6 : 1,
-                cursor: isDisabled ? 'not-allowed' : 'grab',
-                transition: 'all 0.15s ease',
-                color: isDisabled ? '#9ca3af' : '#3d6f5a',
-                boxShadow: isSelected ? '0 0 8px rgba(61, 111, 90, 0.4)' : 'none',
-                touchAction: 'none', // Crucial for drag gestures on all devices
-              }}
             >
-              {itemIcons[item.itemType]}
+              <span className="buyable-item-card__icon">
+                <AssetIconImage itemType={item.itemType} size={52} />
+              </span>
+              <span className="buyable-item-card__body">
+                <span className="buyable-item-card__topline">
+                  <strong>{friendlyLabels[item.itemType]}</strong>
+                  <span>{item.cost.toLocaleString('de-DE')} Euro</span>
+                </span>
+                <span className="buyable-item-card__description">
+                  {shortDescriptions[item.itemType]}
+                </span>
+                <span className="buyable-item-card__tag">{itemTags[item.itemType]}</span>
+              </span>
             </div>
           );
         })}
       </div>
+
+      {selectedItem && (
+        <div
+          className="buyable-item-details-card"
+          data-testid="buyable-item-details-card"
+          style={{
+            position: 'absolute',
+            bottom: 'calc(100% + 8px)',
+            left: getPopoverOffset(selectedItem.itemType),
+            zIndex: 1200,
+            width: 'min(260px, calc(100% - 24px))',
+          }}
+        >
+          <div className="buyable-item-details-card__header">
+            <h4 data-testid="selected-item-label">{friendlyLabels[selectedItem.itemType]}</h4>
+            <button onClick={() => onSelectItemType(null)} aria-label="Details schliessen">
+              &times;
+            </button>
+          </div>
+
+          <div className="buyable-item-details-card__row">
+            <span>Kaufpreis:</span>
+            <strong data-testid="selected-item-cost">
+              {selectedItem.cost.toLocaleString('de-DE')} Euro
+            </strong>
+          </div>
+
+          <p data-testid="selected-item-description">{selectedItem.description}</p>
+
+          <div className="buyable-item-details-card__stats">
+            {selectedItem.productionValue > 0 && (
+              <span>Erzeugung: {selectedItem.productionValue} MW</span>
+            )}
+            {selectedItem.storageValue > 0 && (
+              <span>Speicher: {selectedItem.storageValue} MWh</span>
+            )}
+            <span>Betrieb: {selectedItem.operatingCost.toLocaleString('de-DE')} Euro/M.</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

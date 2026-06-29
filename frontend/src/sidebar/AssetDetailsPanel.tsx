@@ -3,6 +3,8 @@ import type { PlayerAsset, ExistingAsset } from '../types/assets';
 import { zoneRules } from '../data/zoneRules';
 import { itemDefinitions } from '../data/itemDefinitions';
 import { getPlayerAssetSellValue } from '../game/selectors';
+import { AssetIconImage } from '../ui/gameAssetIcons';
+import { ZoneProfileMedia } from '../ui/ZoneProfileMedia';
 
 export interface AssetDetailsPanelProps {
   selectedAsset?: PlayerAsset | ExistingAsset;
@@ -82,6 +84,12 @@ export const AssetDetailsPanel: React.FC<AssetDetailsPanelProps> = ({
     fontSize: '1.25rem',
     fontWeight: 700,
     color: '#111827',
+  };
+
+  const headerRowStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
     borderBottom: '1px solid #f3f4f6',
     paddingBottom: '8px',
   };
@@ -121,9 +129,17 @@ export const AssetDetailsPanel: React.FC<AssetDetailsPanelProps> = ({
 
     return (
       <div className="asset-details-panel" style={panelStyle}>
-        <h3 style={headerStyle} data-testid="asset-title">
-          {labelType}
-        </h3>
+        <div style={headerRowStyle}>
+          <AssetIconImage
+            itemType={playerAsset.itemType}
+            status={playerAsset.status}
+            isSelected
+            size={56}
+          />
+          <h3 style={headerStyle} data-testid="asset-title">
+            {labelType}
+          </h3>
+        </div>
         
         <div style={detailGroupStyle}>
           <div style={rowStyle}>
@@ -133,7 +149,15 @@ export const AssetDetailsPanel: React.FC<AssetDetailsPanelProps> = ({
           
           <div style={rowStyle}>
             <span style={labelStyle}>Zone:</span>
-            <span style={valueStyle} data-testid="asset-zone">{zoneLabel}</span>
+            <span className="asset-details-zone-value" style={valueStyle} data-testid="asset-zone">
+              <ZoneProfileMedia
+                zoneId={selectedAsset.zoneId}
+                label={zoneLabel}
+                variant="thumb"
+                className="asset-details-zone-thumb"
+              />
+              {zoneLabel}
+            </span>
           </div>
           
           <div style={rowStyle}>
@@ -224,7 +248,15 @@ export const AssetDetailsPanel: React.FC<AssetDetailsPanelProps> = ({
           
           <div style={rowStyle}>
             <span style={labelStyle}>Zone:</span>
-            <span style={valueStyle} data-testid="asset-zone">{zoneLabel}</span>
+            <span className="asset-details-zone-value" style={valueStyle} data-testid="asset-zone">
+              <ZoneProfileMedia
+                zoneId={selectedAsset.zoneId}
+                label={zoneLabel}
+                variant="thumb"
+                className="asset-details-zone-thumb"
+              />
+              {zoneLabel}
+            </span>
           </div>
           
           <div style={rowStyle}>
