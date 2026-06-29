@@ -560,6 +560,83 @@ textarea {
   font-weight: 900;
 }
 
+.budget-delta {
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.budget-delta-positive {
+  color: #3db87a;
+}
+
+.budget-delta-negative {
+  color: #e05252;
+}
+
+/* ── Energy Status Row ──────────────────────────────────── */
+.energy-status-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.energy-status-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.energy-grace-badge {
+  margin-left: auto;
+  padding: 1px 6px;
+  background: rgba(244, 180, 0, 0.18);
+  border: 1px solid rgba(244, 180, 0, 0.4);
+  border-radius: 4px;
+  color: #d4a000;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.energy-saldo-value {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.saldo-number {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.saldo-detail {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  opacity: 0.85;
+}
+
+.energy-deficit .saldo-number { color: #e05252; }
+.energy-deficit .saldo-detail { color: #e05252; }
+.energy-ok .saldo-number { color: #3db87a; }
+.energy-ok .saldo-detail { color: #3db87a; }
+
+.saldo-waste {
+  color: #e09a30 !important;
+}
+
 .kpi-bar-container {
   display: flex;
   flex-direction: column;

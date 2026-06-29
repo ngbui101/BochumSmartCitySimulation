@@ -7,7 +7,7 @@ import { initialMockState, midgameMockState, finishMockState } from '../testing/
 import { bochumZonesGeoJson } from '../data/bochumZones';
 import { itemDefinitions } from '../data/itemDefinitions';
 import { gameReducer } from '../game/reducer';
-import { getUndoTooltip } from '../game/selectors';
+import { getUndoTooltip, getCurrentEnergySaldo, getStorageCapacity, getCurrentImportCost, getCurrentNetMonthlyDelta, getCurrentRevenueFromSales } from '../game/selectors';
 import { canPlaceItem } from '../simulation/placementRules';
 import { calculateFinalScore } from '../simulation/scoring';
 import { findZoneForPoint } from '../simulation/zoneDetection';
@@ -384,6 +384,15 @@ export function App() {
         budget={state.budget}
         currentMonthIndex={state.currentMonthIndex}
         kpis={state.kpis}
+        energyStatus={{
+          energySaldo: getCurrentEnergySaldo(state),
+          importCost: getCurrentImportCost(state),
+          storedEnergy: state.storedEnergy,
+          storageCapacity: getStorageCapacity(state),
+          isGracePeriod: state.currentMonthIndex === 0,
+          netMonthlyDelta: getCurrentNetMonthlyDelta(state),
+          revenueFromSales: getCurrentRevenueFromSales(state)
+        }}
         deltas={deltas}
         forecast={state.forecast}
         selectedItemType={selectedItemType}
