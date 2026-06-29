@@ -1,11 +1,13 @@
 import { itemDefinitions } from '../data/itemDefinitions';
 import { zoneRules } from '../data/zoneRules';
+import { getEnergyDemandForMonth } from '../data/energyDemand';
 import type { PlayerAsset } from '../types/assets';
 import type { GameKpis, GameState } from '../types/game';
 import { calculateFinalScore } from './scoring';
 import { createForecast, getWeatherProfileForMonth } from './weatherSimulation';
 
-const SAVINGS_PER_PRODUCTION_VALUE = 50_000;
+/** Importkosten pro fehlender Energieeinheit in Euro. */
+const IMPORT_COST_PER_UNIT = 60_000;
 
 function clampScore(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
@@ -42,7 +44,7 @@ function activateCompletedAssets(state: GameState, nextMonthIndex: number): Play
   });
 }
 
-function calculateProduction(asset: PlayerAsset, monthIndex: number): number {
+function calculateAssetProduction(asset: PlayerAsset, monthIndex: number): number {
   const itemDefinition = getItemDefinition(asset.itemType);
   const weatherProfile = getWeatherProfileForMonth(monthIndex);
 
@@ -61,11 +63,58 @@ function calculateProduction(asset: PlayerAsset, monthIndex: number): number {
   return 0;
 }
 
+function calculateTotalProduction(activeAssets: PlayerAsset[], monthIndex: number): number {
+  return activeAssets.reduce((sum, asset) => sum + calculateAssetProduction(asset, monthIndex), 0);
+}
+
+function calculateStorageCapacity(activeAssets: PlayerAsset[]): number {
+  return activeAssets.reduce((sum, asset) => {
+    const itemDefinition = getItemDefinition(asset.itemType);
+    return sum + (itemDefinition?.storageValue ?? 0);
+  }, 0);
+}
+
+/**
+ * Berechnet die Energiebilanz für einen Monat.
+ *
+ * - Defizit (Saldo < 0): Importkosten werden berechnet, gespeicherte Energie wird aufgebraucht.
+ * - Überschuss (Saldo > 0): Überschuss füllt den persistenten Speicher-Puffer bis zur Kapazität.
+ *   Nicht gespeicherter Überschuss wird verschwendet.
+ */
+function calculateEnergyBalance(
+  state: GameState,
+  activeAssets: PlayerAsset[],
+  monthIndex: number
+): { production: number; demand: number; saldo: number; importCost: number; newStoredEnergy: number } {
+  const production = calculateTotalProduction(activeAssets, monthIndex);
+  const demand = getEnergyDemandForMonth(monthIndex);
+  const storageCapacity = calculateStorageCapacity(activeAssets);
+  const availableEnergy = production + state.storedEnergy;
+  const saldo = availableEnergy - demand;
+
+  if (saldo < 0) {
+    // Defizit: alle gespeicherte Energie ist verbraucht, Rest muss importiert werden
+    return {
+      production,
+      demand,
+      saldo,
+      importCost: Math.abs(saldo) * IMPORT_COST_PER_UNIT,
+      newStoredEnergy: 0
+    };
+  }
+
+  // Überschuss: Speicher so weit füllen wie möglich, Rest wird verschwendet
+  return {
+    production,
+    demand,
+    saldo,
+    importCost: 0,
+    newStoredEnergy: Math.min(saldo, storageCapacity)
+  };
+}
+
 function calculateNextKpis(state: GameState, activeAssets: PlayerAsset[]): GameKpis {
-  const production = activeAssets.reduce(
-    (sum, asset) => sum + calculateProduction(asset, state.currentMonthIndex),
-    0
-  );
+  const production = calculateTotalProduction(activeAssets, state.currentMonthIndex);
   const storageValue = activeAssets.reduce((sum, asset) => {
     const itemDefinition = getItemDefinition(asset.itemType);
     return sum + (itemDefinition?.storageValue ?? 0);
@@ -86,17 +135,11 @@ function calculateNextKpis(state: GameState, activeAssets: PlayerAsset[]): GameK
   };
 }
 
-function calculateNextBudget(state: GameState, activeAssets: PlayerAsset[]): number {
-  const productionSavings = activeAssets.reduce(
-    (sum, asset) => sum + calculateProduction(asset, state.currentMonthIndex) * SAVINGS_PER_PRODUCTION_VALUE,
-    0
-  );
-  const operatingCosts = activeAssets.reduce((sum, asset) => {
-    const itemDefinition = getItemDefinition(asset.itemType);
-    return sum + (itemDefinition?.operatingCost ?? 0);
-  }, 0);
-
-  return Math.max(0, Math.round(state.budget + productionSavings - operatingCosts));
+function calculateNextBudget(
+  state: GameState,
+  netMonthlyDelta: number
+): number {
+  return Math.max(0, Math.round(state.budget + netMonthlyDelta));
 }
 
 export function advanceMonth(state: GameState): GameState {
@@ -108,19 +151,38 @@ export function advanceMonth(state: GameState): GameState {
   const playerAssets = activateCompletedAssets(state, nextMonthIndex);
   const activeAssets = playerAssets.filter((asset) => asset.status === 'active');
   const status = nextMonthIndex >= 60 ? 'finished' : state.status;
+
+  const energyBalance = calculateEnergyBalance(state, activeAssets, state.currentMonthIndex);
+
+  const revenueFromSales = energyBalance.demand * 40_000;
+  const operatingCosts = activeAssets.reduce((sum, asset) => {
+    const itemDefinition = getItemDefinition(asset.itemType);
+    return sum + (itemDefinition?.operatingCost ?? 0);
+  }, 0);
+  const netMonthlyDelta = revenueFromSales - energyBalance.importCost - operatingCosts;
+
   const nextState: GameState = {
     ...state,
     currentMonthIndex: nextMonthIndex,
-    budget: calculateNextBudget(state, activeAssets),
+    budget: calculateNextBudget(state, netMonthlyDelta),
     kpis: calculateNextKpis(state, activeAssets),
     playerAssets,
+    storedEnergy: energyBalance.newStoredEnergy,
     undoStack: [],
     monthlyHistory: [
       ...state.monthlyHistory,
       {
         monthIndex: state.currentMonthIndex,
         budget: state.budget,
-        kpis: state.kpis
+        kpis: state.kpis,
+        energyDemand: energyBalance.demand,
+        energyProduction: energyBalance.production,
+        energySaldo: energyBalance.saldo,
+        importCost: energyBalance.importCost,
+        storedEnergy: state.storedEnergy,
+        revenueFromSales,
+        operatingCosts,
+        netMonthlyDelta
       }
     ],
     forecast: createForecast(nextMonthIndex),

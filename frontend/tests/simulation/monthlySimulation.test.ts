@@ -34,13 +34,12 @@ describe('advanceMonth', () => {
     const next = advanceMonth(placed);
 
     expect(next.currentMonthIndex).toBe(1);
-    expect(next.monthlyHistory).toEqual([
-      {
-        monthIndex: placed.currentMonthIndex,
-        budget: placed.budget,
-        kpis: placed.kpis
-      }
-    ]);
+    expect(next.monthlyHistory).toHaveLength(1);
+    expect(next.monthlyHistory[0]).toMatchObject({
+      monthIndex: placed.currentMonthIndex,
+      budget: placed.budget,
+      kpis: placed.kpis
+    });
     expect(next.undoStack).toEqual([]);
     expect(next.forecast.map((month) => month.monthIndex)).toEqual([1, 2, 3]);
   });
@@ -89,6 +88,14 @@ describe('advanceMonth', () => {
     const next = advanceMonth(state);
 
     expect(next.kpis.citizenSatisfaction).toBeLessThan(state.kpis.citizenSatisfaction);
+  });
+
+  it('updates budget by net monthly delta on advanceMonth', () => {
+    const state = createInitialGameState();
+    // Initially, demand is 95. Revenue = 3.8M. Import cost = 5.7M. Operating cost = 0.
+    // Net delta = -1.9M.
+    const next = advanceMonth(state);
+    expect(next.budget).toBe(18000000 - 1900000);
   });
 
   it('finishes the game after month 60', () => {
