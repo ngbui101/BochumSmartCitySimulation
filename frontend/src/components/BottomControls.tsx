@@ -31,17 +31,17 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
           onClick={onUndo}
           disabled={!canUndo}
           title={undoTooltip}
-          aria-label="Rueckgaengig"
+          aria-label="Rückgängig"
         >
           <span aria-hidden="true">↶</span>
-          <span>Rueckgaengig</span>
+          <span>Rückgängig</span>
         </button>
         <button
           className="btn-next-month"
           onClick={handleNextMonthClick}
-          aria-label="Naechster Monat"
+          aria-label="Nächster Monat"
         >
-          <span>Naechster Monat</span>
+          <span>Nächster Monat</span>
           <span aria-hidden="true">→</span>
         </button>
       </div>

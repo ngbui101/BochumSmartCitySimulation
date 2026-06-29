@@ -69,6 +69,8 @@ describe('AssetDetailsPanel component', () => {
     
     // Zone (Innenstadt)
     expect(screen.getByTestId('asset-zone')).toHaveTextContent('Innenstadt');
+    expect(screen.getByTestId('asset-zone').querySelector('.zone-profile-thumb')).not.toBeInTheDocument();
+    expect(screen.getByTestId('asset-zone').querySelector('img')).not.toBeInTheDocument();
     
     // Status (Aktiv (active))
     expect(screen.getByTestId('asset-status')).toHaveTextContent(/active/i);
@@ -124,6 +126,8 @@ describe('AssetDetailsPanel component', () => {
     
     // Zone
     expect(screen.getByTestId('asset-zone')).toHaveTextContent('Langendreer');
+    expect(screen.getByTestId('asset-zone').querySelector('.zone-profile-thumb')).not.toBeInTheDocument();
+    expect(screen.getByTestId('asset-zone').querySelector('img')).not.toBeInTheDocument();
     
     // Status
     expect(screen.getByTestId('asset-status')).toHaveTextContent('Bestand');

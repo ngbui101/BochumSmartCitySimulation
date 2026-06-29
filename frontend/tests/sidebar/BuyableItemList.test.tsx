@@ -28,7 +28,7 @@ describe('BuyableItemList component', () => {
     const storageCard = screen.getByTestId('buyable-item-storage');
 
     expect(solarCard).toHaveAttribute('title', 'Solaranlage');
-    expect(windCard).toHaveAttribute('title', 'Windmuehle');
+    expect(windCard).toHaveAttribute('title', 'Windkraftanlage');
     expect(storageCard).toHaveAttribute('title', 'Energiespeicher');
 
     expect(solarCard).not.toHaveClass('disabled');
@@ -41,7 +41,7 @@ describe('BuyableItemList component', () => {
 
     expect(windCard).toHaveTextContent('Windkraftanlage');
     expect(windCard).toHaveTextContent('2.800.000');
-    expect(windCard).toHaveTextContent('Nicht ueberall erlaubt');
+    expect(windCard).toHaveTextContent('Nicht überall erlaubt');
 
     expect(storageCard).toHaveTextContent('Energiespeicher');
     expect(storageCard).toHaveTextContent('1.700.000');
@@ -76,39 +76,37 @@ describe('BuyableItemList component', () => {
   it('displays the correct tooltip text when hovering over disabled items', () => {
     render(<BuyableItemList {...defaultProps} budget={1500000} />);
 
-    const windCard = screen.getByTestId('buyable-item-wind');
-    const storageCard = screen.getByTestId('buyable-item-storage');
-
-    expect(windCard).toHaveAttribute(
+    expect(screen.getByTestId('buyable-item-wind')).toHaveAttribute(
       'title',
-      'Nicht genÃ¼gend Budget (BenÃ¶tigt: 2.800.000 Euro, Vorhanden: 1.500.000 Euro)'
+      'Nicht genügend Budget (Benötigt: 2.800.000 Euro, Vorhanden: 1.500.000 Euro)'
     );
-    expect(storageCard).toHaveAttribute(
+    expect(screen.getByTestId('buyable-item-storage')).toHaveAttribute(
       'title',
-      'Nicht genÃ¼gend Budget (BenÃ¶tigt: 1.700.000 Euro, Vorhanden: 1.500.000 Euro)'
+      'Nicht genügend Budget (Benötigt: 1.700.000 Euro, Vorhanden: 1.500.000 Euro)'
     );
-
-    const solarCard = screen.getByTestId('buyable-item-solar');
-    expect(solarCard).toHaveAttribute('title', 'Solaranlage');
+    expect(screen.getByTestId('buyable-item-solar')).toHaveAttribute('title', 'Solaranlage');
   });
 
-  it('renders selected item information as an overlay inside the sidebar item list', () => {
+  it('renders selected item information as a side flyout outside the sidebar item list', () => {
     render(<BuyableItemList {...defaultProps} selectedItemType="solar" />);
 
     const itemList = screen.getByTestId('buyable-item-list');
-    const detailsCard = screen.getByTestId('buyable-item-details-card');
+    const flyout = screen.getByTestId('item-info-flyout');
 
-    expect(itemList).toContainElement(detailsCard);
-    expect(detailsCard).toHaveStyle({
-      position: 'absolute',
-      bottom: 'calc(100% + 8px)',
-      zIndex: '1200'
-    });
+    expect(itemList).not.toContainElement(flyout);
+    expect(flyout).toHaveClass('item-info-flyout');
     expect(screen.getByTestId('selected-item-label')).toHaveTextContent('Solaranlage');
     expect(screen.getByTestId('selected-item-cost')).toHaveTextContent('1.200.000');
+    expect(screen.getByTestId('selected-item-description')).toHaveTextContent(
+      'Günstige Erzeugung'
+    );
+    expect(flyout).toHaveTextContent('Erzeugung: 7 MW');
+    expect(flyout).toHaveTextContent('Betrieb: 35.000 Euro/Monat');
+    expect(flyout.querySelector('.zone-profile-image')).not.toBeInTheDocument();
+    expect(flyout.querySelector('.zone-profile-thumb')).not.toBeInTheDocument();
   });
 
-  it('closes selected item information when clicking outside the item list container', () => {
+  it('closes selected item information when clicking outside the item list and flyout', () => {
     const onSelectItemType = vi.fn();
     render(
       <BuyableItemList

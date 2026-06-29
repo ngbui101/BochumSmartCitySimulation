@@ -208,7 +208,7 @@ describe('App integrated game flow', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'hover innenstadt' }));
 
-    expect(screen.getByTestId('zone-feedback')).toHaveTextContent(/nicht moeglich/i);
+    expect(screen.getByTestId('zone-feedback')).toHaveTextContent(/nicht möglich/i);
 
     fireEvent.click(screen.getByRole('button', { name: 'drop innenstadt' }));
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('0');
@@ -225,11 +225,16 @@ describe('App integrated game flow', () => {
 
     expect(screen.getByTestId('placement-feedback')).toHaveTextContent(/Zone/i);
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('0');
-    expect(screen.queryByTestId('buyable-item-details-card')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('item-info-flyout')).not.toBeInTheDocument();
   });
 
-  it('keeps an item selected after hold-release without placement', () => {
+  it('shows the item flyout on click but keeps it out of drag interactions', () => {
     render(<App />);
+
+    fireEvent.click(screen.getByTestId('buyable-item-solar'));
+
+    expect(screen.getByTestId('item-info-flyout')).toBeInTheDocument();
+    expect(screen.getByTestId('selected-item-label')).toHaveTextContent('Solaranlage');
 
     fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
       clientX: 24,
@@ -239,15 +244,15 @@ describe('App integrated game flow', () => {
       vi.advanceTimersByTime(250);
     });
 
-    expect(screen.getByTestId('buyable-item-details-card')).toBeInTheDocument();
-    expect(screen.getByTestId('selected-item-label')).toHaveTextContent('Solaranlage');
+    expect(screen.getByTestId('placement-drag-preview')).toBeInTheDocument();
+    expect(screen.queryByTestId('item-info-flyout')).not.toBeInTheDocument();
 
     act(() => {
       fireEvent.pointerUp(window);
     });
 
-    expect(screen.getByTestId('buyable-item-details-card')).toBeInTheDocument();
-    expect(screen.getByTestId('selected-item-label')).toHaveTextContent('Solaranlage');
+    expect(screen.queryByTestId('placement-drag-preview')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('item-info-flyout')).not.toBeInTheDocument();
   });
 
   it('cancels purchase and deselects item when dropped on the sidebar', () => {
@@ -261,13 +266,14 @@ describe('App integrated game flow', () => {
       vi.advanceTimersByTime(200);
     });
 
-    expect(screen.getByTestId('buyable-item-details-card')).toBeInTheDocument();
+    expect(screen.getByTestId('placement-drag-preview')).toBeInTheDocument();
+    expect(screen.queryByTestId('item-info-flyout')).not.toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'drop sidebar' }));
 
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('0');
     expect(screen.getByTestId('budget-value')).toHaveTextContent('18.000.000 Euro');
-    expect(screen.queryByTestId('buyable-item-details-card')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('item-info-flyout')).not.toBeInTheDocument();
     expect(screen.getByTestId('placement-feedback')).toHaveTextContent(/Zone/i);
   });
 

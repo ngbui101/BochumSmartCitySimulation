@@ -75,15 +75,15 @@ function getPlacementMessage(itemType: ItemType, result: ReturnType<typeof canPl
   const itemLabel = getItemLabel(itemType);
 
   if (result.allowed) {
-    return `Gute Wahl! ${itemLabel} ist hier moeglich. Noch ${result.remaining} Plaetze frei.`;
+    return `Gute Wahl! ${itemLabel} ist hier möglich. Noch ${result.remaining} Plätze frei.`;
   }
 
   if (result.capacity === 0) {
-    return `${itemLabel} ist hier nicht moeglich. Diese Zone hat dafuer keine Kapazitaet.`;
+    return `${itemLabel} ist hier nicht möglich. Diese Zone hat dafür keine Kapazität.`;
   }
 
   if (result.remaining <= 0) {
-    return `Hier ist kein Platz mehr fuer ${itemLabel}.`;
+    return `Hier ist kein Platz mehr für ${itemLabel}.`;
   }
 
   return `${itemLabel} kann hier gerade nicht gebaut werden. ${result.reason}`;
@@ -213,7 +213,7 @@ export function App() {
       startTime: Date.now(),
       hasMoved: false
     });
-    setSelectedItemType(itemType); // Show description popover instantly on click/press down
+    setSelectedItemType(null);
     clearPlacementFeedback();
   };
 
@@ -377,7 +377,6 @@ export function App() {
     return zones;
   }, [placementDrag, selectedItemType, state]);
 
-  const selectedItem: any = null;
 
   return (
     <main className="app-shell" aria-label="Bochum Smart City Simulation">
@@ -414,134 +413,6 @@ export function App() {
           onUndo={handleUndo}
           onNextMonth={handleNextMonth}
         />
-
-        {selectedItem && (
-          <div
-            className="buyable-item-details-card"
-            data-testid="buyable-item-details-card"
-            style={{
-              position: 'absolute',
-              top: '20px',
-              right: '20px',
-              zIndex: 1000,
-              width: '280px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '8px',
-              padding: '16px',
-              backgroundColor: '#ffffff',
-              border: '1px solid #cbd8d0',
-              borderRadius: '12px',
-              boxShadow: '0 10px 25px rgba(0, 0, 0, 0.12), 0 4px 10px rgba(0, 0, 0, 0.06)',
-              fontSize: '0.85rem',
-              animation: 'fadeIn 0.2s ease',
-            }}
-          >
-            <div
-              style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                borderBottom: '1px solid #f3f4f6',
-                paddingBottom: '6px',
-                marginBottom: '4px',
-              }}
-            >
-              <h4
-                style={{
-                  margin: 0,
-                  fontSize: '0.95rem',
-                  fontWeight: 700,
-                  color: '#111827',
-                }}
-                data-testid="selected-item-label"
-              >
-                {selectedItem.itemType === 'solar'
-                  ? 'Solaranlage'
-                  : selectedItem.itemType === 'wind'
-                  ? 'Windmühle'
-                  : 'Energiespeicher'}
-              </h4>
-              <button
-                onClick={() => setSelectedItemType(null)}
-                aria-label="Details schließen"
-                style={{
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  color: '#9ca3af',
-                  fontSize: '1.25rem',
-                  lineHeight: 1,
-                  padding: '0 4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  transition: 'color 0.15s ease',
-                }}
-                onMouseOver={(e) => (e.currentTarget.style.color = '#ef4444')}
-                onMouseOut={(e) => (e.currentTarget.style.color = '#9ca3af')}
-              >
-                &times;
-              </button>
-            </div>
-            
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-              <span style={{ color: '#4b5563', fontWeight: 500 }}>Kaufpreis:</span>
-              <span
-                style={{ fontWeight: 700, color: '#059669', fontSize: '0.9rem' }}
-                data-testid="selected-item-cost"
-              >
-                {selectedItem.cost.toLocaleString('de-DE')} €
-              </span>
-            </div>
-
-            <p
-              style={{
-                margin: '4px 0',
-                color: '#4b5563',
-                fontSize: '0.8rem',
-                lineHeight: '1.3',
-              }}
-              data-testid="selected-item-description"
-            >
-              {selectedItem.description}
-            </p>
-
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 1fr',
-                gap: '6px',
-                fontSize: '0.75rem',
-                borderTop: '1px solid #f3f4f6',
-                paddingTop: '8px',
-                marginTop: '4px',
-              }}
-            >
-              {selectedItem.productionValue > 0 && (
-                <div>
-                  <span style={{ color: '#6b7280' }}>Erzeugung: </span>
-                  <span style={{ fontWeight: 600, color: '#111827' }}>
-                    {selectedItem.productionValue} MW
-                  </span>
-                </div>
-              )}
-              {selectedItem.storageValue > 0 && (
-                <div>
-                  <span style={{ color: '#6b7280' }}>Speicher: </span>
-                  <span style={{ fontWeight: 600, color: '#111827' }}>
-                    {selectedItem.storageValue} MWh
-                  </span>
-                </div>
-              )}
-              <div>
-                <span style={{ color: '#6b7280' }}>Betrieb: </span>
-                <span style={{ fontWeight: 600, color: '#111827' }}>
-                  {selectedItem.operatingCost.toLocaleString('de-DE')} €/M.
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
       </section>
 
       {import.meta.env.DEV && (

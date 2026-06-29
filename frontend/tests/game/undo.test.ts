@@ -77,7 +77,8 @@ describe('current-month undo', () => {
     const state = placeSolar(createInitialGameState());
 
     expect(getUndoTooltip(state)).toContain('Solaranlage');
-    expect(getUndoTooltip(createInitialGameState())).toBe('Keine Aktion zum Rueckgaengigmachen.');
+    expect(getUndoTooltip(state)).toContain('rückgängig');
+    expect(getUndoTooltip(createInitialGameState())).toBe('Keine Aktion zum Rückgängigmachen.');
   });
 
   it('clears the current-month undo stack when advancing month through the reducer', () => {

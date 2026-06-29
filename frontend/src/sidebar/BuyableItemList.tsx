@@ -1,6 +1,7 @@
 import React from 'react';
 import { itemDefinitions } from '../data/itemDefinitions';
 import { AssetIconImage } from '../ui/gameAssetIcons';
+import { BuyableItemFlyout } from './BuyableItemFlyout';
 import type { ItemType } from '../types/assets';
 
 export interface BuyableItemListProps {
@@ -24,13 +25,13 @@ const friendlyLabels: Record<ItemType, string> = {
 
 const tooltipLabels: Record<ItemType, string> = {
   solar: 'Solaranlage',
-  wind: 'Windmuehle',
+  wind: 'Windkraftanlage',
   storage: 'Energiespeicher',
 };
 
 const shortDescriptions: Record<ItemType, string> = {
   solar: 'Stark in sonnigen Monaten',
-  wind: 'Nicht ueberall erlaubt',
+  wind: 'Nicht überall erlaubt',
   storage: 'Mehr Versorgungssicherheit',
 };
 
@@ -40,18 +41,6 @@ const itemTags: Record<ItemType, string> = {
   storage: 'Speicher',
 };
 
-function getPopoverOffset(itemType: ItemType): string {
-  if (itemType === 'solar') {
-    return '72px';
-  }
-
-  if (itemType === 'wind') {
-    return '28px';
-  }
-
-  return '12px';
-}
-
 export const BuyableItemList: React.FC<BuyableItemListProps> = ({
   budget,
   selectedItemType,
@@ -59,6 +48,8 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
   onPointerDragStart,
 }) => {
   const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const flyoutRef = React.useRef<HTMLElement | null>(null);
+  const [flyoutTop, setFlyoutTop] = React.useState(96);
   const selectedItem = itemDefinitions.find((item) => item.itemType === selectedItemType);
   const items = itemDefinitions.filter((item) =>
     ['solar', 'wind', 'storage'].includes(item.itemType)
@@ -74,6 +65,9 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
       if (target instanceof Node && containerRef.current?.contains(target)) {
         return;
       }
+      if (target instanceof Node && flyoutRef.current?.contains(target)) {
+        return;
+      }
 
       onSelectItemType(null);
     };
@@ -84,6 +78,31 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
       window.removeEventListener('pointerdown', handleOutsidePointerDown);
     };
   }, [onSelectItemType, selectedItem]);
+
+  React.useLayoutEffect(() => {
+    if (!selectedItemType || !containerRef.current) {
+      return;
+    }
+
+    const updateFlyoutTop = () => {
+      const selectedCard = containerRef.current?.querySelector(
+        `[data-testid="buyable-item-${selectedItemType}"]`
+      );
+      const rect = selectedCard?.getBoundingClientRect();
+      const rawTop = rect ? rect.top - 4 : 96;
+      const maxTop = Math.max(16, window.innerHeight - 340);
+      setFlyoutTop(Math.min(Math.max(rawTop, 16), maxTop));
+    };
+
+    updateFlyoutTop();
+    window.addEventListener('resize', updateFlyoutTop);
+    window.addEventListener('scroll', updateFlyoutTop, true);
+
+    return () => {
+      window.removeEventListener('resize', updateFlyoutTop);
+      window.removeEventListener('scroll', updateFlyoutTop, true);
+    };
+  }, [selectedItemType]);
 
   const handlePointerDown = (event: React.PointerEvent, itemType: ItemType) => {
     event.preventDefault();
@@ -136,7 +155,7 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
           const isSelected = selectedItemType === item.itemType;
           const isDisabled = item.cost > budget;
           const tooltipText = isDisabled
-            ? `Nicht genÃ¼gend Budget (BenÃ¶tigt: ${item.cost.toLocaleString('de-DE')} Euro, Vorhanden: ${budget.toLocaleString('de-DE')} Euro)`
+            ? `Nicht genügend Budget (Benötigt: ${item.cost.toLocaleString('de-DE')} Euro, Vorhanden: ${budget.toLocaleString('de-DE')} Euro)`
             : tooltipLabels[item.itemType];
 
           return (
@@ -177,43 +196,12 @@ export const BuyableItemList: React.FC<BuyableItemListProps> = ({
       </div>
 
       {selectedItem && (
-        <div
-          className="buyable-item-details-card"
-          data-testid="buyable-item-details-card"
-          style={{
-            position: 'absolute',
-            bottom: 'calc(100% + 8px)',
-            left: getPopoverOffset(selectedItem.itemType),
-            zIndex: 1200,
-            width: 'min(260px, calc(100% - 24px))',
-          }}
-        >
-          <div className="buyable-item-details-card__header">
-            <h4 data-testid="selected-item-label">{friendlyLabels[selectedItem.itemType]}</h4>
-            <button onClick={() => onSelectItemType(null)} aria-label="Details schliessen">
-              &times;
-            </button>
-          </div>
-
-          <div className="buyable-item-details-card__row">
-            <span>Kaufpreis:</span>
-            <strong data-testid="selected-item-cost">
-              {selectedItem.cost.toLocaleString('de-DE')} Euro
-            </strong>
-          </div>
-
-          <p data-testid="selected-item-description">{selectedItem.description}</p>
-
-          <div className="buyable-item-details-card__stats">
-            {selectedItem.productionValue > 0 && (
-              <span>Erzeugung: {selectedItem.productionValue} MW</span>
-            )}
-            {selectedItem.storageValue > 0 && (
-              <span>Speicher: {selectedItem.storageValue} MWh</span>
-            )}
-            <span>Betrieb: {selectedItem.operatingCost.toLocaleString('de-DE')} Euro/M.</span>
-          </div>
-        </div>
+        <BuyableItemFlyout
+          item={selectedItem}
+          top={flyoutTop}
+          onClose={() => onSelectItemType(null)}
+          ref={flyoutRef}
+        />
       )}
     </div>
   );
