@@ -55,6 +55,14 @@ export type MonthlySnapshot = {
   monthIndex: number;
   budget: number;
   kpis: GameKpis;
+  energyDemand: number;
+  energyProduction: number;
+  energySaldo: number;
+  importCost: number;
+  storedEnergy: number;
+  revenueFromSales: number;
+  operatingCosts: number;
+  netMonthlyDelta: number;
 };
 
 export type GameState = {
@@ -68,6 +76,8 @@ export type GameState = {
   monthlyHistory: MonthlySnapshot[];
   forecast: WeatherForecastMonth[];
   status: GameStatus;
+  /** Persistenter Energiepuffer aller Speicher-Assets in Einheiten. */
+  storedEnergy: number;
   selectedAssetId?: string;
   finalScore?: FinalScore;
 };
