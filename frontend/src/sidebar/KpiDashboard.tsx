@@ -58,7 +58,7 @@ export const KpiDashboard: React.FC<KpiDashboardProps> = ({
           icon={<EnergyIcon />}
         />
         <KpiBar
-          label="Buergerzufriedenheit"
+          label="Bürgerzufriedenheit"
           value={kpis.citizenSatisfaction}
           delta={deltas?.citizenSatisfaction}
           unit="%"

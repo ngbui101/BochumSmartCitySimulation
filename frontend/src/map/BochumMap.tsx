@@ -461,7 +461,7 @@ export const BochumMap: React.FC<BochumMapProps> = ({
               {selectedZoneRule.allowedItemTypes.map((itemType) => itemTypeLabels[itemType]).join(', ')}
             </span>
             <span>
-              Kapazitaet: Solar {selectedZoneRule.capacity.solar}, Wind{' '}
+              Kapazität: Solar {selectedZoneRule.capacity.solar}, Wind{' '}
               {selectedZoneRule.capacity.wind}, Speicher {selectedZoneRule.capacity.storage}
             </span>
           </div>

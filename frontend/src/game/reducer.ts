@@ -60,7 +60,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.undoStack,
           {
             type: 'placed_asset',
-            description: `${getItemLabel(playerAsset.itemType)} platzieren rueckgaengig machen.`,
+            description: `${getItemLabel(playerAsset.itemType)} platzieren rückgängig machen.`,
             asset: playerAsset
           }
         ],
@@ -85,7 +85,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...state.undoStack,
           {
             type: 'sold_asset',
-            description: `${getItemLabel(assetToSell.itemType)} verkaufen rueckgaengig machen.`,
+            description: `${getItemLabel(assetToSell.itemType)} verkaufen rückgängig machen.`,
             asset: assetToSell,
             refundAmount
           }

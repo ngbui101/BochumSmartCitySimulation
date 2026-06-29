@@ -37,7 +37,7 @@ describe('placementRules', () => {
 
     expect(result).toEqual({
       allowed: true,
-      reason: 'Platzierung moeglich.',
+      reason: 'Platzierung möglich.',
       remaining: 10,
       capacity: 10
     });
@@ -65,7 +65,7 @@ describe('placementRules', () => {
     const result = canPlaceItem(state, 'solar', 'innenstadt');
 
     expect(result.allowed).toBe(false);
-    expect(result.reason).toContain('Kapazitaet');
+    expect(result.reason).toContain('Kapazität');
     expect(result.remaining).toBe(0);
   });
 

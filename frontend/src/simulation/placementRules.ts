@@ -57,7 +57,7 @@ export function canPlaceItem(
   if (remaining <= 0) {
     return {
       allowed: false,
-      reason: `Kapazitaet fuer ${itemType} in ${zoneRule.label} ist erschoepft.`,
+      reason: `Kapazität für ${itemType} in ${zoneRule.label} ist erschöpft.`,
       remaining,
       capacity
     };
@@ -68,7 +68,7 @@ export function canPlaceItem(
   if (state.budget < itemCost) {
     return {
       allowed: false,
-      reason: `Budget reicht nicht fuer ${itemType}.`,
+      reason: `Budget reicht nicht für ${itemType}.`,
       remaining,
       capacity
     };
@@ -76,7 +76,7 @@ export function canPlaceItem(
 
   return {
     allowed: true,
-    reason: 'Platzierung moeglich.',
+    reason: 'Platzierung möglich.',
     remaining,
     capacity
   };
