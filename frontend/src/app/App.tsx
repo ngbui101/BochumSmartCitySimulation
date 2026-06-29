@@ -72,7 +72,21 @@ function getItemIcon(itemType: ItemType): React.ReactNode {
 }
 
 function getPlacementMessage(itemType: ItemType, result: ReturnType<typeof canPlaceItem>): string {
-  return `${getItemLabel(itemType)}: ${result.reason} Restkapazitaet: ${result.remaining}/${result.capacity}.`;
+  const itemLabel = getItemLabel(itemType);
+
+  if (result.allowed) {
+    return `Gute Wahl! ${itemLabel} ist hier moeglich. Noch ${result.remaining} Plaetze frei.`;
+  }
+
+  if (result.capacity === 0) {
+    return `${itemLabel} ist hier nicht moeglich. Diese Zone hat dafuer keine Kapazitaet.`;
+  }
+
+  if (result.remaining <= 0) {
+    return `Hier ist kein Platz mehr fuer ${itemLabel}.`;
+  }
+
+  return `${itemLabel} kann hier gerade nicht gebaut werden. ${result.reason}`;
 }
 
 function validateDropPosition(
@@ -98,7 +112,7 @@ function validateDropPosition(
       zoneFeedback: undefined,
       placementFeedback: {
         status: 'blocked',
-        message: 'Keine Bochumer Zone an dieser Position.'
+        message: 'Hier liegt keine Bochum-Spielzone.'
       }
     };
   }
@@ -142,6 +156,7 @@ export function App() {
     setZoneFeedback(undefined);
     setPlacementFeedback(undefined);
     setPlacementDrag(null);
+    setSelectedItemType(null);
 
     if (isMockStateMode(value)) {
       setMockState(mockStates[value]);
@@ -253,7 +268,7 @@ export function App() {
     setZoneFeedback(undefined);
     setPlacementFeedback({
       status: 'blocked',
-      message: 'Keine Bochumer Zone an dieser Position.'
+      message: 'Hier liegt keine Bochum-Spielzone.'
     });
     setPlacementDrag(null);
     setSelectedItemType(null);
@@ -278,7 +293,7 @@ export function App() {
     if (placementDrag) {
       setPlacementFeedback({
         status: 'blocked',
-        message: 'Keine Bochumer Zone an dieser Position.'
+        message: 'Hier liegt keine Bochum-Spielzone.'
       });
       setPlacementDrag((currentDrag) =>
         currentDrag
@@ -531,7 +546,7 @@ export function App() {
 
       {import.meta.env.DEV && (
         <div className="dev-mock-harness" data-testid="dev-mock-harness">
-          <label htmlFor="mock-state-select">State-Modus:</label>
+          <label htmlFor="mock-state-select">Dev State-Modus</label>
           <select id="mock-state-select" onChange={handleMockStateChange} value={devStateMode}>
             <option value="real">Real-State</option>
             <option value="initial">Mock Preview: Initial</option>

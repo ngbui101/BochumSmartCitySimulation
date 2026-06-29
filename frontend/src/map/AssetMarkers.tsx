@@ -26,8 +26,12 @@ export const AssetMarkerIcon: React.FC<{
 }> = ({ asset, isSelected }) => {
   const isPlayer = 'itemType' in asset;
   const playerAsset = isPlayer ? (asset as PlayerAsset) : null;
-  const markerSize = isPlayer ? (isSelected ? 64 : 56) : 36;
-  const iconSize = isPlayer ? (isSelected ? 60 : 52) : 32;
+  const markerSize = isPlayer ? (isSelected ? 58 : 48) : 34;
+  const iconSize = isPlayer ? (isSelected ? 52 : 42) : 30;
+  const itemClass = playerAsset ? `asset-marker--${playerAsset.itemType}` : 'asset-marker--existing';
+  const statusClass =
+    playerAsset?.status === 'under_construction' ? 'asset-marker--construction' : '';
+  const selectedClass = isSelected ? 'asset-marker--selected' : '';
 
   const containerStyle: React.CSSProperties = {
     position: 'relative',
@@ -44,14 +48,14 @@ export const AssetMarkerIcon: React.FC<{
     justifyContent: 'center',
     width: `${iconSize}px`,
     height: `${iconSize}px`,
-    borderRadius: isPlayer ? '14px' : '50%',
+    borderRadius: isPlayer ? '16px' : '50%',
     position: 'relative',
     color: '#ffffff',
-    backgroundColor: isPlayer ? 'rgba(255, 255, 255, 0.88)' : '#6b7280',
-    border: isPlayer ? '1px solid rgba(23, 33, 27, 0.12)' : '2.5px solid #4b5563',
+    backgroundColor: isPlayer ? 'rgba(255, 253, 246, 0.95)' : '#60736A',
+    border: isPlayer ? '1px solid rgba(16, 35, 27, 0.12)' : '2.5px solid #60736A',
     boxShadow: isSelected
-      ? '0 6px 18px rgba(61, 111, 90, 0.34)'
-      : '0 4px 10px rgba(0,0,0,0.18)',
+      ? '0 10px 24px rgba(31, 79, 58, 0.26)'
+      : '0 8px 18px rgba(16, 35, 27, 0.18)',
     transition: 'transform 0.15s ease',
   };
 
@@ -63,7 +67,10 @@ export const AssetMarkerIcon: React.FC<{
   const showConstruction = playerAsset?.status === 'under_construction';
 
   return (
-    <div style={containerStyle} className="asset-marker-container">
+    <div
+      style={containerStyle}
+      className={`asset-marker-container ${itemClass} ${statusClass} ${selectedClass}`}
+    >
       {isSelected && (
         <div
           className="selected-ring"
@@ -144,7 +151,7 @@ export const AssetMarkers: React.FC<AssetMarkersProps> = ({
 
   const renderMarker = (asset: PlayerAsset | ExistingAsset) => {
     const isSelected = asset.id === selectedAssetId;
-    const markerSize = 'itemType' in asset ? (isSelected ? 64 : 56) : 36;
+    const markerSize = 'itemType' in asset ? (isSelected ? 58 : 48) : 34;
     const markerAnchor = markerSize / 2;
     
     // Create Leaflet divIcon using the string representation of our React component

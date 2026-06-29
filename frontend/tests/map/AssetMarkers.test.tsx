@@ -143,16 +143,20 @@ describe('AssetMarkers component', () => {
     
     const solarMarker = getByAttribute('data-id', 'solar-1');
     const solarHtml = solarMarker.getAttribute('data-icon-html') || '';
+    expect(solarHtml).toContain('asset-marker--solar');
     expect(solarHtml).toContain('/icons/Solaranlage.png');
     expect(solarHtml).toContain('alt="Solaranlage"');
 
     const windMarker = getByAttribute('data-id', 'wind-1');
     const windHtml = windMarker.getAttribute('data-icon-html') || '';
+    expect(windHtml).toContain('asset-marker--wind');
+    expect(windHtml).toContain('asset-marker--construction');
     expect(windHtml).toContain('/icons/Windkraftanlage_build.png');
     expect(windHtml).toContain('alt="Windkraftanlage im Bau"');
 
     const storageMarker = getByAttribute('data-id', 'storage-1');
     const storageHtml = storageMarker.getAttribute('data-icon-html') || '';
+    expect(storageHtml).toContain('asset-marker--storage');
     expect(storageHtml).toContain('/icons/Energiespeicher.png');
     expect(storageHtml).toContain('alt="Energiespeicher"');
   });
@@ -162,8 +166,8 @@ describe('AssetMarkers component', () => {
     
     const existingMarker = getByAttribute('data-id', 'existing-1');
     const existingHtml = existingMarker.getAttribute('data-icon-html') || '';
-    // Existing icon uses grey color #6b7280 and standard rect
-    expect(existingHtml).toContain('#6b7280');
+    expect(existingHtml).toContain('asset-marker--existing');
+    expect(existingHtml).toContain('#60736A');
   });
 
   it('uses build icon and construction badge overlay for assets under construction', () => {

@@ -13,8 +13,7 @@ describe('KpiDashboard component', () => {
 
   it('renders localized budget correctly', () => {
     render(<KpiDashboard budget={18000000} kpis={mockKpis} />);
-    
-    // Check for de-DE localized budget: "18.000.000 Euro"
+
     const budgetDisplay = screen.getByTestId('budget-value');
     expect(budgetDisplay).toHaveTextContent('18.000.000 Euro');
   });
@@ -22,22 +21,19 @@ describe('KpiDashboard component', () => {
   it('renders all three KPI bars with correct labels, values and percentage units', () => {
     render(<KpiDashboard budget={10000000} kpis={mockKpis} />);
 
-    // Energieautarkie
     expect(screen.getByText('Energieautarkie')).toBeInTheDocument();
     expect(screen.getByText('42%')).toBeInTheDocument();
 
-    // Bürgerzufriedenheit
-    expect(screen.getByText('Bürgerzufriedenheit')).toBeInTheDocument();
+    expect(screen.getByText('Buergerzufriedenheit')).toBeInTheDocument();
     expect(screen.getByText('73%')).toBeInTheDocument();
 
-    // Versorgungssicherheit
     expect(screen.getByText('Versorgungssicherheit')).toBeInTheDocument();
     expect(screen.getByText('88%')).toBeInTheDocument();
   });
 
   it('does not render budgetEfficiency KPI', () => {
     render(<KpiDashboard budget={10000000} kpis={mockKpis} />);
-    
+
     expect(screen.queryByText(/budgetEfficiency/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Budgeteffizienz/i)).not.toBeInTheDocument();
   });

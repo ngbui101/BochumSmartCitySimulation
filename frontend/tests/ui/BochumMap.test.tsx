@@ -148,8 +148,8 @@ describe('BochumMap component', () => {
     const style = styleFn(feature);
     
     expect(style.className).toBe('bochum-zone-path');
-    expect(style.color).toBe('#3b82f6');
-    expect(style.fillColor).toBe('#3b82f6');
+    expect(style.color).toBe('#2F7A55');
+    expect(style.fillColor).toBe('#2F7A55');
     expect(style.fillOpacity).toBe(0);
     expect(style.opacity).toBe(0);
   });
@@ -259,24 +259,41 @@ describe('BochumMap component', () => {
       });
     });
 
-    const profileImage = screen.getByRole('img', { name: 'Innenstadt Profilbild' });
-    expect(profileImage).toHaveAttribute('src', expect.stringContaining('data:image/svg+xml'));
-    expect(profileImage).toHaveStyle({ width: '96px', height: '72px' });
+    const profileImage = screen.getByRole('img', { name: 'Profilbild Innenstadt' });
+    expect(profileImage).toHaveAttribute('src', '/photos/Innenstadt.png');
+    expect(profileImage).toHaveClass('zone-profile-image');
 
     const closeButton = screen.getByRole('button', { name: 'Zone-Information schliessen' });
     expect(closeButton).toHaveTextContent('×');
     expect(closeButton).not.toHaveTextContent('(x)');
-    expect(closeButton).toHaveStyle({
-      background: 'none',
-      borderWidth: '0',
-      borderStyle: 'none',
-      color: '#9ca3af',
-      fontSize: '1.25rem'
-    });
+    expect(closeButton).toHaveClass('zone-info-card__close');
 
     fireEvent.click(closeButton);
 
     expect(screen.queryByTestId('zone-info-card')).not.toBeInTheDocument();
+  });
+
+  it('shows a cozy fallback instead of a broken image when a zone has no profile image', () => {
+    render(<BochumMap {...defaultProps} />);
+    const stiepelLayer = registeredLayers.find(
+      (entry) => entry.feature.properties.zoneId === 'stiepel'
+    )?.layer;
+
+    expect(stiepelLayer).toBeDefined();
+
+    const clickHandler = (stiepelLayer!.on as any)._events.click;
+
+    act(() => {
+      clickHandler({
+        originalEvent: {
+          stopPropagation: vi.fn()
+        },
+        containerPoint: { x: 500, y: 120 }
+      });
+    });
+
+    expect(screen.getByTestId('zone-photo-fallback')).toHaveTextContent('Stiepel');
+    expect(screen.queryByRole('img', { name: /Profilbild Stiepel/i })).not.toBeInTheDocument();
   });
 
   it('highlights the zone in green if feedback status is allowed', () => {
@@ -294,8 +311,8 @@ describe('BochumMap component', () => {
     
     expect(innenstadtFeature).toBeDefined();
     const style = styleFn(innenstadtFeature);
-    expect(style.color).toBe('#22c55e');
-    expect(style.fillColor).toBe('#22c55e');
+    expect(style.color).toBe('#3BB273');
+    expect(style.fillColor).toBe('#3BB273');
   });
 
   it('highlights the zone in red if feedback status is blocked', () => {
@@ -313,8 +330,8 @@ describe('BochumMap component', () => {
     
     expect(wattenscheidFeature).toBeDefined();
     const style = styleFn(wattenscheidFeature);
-    expect(style.color).toBe('#ef4444');
-    expect(style.fillColor).toBe('#ef4444');
+    expect(style.color).toBe('#F06A6A');
+    expect(style.fillColor).toBe('#F06A6A');
   });
 
   it('handles map click by clearing selection without dispatching a drop', () => {

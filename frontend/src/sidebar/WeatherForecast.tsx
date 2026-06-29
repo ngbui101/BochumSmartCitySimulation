@@ -68,93 +68,41 @@ const germanMonths = [
 ];
 
 export const WeatherForecast: React.FC<WeatherForecastProps> = ({ forecast }) => {
-  // Ensure we display exactly the first 3 items from the forecast
   const displayedForecast = forecast.slice(0, 3);
 
   return (
-    <div
-      className="weather-forecast"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '8px',
-      }}
-    >
-      <h3
-        style={{
-          margin: 0,
-          fontSize: '0.875rem',
-          fontWeight: 700,
-          color: '#3d6f5a',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-        }}
-      >
-        Wetterprognose
-      </h3>
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '8px',
-        }}
-      >
+    <div className="weather-forecast">
+      <h3>Wetterprognose</h3>
+      <div className="weather-card-grid">
         {displayedForecast.map((item, index) => {
           const monthName = germanMonths[item.monthOfYear] || `Monat ${item.monthIndex + 1}`;
           
           return (
             <div
               key={`${item.monthIndex}-${index}`}
-              className="weather-card"
+              className={`weather-card weather-card--${item.weatherType} weather-card--${item.confidence}`}
               data-testid="weather-card"
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '3px',
-                padding: '6px 4px',
-                backgroundColor: '#ffffff',
-                border: '1px solid #d7e2da',
-                borderRadius: '8px',
-                textAlign: 'center',
-              }}
             >
               <span
                 className="weather-month"
                 data-testid="weather-month"
-                style={{
-                  fontSize: '0.7rem',
-                  fontWeight: 700,
-                  color: '#374151',
-                }}
               >
                 {monthName}
               </span>
-              <div style={{ display: 'flex', height: '20px', alignItems: 'center' }}>
+              <div className="weather-icon">
                 {weatherIcons[item.weatherType]}
               </div>
               <span
                 className="weather-type"
                 data-testid="weather-type"
-                style={{
-                  fontSize: '0.7rem',
-                  fontWeight: 600,
-                  color: '#4b5563',
-                }}
               >
                 {weatherLabels[item.weatherType] || item.weatherType}
               </span>
               <span
                 className="weather-confidence"
                 data-testid="weather-confidence"
-                style={{
-                  fontSize: '0.65rem',
-                  fontWeight: 600,
-                  color: item.confidence === 'high' ? '#059669' : item.confidence === 'medium' ? '#d97706' : '#dc2626',
-                  marginTop: 'auto',
-                }}
               >
-                {confidenceLabels[item.confidence] || item.confidence}
+                Sicher: {confidenceLabels[item.confidence] || item.confidence}
               </span>
             </div>
           );

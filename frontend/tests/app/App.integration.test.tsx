@@ -111,7 +111,7 @@ describe('App integrated game flow', () => {
     vi.useRealTimers();
   });
 
-  it('starts in real-state mode, loads persisted game state, and saves reducer changes', () => {
+  it('loads persisted game state and saves reducer changes', () => {
     saveGameState({
       ...createInitialGameState(),
       budget: 12_345_678,
@@ -126,7 +126,6 @@ describe('App integrated game flow', () => {
 
     expect(screen.getByTestId('budget-value')).toHaveTextContent('12.345.678 Euro');
     expect(screen.getByText('Energieautarkie')).toBeInTheDocument();
-    expect(screen.getByTestId('dev-mock-harness')).toHaveTextContent('Real-State');
 
     fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
       clientX: 24,
@@ -148,6 +147,22 @@ describe('App integrated game flow', () => {
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('1');
     expect(screen.getByTestId('budget-value')).toHaveTextContent('11.145.678 Euro');
     expect(storedState()?.playerAssets).toHaveLength(1);
+  });
+
+  it('shows a dev-only state mode selector with Real-State as the default', () => {
+    render(<App />);
+
+    const harness = screen.getByTestId('dev-mock-harness');
+    const selector = screen.getByLabelText(/Dev State-Modus/i);
+
+    expect(harness).toBeInTheDocument();
+    expect(selector).toHaveValue('real');
+
+    fireEvent.change(selector, { target: { value: 'midgame' } });
+    expect(screen.getByTestId('player-asset-count')).toHaveTextContent('2');
+
+    fireEvent.change(selector, { target: { value: 'real' } });
+    expect(screen.getByTestId('player-asset-count')).toHaveTextContent('0');
   });
 
   it('uses real undo and month actions from the bottom controls', () => {
@@ -193,7 +208,7 @@ describe('App integrated game flow', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: 'hover innenstadt' }));
 
-    expect(screen.getByTestId('zone-feedback')).toHaveTextContent(/nicht erlaubt/i);
+    expect(screen.getByTestId('zone-feedback')).toHaveTextContent(/nicht moeglich/i);
 
     fireEvent.click(screen.getByRole('button', { name: 'drop innenstadt' }));
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('0');

@@ -20,7 +20,7 @@ describe('BuyableItemList component', () => {
     vi.useRealTimers();
   });
 
-  it('renders all buyable items (Solar, Wind, Storage) in a grid layout', () => {
+  it('renders all buyable items as compact cards with icon, name, price, and description', () => {
     render(<BuyableItemList {...defaultProps} />);
 
     const solarCard = screen.getByTestId('buyable-item-solar');
@@ -28,12 +28,24 @@ describe('BuyableItemList component', () => {
     const storageCard = screen.getByTestId('buyable-item-storage');
 
     expect(solarCard).toHaveAttribute('title', 'Solaranlage');
-    expect(windCard).toHaveAttribute('title', 'Windmühle');
+    expect(windCard).toHaveAttribute('title', 'Windmuehle');
     expect(storageCard).toHaveAttribute('title', 'Energiespeicher');
 
     expect(solarCard).not.toHaveClass('disabled');
     expect(windCard).not.toHaveClass('disabled');
     expect(storageCard).not.toHaveClass('disabled');
+
+    expect(solarCard).toHaveTextContent('Solaranlage');
+    expect(solarCard).toHaveTextContent('1.200.000');
+    expect(solarCard).toHaveTextContent('Stark in sonnigen Monaten');
+
+    expect(windCard).toHaveTextContent('Windkraftanlage');
+    expect(windCard).toHaveTextContent('2.800.000');
+    expect(windCard).toHaveTextContent('Nicht ueberall erlaubt');
+
+    expect(storageCard).toHaveTextContent('Energiespeicher');
+    expect(storageCard).toHaveTextContent('1.700.000');
+    expect(storageCard).toHaveTextContent('Mehr Versorgungssicherheit');
 
     expect(screen.getByRole('img', { name: 'Solaranlage' })).toHaveAttribute(
       'src',
@@ -69,11 +81,11 @@ describe('BuyableItemList component', () => {
 
     expect(windCard).toHaveAttribute(
       'title',
-      'Nicht genügend Budget (Benötigt: 2.800.000 Euro, Vorhanden: 1.500.000 Euro)'
+      'Nicht genÃ¼gend Budget (BenÃ¶tigt: 2.800.000 Euro, Vorhanden: 1.500.000 Euro)'
     );
     expect(storageCard).toHaveAttribute(
       'title',
-      'Nicht genügend Budget (Benötigt: 1.700.000 Euro, Vorhanden: 1.500.000 Euro)'
+      'Nicht genÃ¼gend Budget (BenÃ¶tigt: 1.700.000 Euro, Vorhanden: 1.500.000 Euro)'
     );
 
     const solarCard = screen.getByTestId('buyable-item-solar');

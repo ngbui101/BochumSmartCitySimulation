@@ -5,6 +5,7 @@ import { bochumZonesGeoJson } from '../data/bochumZones';
 import { zoneRules } from '../data/zoneRules';
 import type { ItemType, LatLngPosition, PlayerAsset, ExistingAsset } from '../types/assets';
 import type { ZoneId } from '../types/zones';
+import { ZoneProfileMedia } from '../ui/ZoneProfileMedia';
 import L, { type PathOptions } from 'leaflet';
 import { AssetMarkers } from './AssetMarkers';
 
@@ -163,41 +164,6 @@ const acceptanceSensitivityLabels = {
   high: 'Hoch'
 } as const;
 
-const zoneProfileThemes: Record<
-  ZoneId,
-  { from: string; to: string; accent: string; initials: string }
-> = {
-  innenstadt: { from: '#1f6f8b', to: '#f2c14e', accent: '#ffffff', initials: 'IN' },
-  wattenscheid: { from: '#547aa5', to: '#7fc8a9', accent: '#ffffff', initials: 'WA' },
-  querenburg: { from: '#596e79', to: '#88c0d0', accent: '#ffffff', initials: 'QU' },
-  langendreer: { from: '#2f855a', to: '#f6ad55', accent: '#ffffff', initials: 'LA' },
-  gerthe_harpen: { from: '#6b46c1', to: '#38b2ac', accent: '#ffffff', initials: 'GH' },
-  weitmar_linden: { from: '#805ad5', to: '#68d391', accent: '#ffffff', initials: 'WL' },
-  stiepel: { from: '#2b6cb0', to: '#9ae6b4', accent: '#ffffff', initials: 'ST' }
-};
-
-const getZoneProfileImage = (zoneId: ZoneId, label: string): string => {
-  const theme = zoneProfileThemes[zoneId];
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="96" height="72" viewBox="0 0 96 72">
-      <defs>
-        <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="${theme.from}"/>
-          <stop offset="1" stop-color="${theme.to}"/>
-        </linearGradient>
-      </defs>
-      <rect width="96" height="72" rx="12" fill="url(#bg)"/>
-      <path d="M10 52 C24 38, 34 44, 46 30 S72 18, 86 28" fill="none" stroke="${theme.accent}" stroke-width="5" stroke-linecap="round" opacity="0.72"/>
-      <path d="M12 18 H82 M22 12 V60 M46 10 V62 M70 14 V58" stroke="${theme.accent}" stroke-width="2" opacity="0.32"/>
-      <circle cx="74" cy="18" r="8" fill="${theme.accent}" opacity="0.34"/>
-      <text x="14" y="62" font-family="Arial, sans-serif" font-size="20" font-weight="700" fill="${theme.accent}">${theme.initials}</text>
-      <title>${label}</title>
-    </svg>
-  `;
-
-  return `data:image/svg+xml,${encodeURIComponent(svg)}`;
-};
-
 type ZoneInfoPlacement = 'top' | 'right' | 'bottom' | 'left';
 
 type ZoneInfoSelection = {
@@ -209,7 +175,7 @@ type ZoneInfoSelection = {
 };
 
 const zoneInfoCardWidth = 320;
-const zoneInfoCardHeight = 250;
+const zoneInfoCardHeight = 360;
 const zoneInfoCardOffset = 16;
 const fallbackMapSize = {
   width: 1000,
@@ -315,37 +281,37 @@ export const BochumMap: React.FC<BochumMapProps> = ({
     const isHovered = hoveredZoneId === zoneId;
 
     if (isFeedback) {
-      const color = zoneFeedback.status === 'allowed' ? '#22c55e' : '#ef4444';
+      const color = zoneFeedback.status === 'allowed' ? '#3BB273' : '#F06A6A';
       return {
         fillColor: color,
-        fillOpacity: isHovered ? 0.35 : 0.15,
+        fillOpacity: isHovered ? 0.24 : 0.14,
         color: color,
         className: 'bochum-zone-path',
         weight: 3,
-        opacity: 0.8
+        opacity: 0.78
       };
     }
 
     if (placeableZones) {
       const isAllowed = placeableZones[zoneId];
-      const color = isAllowed ? '#22c55e' : '#ef4444';
+      const color = isAllowed ? '#3BB273' : '#F06A6A';
       return {
         fillColor: color,
-        fillOpacity: isHovered ? 0.35 : 0.15,
+        fillOpacity: isHovered ? 0.22 : 0.08,
         color: color,
         className: 'bochum-zone-path',
-        weight: isHovered ? 2.5 : 1.5,
-        opacity: 0.6
+        weight: isHovered ? 2.5 : 1.25,
+        opacity: isHovered ? 0.7 : 0.38
       };
     }
 
     return {
-      fillColor: '#3b82f6',
-      fillOpacity: isHovered ? 0.25 : 0,
-      color: '#3b82f6',
+      fillColor: '#2F7A55',
+      fillOpacity: isHovered ? 0.07 : 0,
+      color: '#2F7A55',
       className: 'bochum-zone-path',
-      weight: isHovered ? 2.5 : 1.5,
-      opacity: isHovered ? 0.6 : 0
+      weight: isHovered ? 1.75 : 1,
+      opacity: isHovered ? 0.34 : 0
     };
   };
 
@@ -462,77 +428,43 @@ export const BochumMap: React.FC<BochumMapProps> = ({
             width: 'min(320px, calc(100% - 48px))',
             display: 'flex',
             flexDirection: 'column',
-            gap: '8px',
-            padding: '14px',
-            color: '#17211b',
-            background: 'rgba(255, 255, 255, 0.96)',
-            border: '1px solid #cbd8d0',
-            borderRadius: '8px',
-            boxShadow: '0 8px 24px rgba(0, 0, 0, 0.16)',
-            fontSize: '0.85rem',
-            lineHeight: 1.35
+            gap: '10px'
           }}
         >
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '96px 1fr 28px',
-              gap: '10px',
-              alignItems: 'center'
+          <button
+            type="button"
+            className="zone-info-card__close"
+            aria-label="Zone-Information schliessen"
+            onClick={(event) => {
+              event.stopPropagation();
+              setSelectedZoneInfo(null);
             }}
           >
-            <img
-              src={getZoneProfileImage(selectedZoneRule.zoneId, selectedZoneRule.label)}
-              alt={`${selectedZoneRule.label} Profilbild`}
-              style={{
-                width: '96px',
-                height: '72px',
-                objectFit: 'cover',
-                borderRadius: '6px',
-                border: '1px solid #cbd8d0'
-              }}
-            />
-            <strong style={{ fontSize: '1rem' }}>{selectedZoneRule.label}</strong>
-            <button
-              type="button"
-              aria-label="Zone-Information schliessen"
-              onClick={(event) => {
-                event.stopPropagation();
-                setSelectedZoneInfo(null);
-              }}
-              style={{
-                width: '28px',
-                height: '28px',
-                background: 'none',
-                border: 'none',
-                borderWidth: 0,
-                borderStyle: 'none',
-                cursor: 'pointer',
-                color: '#9ca3af',
-                fontSize: '1.25rem',
-                lineHeight: 1,
-                padding: '0 4px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              &times;
-            </button>
+            &times;
+          </button>
+          <ZoneProfileMedia
+            zoneId={selectedZoneRule.zoneId}
+            label={selectedZoneRule.label}
+            className="zone-info-card__media"
+          />
+          <div className="zone-info-card__header">
+            <strong>{selectedZoneRule.label}</strong>
+            <span>{demandProfileLabels[selectedZoneRule.demandProfile]}</span>
           </div>
-          <span>Profil: {demandProfileLabels[selectedZoneRule.demandProfile]}</span>
-          <span>
-            Akzeptanzsensibilitaet:{' '}
-            {acceptanceSensitivityLabels[selectedZoneRule.acceptanceSensitivity]}
-          </span>
-          <span>
-            Erlaubt:{' '}
-            {selectedZoneRule.allowedItemTypes.map((itemType) => itemTypeLabels[itemType]).join(', ')}
-          </span>
-          <span>
-            Kapazitaet: Solar {selectedZoneRule.capacity.solar}, Wind{' '}
-            {selectedZoneRule.capacity.wind}, Speicher {selectedZoneRule.capacity.storage}
-          </span>
+          <div className="zone-info-card__meta">
+            <span>
+              Akzeptanzsensibilitaet:{' '}
+              {acceptanceSensitivityLabels[selectedZoneRule.acceptanceSensitivity]}
+            </span>
+            <span>
+              Erlaubt:{' '}
+              {selectedZoneRule.allowedItemTypes.map((itemType) => itemTypeLabels[itemType]).join(', ')}
+            </span>
+            <span>
+              Kapazitaet: Solar {selectedZoneRule.capacity.solar}, Wind{' '}
+              {selectedZoneRule.capacity.wind}, Speicher {selectedZoneRule.capacity.storage}
+            </span>
+          </div>
         </div>
       )}
     </div>

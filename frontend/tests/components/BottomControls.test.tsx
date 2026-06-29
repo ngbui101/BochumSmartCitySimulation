@@ -14,7 +14,7 @@ describe('BottomControls component', () => {
     const { container } = render(
       <BottomControls
         canUndo={true}
-        undoTooltip="Letzten Schritt rückgängig machen"
+        undoTooltip="Letzten Schritt rueckgaengig machen"
         onUndo={onUndo}
         onNextMonth={onNextMonth}
       />
@@ -22,40 +22,36 @@ describe('BottomControls component', () => {
 
     const buttons = container.querySelectorAll('button');
     expect(buttons).toHaveLength(2);
-    
-    // Left button should be Undo, Right button should be Next Month
-    expect(buttons[0]).toHaveTextContent(/Rückgängig/i);
-    expect(buttons[1]).toHaveTextContent(/Nächster Monat/i);
+    expect(buttons[0]).toHaveTextContent(/Rueckgaengig/i);
+    expect(buttons[1]).toHaveTextContent(/Naechster Monat/i);
   });
 
   it('sets the title/tooltip and disabled state on the Undo button', () => {
     const onUndo = vi.fn();
     const onNextMonth = vi.fn();
-    
-    // Test with canUndo = true
+
     const { rerender } = render(
       <BottomControls
         canUndo={true}
-        undoTooltip="Letzten Schritt rückgängig machen"
+        undoTooltip="Letzten Schritt rueckgaengig machen"
         onUndo={onUndo}
         onNextMonth={onNextMonth}
       />
     );
 
-    const undoBtn = screen.getByRole('button', { name: /Rückgängig/i });
-    expect(undoBtn).toHaveAttribute('title', 'Letzten Schritt rückgängig machen');
+    const undoBtn = screen.getByRole('button', { name: /Rueckgaengig/i });
+    expect(undoBtn).toHaveAttribute('title', 'Letzten Schritt rueckgaengig machen');
     expect(undoBtn).not.toBeDisabled();
 
-    // Test with canUndo = false
     rerender(
       <BottomControls
         canUndo={false}
-        undoTooltip="Kein Schritt zum Rückgängig machen"
+        undoTooltip="Kein Schritt zum Rueckgaengig machen"
         onUndo={onUndo}
         onNextMonth={onNextMonth}
       />
     );
-    expect(undoBtn).toHaveAttribute('title', 'Kein Schritt zum Rückgängig machen');
+    expect(undoBtn).toHaveAttribute('title', 'Kein Schritt zum Rueckgaengig machen');
     expect(undoBtn).toBeDisabled();
   });
 
@@ -71,8 +67,7 @@ describe('BottomControls component', () => {
       />
     );
 
-    const undoBtn = screen.getByRole('button', { name: /Rückgängig/i });
-    fireEvent.click(undoBtn);
+    fireEvent.click(screen.getByRole('button', { name: /Rueckgaengig/i }));
     expect(onUndo).toHaveBeenCalledTimes(1);
   });
 
@@ -89,26 +84,19 @@ describe('BottomControls component', () => {
       />
     );
 
-    // Curtain should not be present initially
     expect(document.querySelector('.transition-curtain')).not.toBeInTheDocument();
 
-    const nextMonthBtn = screen.getByRole('button', { name: /Nächster Monat/i });
-    fireEvent.click(nextMonthBtn);
+    fireEvent.click(screen.getByRole('button', { name: /Naechster Monat/i }));
 
-    // Curtain should be visible immediately after click
     const curtain = document.querySelector('.transition-curtain');
     expect(curtain).toBeInTheDocument();
-    expect(curtain).toHaveTextContent(/Bochum/i); // text or spinner
-
-    // Callback should not be called yet
+    expect(curtain).toHaveTextContent(/Bochum/i);
     expect(onNextMonth).not.toHaveBeenCalled();
 
-    // Advance timer by 600ms
     act(() => {
       vi.advanceTimersByTime(600);
     });
 
-    // Callback should be called and curtain should disappear
     expect(onNextMonth).toHaveBeenCalledTimes(1);
     expect(document.querySelector('.transition-curtain')).not.toBeInTheDocument();
 

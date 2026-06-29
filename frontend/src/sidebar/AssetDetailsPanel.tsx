@@ -4,6 +4,7 @@ import { zoneRules } from '../data/zoneRules';
 import { itemDefinitions } from '../data/itemDefinitions';
 import { getPlayerAssetSellValue } from '../game/selectors';
 import { AssetIconImage } from '../ui/gameAssetIcons';
+import { ZoneProfileMedia } from '../ui/ZoneProfileMedia';
 
 export interface AssetDetailsPanelProps {
   selectedAsset?: PlayerAsset | ExistingAsset;
@@ -148,7 +149,15 @@ export const AssetDetailsPanel: React.FC<AssetDetailsPanelProps> = ({
           
           <div style={rowStyle}>
             <span style={labelStyle}>Zone:</span>
-            <span style={valueStyle} data-testid="asset-zone">{zoneLabel}</span>
+            <span className="asset-details-zone-value" style={valueStyle} data-testid="asset-zone">
+              <ZoneProfileMedia
+                zoneId={selectedAsset.zoneId}
+                label={zoneLabel}
+                variant="thumb"
+                className="asset-details-zone-thumb"
+              />
+              {zoneLabel}
+            </span>
           </div>
           
           <div style={rowStyle}>
@@ -239,7 +248,15 @@ export const AssetDetailsPanel: React.FC<AssetDetailsPanelProps> = ({
           
           <div style={rowStyle}>
             <span style={labelStyle}>Zone:</span>
-            <span style={valueStyle} data-testid="asset-zone">{zoneLabel}</span>
+            <span className="asset-details-zone-value" style={valueStyle} data-testid="asset-zone">
+              <ZoneProfileMedia
+                zoneId={selectedAsset.zoneId}
+                label={zoneLabel}
+                variant="thumb"
+                className="asset-details-zone-thumb"
+              />
+              {zoneLabel}
+            </span>
           </div>
           
           <div style={rowStyle}>

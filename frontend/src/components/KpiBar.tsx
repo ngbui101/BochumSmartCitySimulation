@@ -49,8 +49,6 @@ export const KpiBar: React.FC<KpiBarProps> = ({
 
   const isImprove = delta !== undefined && delta > 0;
   const isWorsen = delta !== undefined && delta < 0;
-
-  // Root class applies delta-active-improve / delta-active-worsen when playing
   const activeClass = isPlaying
     ? isImprove
       ? 'delta-active-improve'
@@ -60,56 +58,14 @@ export const KpiBar: React.FC<KpiBarProps> = ({
     : '';
 
   return (
-    <div
-      className={`kpi-bar-container ${activeClass}`}
-      onMouseEnter={handleMouseEnter}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '4px',
-        padding: '8px 12px',
-        backgroundColor: '#ffffff',
-        border: '1px solid #d7e2da',
-        borderRadius: '8px',
-        position: 'relative',
-        transition: 'all 0.2s ease',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {icon && (
-            <span style={{ display: 'flex', alignItems: 'center', color: '#3d6f5a' }}>
-              {icon}
-            </span>
-          )}
-          <span
-            className="kpi-label"
-            style={{
-              fontWeight: 600,
-              fontSize: '0.8rem',
-              color: '#374151',
-              transition: 'color 0.2s ease',
-            }}
-          >
-            {label}
-          </span>
+    <div className={`kpi-bar-container ${activeClass}`} onMouseEnter={handleMouseEnter}>
+      <div className="kpi-bar-header">
+        <div className="kpi-bar-label-wrap">
+          {icon && <span className="kpi-icon">{icon}</span>}
+          <span className="kpi-label">{label}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', position: 'relative' }}>
-          <span
-            className="kpi-value"
-            style={{
-              fontWeight: 700,
-              fontSize: '0.9rem',
-              color: '#111827',
-              transition: 'color 0.2s ease',
-            }}
-          >
+        <div className="kpi-value-wrap">
+          <span className="kpi-value">
             {value}
             {unit}
           </span>
@@ -118,15 +74,6 @@ export const KpiBar: React.FC<KpiBarProps> = ({
               key={animationKey}
               className={`kpi-delta-indicator ${isImprove ? 'delta-improve' : 'delta-worsen'}`}
               data-testid="kpi-delta-indicator"
-              style={{
-                position: 'absolute',
-                right: 0,
-                top: '-20px',
-                fontWeight: 700,
-                fontSize: '0.875rem',
-                pointerEvents: 'none',
-                whiteSpace: 'nowrap',
-              }}
             >
               {isImprove ? `+${delta}` : delta}
               {unit}
@@ -134,25 +81,10 @@ export const KpiBar: React.FC<KpiBarProps> = ({
           )}
         </div>
       </div>
-      <div
-        className="kpi-progress-bg"
-        style={{
-          width: '100%',
-          height: '6px',
-          backgroundColor: '#e5e7eb',
-          borderRadius: '4px',
-          overflow: 'hidden',
-        }}
-      >
+      <div className="kpi-progress-bg">
         <div
           className="kpi-progress-fill"
-          style={{
-            width: `${Math.max(0, Math.min(100, value))}%`,
-            height: '100%',
-            backgroundColor: '#3d6f5a',
-            borderRadius: '4px',
-            transition: 'width 0.3s ease, background-color 0.2s ease',
-          }}
+          style={{ width: `${Math.max(0, Math.min(100, value))}%` }}
         />
       </div>
     </div>
