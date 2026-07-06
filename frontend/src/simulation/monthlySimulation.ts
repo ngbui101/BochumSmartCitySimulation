@@ -1,4 +1,5 @@
 import { itemDefinitions } from '../data/itemDefinitions';
+import { subsidyPrograms } from '../data/subsidyPrograms';
 import { zoneRules } from '../data/zoneRules';
 import { getEnergyDemandForMonth } from '../data/energyDemand';
 import type { PlayerAsset } from '../types/assets';
@@ -8,6 +9,7 @@ import { createForecast, getWeatherProfileForMonth } from './weatherSimulation';
 
 /** Importkosten pro fehlender Energieeinheit in Euro. */
 const IMPORT_COST_PER_UNIT = 60_000;
+const PRIVATE_STORAGE_DISCHARGE_RATE = 0.25;
 
 function clampScore(value: number): number {
   return Math.max(0, Math.min(100, Math.round(value)));
@@ -74,6 +76,40 @@ function calculateStorageCapacity(activeAssets: PlayerAsset[]): number {
   }, 0);
 }
 
+function calculateSubsidyCosts(state: GameState): number {
+  const subsidies = state.subsidies ?? {
+    solar: { level: 0, privateCapacity: 0 },
+    storage: { level: 0, privateCapacity: 0 }
+  };
+
+  return (
+    subsidies.solar.level * subsidyPrograms.solar.monthlyCostPerLevel +
+    subsidies.storage.level * subsidyPrograms.storage.monthlyCostPerLevel
+  );
+}
+
+function calculateNextSubsidies(state: GameState): NonNullable<GameState['subsidies']> {
+  const subsidies = state.subsidies ?? {
+    solar: { level: 0, privateCapacity: 0 },
+    storage: { level: 0, privateCapacity: 0 }
+  };
+
+  return {
+    solar: {
+      ...subsidies.solar,
+      privateCapacity:
+        subsidies.solar.privateCapacity +
+        subsidies.solar.level * subsidyPrograms.solar.adoptionPerLevel
+    },
+    storage: {
+      ...subsidies.storage,
+      privateCapacity:
+        subsidies.storage.privateCapacity +
+        subsidies.storage.level * subsidyPrograms.storage.adoptionPerLevel
+    }
+  };
+}
+
 /**
  * Berechnet die Energiebilanz für einen Monat.
  *
@@ -84,13 +120,29 @@ function calculateStorageCapacity(activeAssets: PlayerAsset[]): number {
 function calculateEnergyBalance(
   state: GameState,
   activeAssets: PlayerAsset[],
-  monthIndex: number
-): { production: number; demand: number; saldo: number; importCost: number; newStoredEnergy: number } {
+  monthIndex: number,
+  subsidies: NonNullable<GameState['subsidies']>
+): {
+  production: number;
+  demand: number;
+  saldo: number;
+  importCost: number;
+  newStoredEnergy: number;
+  privateSolarProduction: number;
+  privateStorageDischarge: number;
+} {
   const production = calculateTotalProduction(activeAssets, monthIndex);
   const demand = getEnergyDemandForMonth(monthIndex);
   const storageCapacity = calculateStorageCapacity(activeAssets);
+  const weatherProfile = getWeatherProfileForMonth(monthIndex);
+  const privateSolarProduction = Math.round(subsidies.solar.privateCapacity * weatherProfile.solarFactor * 10) / 10;
   const availableEnergy = production + state.storedEnergy;
-  const saldo = availableEnergy - demand;
+  const rawSaldo = availableEnergy + privateSolarProduction - demand;
+  const privateStorageDischarge =
+    rawSaldo < 0
+      ? Math.min(Math.abs(rawSaldo), subsidies.storage.privateCapacity * PRIVATE_STORAGE_DISCHARGE_RATE)
+      : 0;
+  const saldo = rawSaldo + privateStorageDischarge;
 
   if (saldo < 0) {
     // Defizit: alle gespeicherte Energie ist verbraucht, Rest muss importiert werden
@@ -99,7 +151,9 @@ function calculateEnergyBalance(
       demand,
       saldo,
       importCost: Math.abs(saldo) * IMPORT_COST_PER_UNIT,
-      newStoredEnergy: 0
+      newStoredEnergy: 0,
+      privateSolarProduction,
+      privateStorageDischarge
     };
   }
 
@@ -109,11 +163,17 @@ function calculateEnergyBalance(
     demand,
     saldo,
     importCost: 0,
-    newStoredEnergy: Math.min(saldo, storageCapacity)
+    newStoredEnergy: Math.min(saldo, storageCapacity),
+    privateSolarProduction,
+    privateStorageDischarge
   };
 }
 
-function calculateNextKpis(state: GameState, activeAssets: PlayerAsset[]): GameKpis {
+function calculateNextKpis(
+  state: GameState,
+  activeAssets: PlayerAsset[],
+  subsidies: NonNullable<GameState['subsidies']>
+): GameKpis {
   const production = calculateTotalProduction(activeAssets, state.currentMonthIndex);
   const storageValue = activeAssets.reduce((sum, asset) => {
     const itemDefinition = getItemDefinition(asset.itemType);
@@ -127,11 +187,19 @@ function calculateNextKpis(state: GameState, activeAssets: PlayerAsset[]): GameK
   const hasSolar = activeAssets.some((asset) => asset.itemType === 'solar');
   const hasWind = activeAssets.some((asset) => asset.itemType === 'wind');
   const mixedGenerationBonus = hasSolar && hasWind ? 2 : 0;
+  const currentSubsidies = state.subsidies ?? {
+    solar: { level: 0, privateCapacity: 0 },
+    storage: { level: 0, privateCapacity: 0 }
+  };
+  const subsidyCitizenBonus = currentSubsidies.solar.level * 0.4 + currentSubsidies.storage.level * 0.25;
+  const privateSecurityBonus = Math.min(4, subsidies.storage.privateCapacity * 0.08);
 
   return {
     energyAutarky: clampScore(state.kpis.energyAutarky + production * 0.35),
-    citizenSatisfaction: clampScore(state.kpis.citizenSatisfaction + citizenImpact),
-    supplySecurity: clampScore(state.kpis.supplySecurity + storageValue * 0.5 + mixedGenerationBonus)
+    citizenSatisfaction: clampScore(state.kpis.citizenSatisfaction + citizenImpact + subsidyCitizenBonus),
+    supplySecurity: clampScore(
+      state.kpis.supplySecurity + storageValue * 0.5 + mixedGenerationBonus + privateSecurityBonus
+    )
   };
 }
 
@@ -151,22 +219,25 @@ export function advanceMonth(state: GameState): GameState {
   const playerAssets = activateCompletedAssets(state, nextMonthIndex);
   const activeAssets = playerAssets.filter((asset) => asset.status === 'active');
   const status = nextMonthIndex >= 60 ? 'finished' : state.status;
+  const subsidies = calculateNextSubsidies(state);
 
-  const energyBalance = calculateEnergyBalance(state, activeAssets, state.currentMonthIndex);
+  const energyBalance = calculateEnergyBalance(state, activeAssets, state.currentMonthIndex, subsidies);
 
   const revenueFromSales = energyBalance.demand * 40_000;
+  const subsidyCosts = calculateSubsidyCosts(state);
   const operatingCosts = activeAssets.reduce((sum, asset) => {
     const itemDefinition = getItemDefinition(asset.itemType);
     return sum + (itemDefinition?.operatingCost ?? 0);
   }, 0);
-  const netMonthlyDelta = revenueFromSales - energyBalance.importCost - operatingCosts;
+  const netMonthlyDelta = revenueFromSales - energyBalance.importCost - operatingCosts - subsidyCosts;
 
   const nextState: GameState = {
     ...state,
     currentMonthIndex: nextMonthIndex,
     budget: calculateNextBudget(state, netMonthlyDelta),
-    kpis: calculateNextKpis(state, activeAssets),
+    kpis: calculateNextKpis(state, activeAssets, subsidies),
     playerAssets,
+    subsidies,
     storedEnergy: energyBalance.newStoredEnergy,
     undoStack: [],
     monthlyHistory: [
@@ -182,6 +253,9 @@ export function advanceMonth(state: GameState): GameState {
         storedEnergy: state.storedEnergy,
         revenueFromSales,
         operatingCosts,
+        subsidyCosts,
+        privateSolarProduction: energyBalance.privateSolarProduction,
+        privateStorageDischarge: energyBalance.privateStorageDischarge,
         netMonthlyDelta
       }
     ],

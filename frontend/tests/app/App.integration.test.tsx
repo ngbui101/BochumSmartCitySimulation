@@ -36,12 +36,12 @@ vi.mock('../../src/map/BochumMap', async () => {
         React.createElement(
           'button',
           { type: 'button', onClick: () => props.onDropAsset?.({ lat: 51.48, lng: 7.21 }) },
-          'drop innenstadt'
+          'drop mitte'
         ),
         React.createElement(
           'button',
           { type: 'button', onClick: () => props.onDragPosition?.({ lat: 51.48, lng: 7.21 }) },
-          'hover innenstadt'
+          'hover mitte'
         ),
         React.createElement(
           'button',
@@ -142,7 +142,7 @@ describe('App integrated game flow', () => {
       '/icons/Solaranlage.png'
     );
 
-    fireEvent.click(screen.getByRole('button', { name: 'drop innenstadt' }));
+    fireEvent.click(screen.getByRole('button', { name: 'drop mitte' }));
 
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('1');
     expect(screen.getByTestId('budget-value')).toHaveTextContent('11.145.678 Euro');
@@ -175,7 +175,7 @@ describe('App integrated game flow', () => {
     act(() => {
       vi.advanceTimersByTime(200);
     });
-    fireEvent.click(screen.getByRole('button', { name: 'drop innenstadt' }));
+    fireEvent.click(screen.getByRole('button', { name: 'drop mitte' }));
 
     const undoButton = screen.getByRole('button', { name: /R/ });
     expect(undoButton).toHaveAttribute('title', expect.stringContaining('Solaranlage'));
@@ -206,11 +206,11 @@ describe('App integrated game flow', () => {
     act(() => {
       vi.advanceTimersByTime(200);
     });
-    fireEvent.click(screen.getByRole('button', { name: 'hover innenstadt' }));
+    fireEvent.click(screen.getByRole('button', { name: 'hover mitte' }));
 
     expect(screen.getByTestId('zone-feedback')).toHaveTextContent(/nicht möglich/i);
 
-    fireEvent.click(screen.getByRole('button', { name: 'drop innenstadt' }));
+    fireEvent.click(screen.getByRole('button', { name: 'drop mitte' }));
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('0');
     expect(screen.getByTestId('budget-value')).toHaveTextContent('18.000.000 Euro');
 
@@ -304,7 +304,7 @@ describe('App integrated game flow', () => {
     act(() => {
       vi.advanceTimersByTime(200);
     });
-    fireEvent.click(screen.getByRole('button', { name: 'drop innenstadt' }));
+    fireEvent.click(screen.getByRole('button', { name: 'drop mitte' }));
     fireEvent.click(screen.getByRole('button', { name: 'select player' }));
     expect(screen.getByRole('button', { name: /Verkaufen/i })).toBeInTheDocument();
 

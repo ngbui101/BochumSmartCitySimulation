@@ -24,7 +24,12 @@ export function createInitialGameState(): GameState {
     existingAssets: initialAssets,
     undoStack: [],
     monthlyHistory: [],
+    subsidies: {
+      solar: { level: 0, privateCapacity: 0 },
+      storage: { level: 0, privateCapacity: 0 }
+    },
     forecast: createForecast(0),
+    storedEnergy: 0,
     status: 'running'
   };
 }

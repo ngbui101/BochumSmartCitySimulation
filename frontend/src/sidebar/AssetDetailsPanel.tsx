@@ -12,7 +12,7 @@ export interface AssetDetailsPanelProps {
 
 const playerAssetLabels = {
   solar: 'Solaranlage',
-  wind: 'Windmühle',
+  wind: 'Kleinwindanlage',
   storage: 'Energiespeicher',
 } as const;
 
@@ -21,10 +21,9 @@ const panelStyle: React.CSSProperties = {
   flexDirection: 'column',
   gap: '12px',
   padding: '16px',
-  backgroundColor: '#ffffff',
-  border: '1px solid #cbd8d0',
-  borderRadius: '12px',
-  boxShadow: '0 8px 22px rgba(31, 79, 58, 0.14)',
+  backgroundColor: 'transparent',
+  border: '0',
+  boxShadow: 'none',
 };
 
 const headerStyle: React.CSSProperties = {

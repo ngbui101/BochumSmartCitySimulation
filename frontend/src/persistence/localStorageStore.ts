@@ -32,6 +32,23 @@ function isStoredGameState(value: unknown): value is StoredGameState {
   );
 }
 
+function withStateDefaults(state: GameState): GameState {
+  return {
+    ...state,
+    subsidies: state.subsidies ?? {
+      solar: { level: 0, privateCapacity: 0 },
+      storage: { level: 0, privateCapacity: 0 }
+    },
+    storedEnergy: state.storedEnergy ?? 0,
+    monthlyHistory: state.monthlyHistory.map((snapshot) => ({
+      ...snapshot,
+      subsidyCosts: snapshot.subsidyCosts ?? 0,
+      privateSolarProduction: snapshot.privateSolarProduction ?? 0,
+      privateStorageDischarge: snapshot.privateStorageDischarge ?? 0
+    }))
+  };
+}
+
 export function loadGameState(): GameState | null {
   const storedValue = localStorage.getItem(GAME_STATE_STORAGE_KEY);
 
@@ -41,7 +58,7 @@ export function loadGameState(): GameState | null {
 
   try {
     const parsed = JSON.parse(storedValue) as unknown;
-    return isStoredGameState(parsed) ? parsed.state : null;
+    return isStoredGameState(parsed) ? withStateDefaults(parsed.state) : null;
   } catch {
     return null;
   }

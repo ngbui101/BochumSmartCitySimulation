@@ -5,6 +5,17 @@ import type { WeatherForecastMonth } from './weather';
 
 export type GameStatus = 'running' | 'finished';
 
+export type SubsidyProgram = 'solar' | 'storage';
+
+export type SubsidyLevel = 0 | 1 | 2 | 3;
+
+export type SubsidyProgramState = {
+  level: SubsidyLevel;
+  privateCapacity: number;
+};
+
+export type SubsidyState = Record<SubsidyProgram, SubsidyProgramState>;
+
 export type GameKpis = {
   energyAutarky: number;
   citizenSatisfaction: number;
@@ -36,7 +47,8 @@ export type GameAction =
   | { type: 'ADVANCE_MONTH' }
   | { type: 'RESET_GAME' }
   | { type: 'SELECT_ASSET'; assetId: string }
-  | { type: 'CLEAR_SELECTION' };
+  | { type: 'CLEAR_SELECTION' }
+  | { type: 'SET_SUBSIDY_LEVEL'; program: SubsidyProgram; level: SubsidyLevel };
 
 export type UndoEntry =
   | {
@@ -62,6 +74,9 @@ export type MonthlySnapshot = {
   storedEnergy: number;
   revenueFromSales: number;
   operatingCosts: number;
+  subsidyCosts?: number;
+  privateSolarProduction?: number;
+  privateStorageDischarge?: number;
   netMonthlyDelta: number;
 };
 
@@ -74,6 +89,7 @@ export type GameState = {
   existingAssets: ExistingAsset[];
   undoStack: UndoEntry[];
   monthlyHistory: MonthlySnapshot[];
+  subsidies?: SubsidyState;
   forecast: WeatherForecastMonth[];
   status: GameStatus;
   /** Persistenter Energiepuffer aller Speicher-Assets in Einheiten. */

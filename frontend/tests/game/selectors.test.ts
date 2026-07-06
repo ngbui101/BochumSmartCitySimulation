@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createInitialGameState } from '../../src/game/initialGameState';
-import { getCurrentRevenueFromSales, getCurrentOperatingCosts, getCurrentNetMonthlyDelta } from '../../src/game/selectors';
+import { getCurrentRevenueFromSales, getCurrentOperatingCosts, getCurrentNetMonthlyDelta, getCurrentSubsidyCosts, getCurrentPrivateSolarProduction } from '../../src/game/selectors';
+import type { GameState } from '../../src/types/game';
 
 describe('energy finance selectors', () => {
   it('calculates initial revenue from sales and operating costs', () => {
@@ -30,5 +31,19 @@ describe('energy finance selectors', () => {
     // If we use the raw import cost for delta, then in Month 0 the net delta will be -1.9M.
     // Let's write the test based on that:
     expect(getCurrentNetMonthlyDelta(state)).toBe(-1900000);
+  });
+
+  it('includes subsidy costs and private solar import offsets in the current monthly preview', () => {
+    const state: GameState = {
+      ...createInitialGameState(),
+      subsidies: {
+        solar: { level: 2, privateCapacity: 4 },
+        storage: { level: 1, privateCapacity: 3 }
+      }
+    };
+
+    expect(getCurrentSubsidyCosts(state)).toBe(680000);
+    expect(getCurrentPrivateSolarProduction(state)).toBe(2.2);
+    expect(getCurrentNetMonthlyDelta(state)).toBe(-2403000);
   });
 });

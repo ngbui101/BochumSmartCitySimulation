@@ -36,7 +36,7 @@ export const midgameMockState: GameState = {
     {
       id: 'mock-player-solar-1',
       itemType: 'solar',
-      zoneId: 'innenstadt',
+      zoneId: 'mitte',
       position: { lat: 51.482, lng: 7.218 },
       status: 'active',
       placedMonthIndex: 3,
@@ -46,7 +46,7 @@ export const midgameMockState: GameState = {
     {
       id: 'mock-player-wind-1',
       itemType: 'wind',
-      zoneId: 'gerthe_harpen',
+      zoneId: 'nord',
       position: { lat: 51.520, lng: 7.260 },
       status: 'active',
       placedMonthIndex: 6,
@@ -93,7 +93,7 @@ export const finishMockState: GameState = {
     {
       id: 'mock-player-solar-1',
       itemType: 'solar',
-      zoneId: 'innenstadt',
+      zoneId: 'mitte',
       position: { lat: 51.482, lng: 7.218 },
       status: 'active',
       placedMonthIndex: 3,
@@ -103,7 +103,7 @@ export const finishMockState: GameState = {
     {
       id: 'mock-player-wind-1',
       itemType: 'wind',
-      zoneId: 'gerthe_harpen',
+      zoneId: 'nord',
       position: { lat: 51.520, lng: 7.260 },
       status: 'active',
       placedMonthIndex: 6,

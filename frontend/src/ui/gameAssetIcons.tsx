@@ -24,11 +24,11 @@ export const assetIconConfig: Record<ItemType, AssetIconConfig> = {
     }
   },
   wind: {
-    label: 'Windkraftanlage',
+    label: 'Kleinwindanlage',
     alt: {
-      default: 'Windkraftanlage',
-      build: 'Windkraftanlage im Bau',
-      selected: 'Ausgewählte Windkraftanlage'
+      default: 'Kleinwindanlage',
+      build: 'Kleinwindanlage im Bau',
+      selected: 'Ausgewählte Kleinwindanlage'
     },
     src: {
       default: '/icons/Windkraftanlage.png',

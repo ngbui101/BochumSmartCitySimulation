@@ -7,14 +7,14 @@ import { initialMockState, midgameMockState, finishMockState } from '../testing/
 import { bochumZonesGeoJson } from '../data/bochumZones';
 import { itemDefinitions } from '../data/itemDefinitions';
 import { gameReducer } from '../game/reducer';
-import { getUndoTooltip, getCurrentEnergySaldo, getStorageCapacity, getCurrentImportCost, getCurrentNetMonthlyDelta, getCurrentRevenueFromSales } from '../game/selectors';
+import { getUndoTooltip, getCurrentEnergySaldo, getStorageCapacity, getCurrentImportCost, getCurrentNetMonthlyDelta, getCurrentRevenueFromSales, getCurrentSubsidyCosts, getCurrentPrivateSolarProduction, getCurrentPrivateStorageDischarge } from '../game/selectors';
 import { canPlaceItem } from '../simulation/placementRules';
 import { calculateFinalScore } from '../simulation/scoring';
 import { findZoneForPoint } from '../simulation/zoneDetection';
 import { useAppState } from './appState';
 import { AssetIconImage } from '../ui/gameAssetIcons';
 import type { ItemType, LatLngPosition } from '../types/assets';
-import type { GameAction, GameKpis, GameState } from '../types/game';
+import type { GameAction, GameKpis, GameState, SubsidyLevel, SubsidyProgram } from '../types/game';
 import type { ZoneId } from '../types/zones';
 import type { PlacementFeedback, ZoneFeedback } from '../map/BochumMap';
 
@@ -195,6 +195,10 @@ export function App() {
     clearPlacementFeedback();
     setPlacementDrag(null);
     dispatchToActiveState({ type: 'ADVANCE_MONTH' });
+  };
+
+  const handleSetSubsidyLevel = (program: SubsidyProgram, level: SubsidyLevel) => {
+    dispatchToActiveState({ type: 'SET_SUBSIDY_LEVEL', program, level });
   };
 
   const handlePointerDragStart = (
@@ -395,8 +399,13 @@ export function App() {
         }}
         deltas={deltas}
         forecast={state.forecast}
+        subsidies={state.subsidies}
+        subsidyCosts={getCurrentSubsidyCosts(state)}
+        privateSolarProduction={getCurrentPrivateSolarProduction(state)}
+        privateStorageDischarge={getCurrentPrivateStorageDischarge(state)}
         selectedItemType={selectedItemType}
         onSelectItemType={setSelectedItemType}
+        onSetSubsidyLevel={handleSetSubsidyLevel}
         onPointerDragStart={handlePointerDragStart}
       />
 

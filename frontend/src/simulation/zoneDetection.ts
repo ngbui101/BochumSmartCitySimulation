@@ -25,13 +25,12 @@ export type ZoneFeatureCollection = {
 };
 
 const zoneIds: ZoneId[] = [
-  'innenstadt',
+  'mitte',
   'wattenscheid',
-  'querenburg',
-  'langendreer',
-  'gerthe_harpen',
-  'weitmar_linden',
-  'stiepel'
+  'nord',
+  'ost',
+  'sued',
+  'suedwest'
 ];
 
 function isZoneId(value: string | undefined): value is ZoneId {

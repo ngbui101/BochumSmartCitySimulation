@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap, useMapEvents } from 'react-leaflet';
 import { bochumBounds, minZoom, maxZoom } from './mapBounds';
+import { bochumCityBoundaryGeoJson } from '../data/bochumCityBoundary';
+import { bochumPostalBoundariesGeoJson } from '../data/bochumPostalBoundaries';
 import { bochumZonesGeoJson } from '../data/bochumZones';
 import { zoneRules } from '../data/zoneRules';
 import type { ItemType, LatLngPosition, PlayerAsset, ExistingAsset } from '../types/assets';
@@ -163,6 +165,24 @@ const acceptanceSensitivityLabels = {
   medium: 'Mittel',
   high: 'Hoch'
 } as const;
+
+const cityBoundaryStyle: PathOptions = {
+  color: '#ef4444',
+  weight: 2.5,
+  opacity: 0.95,
+  fillOpacity: 0,
+  interactive: false,
+  className: 'bochum-city-boundary'
+};
+
+const postalBoundaryStyle: PathOptions = {
+  color: '#2563eb',
+  weight: 1.4,
+  opacity: 0.62,
+  fillOpacity: 0,
+  interactive: false,
+  className: 'bochum-postal-boundary'
+};
 
 type ZoneInfoPlacement = 'top' | 'right' | 'bottom' | 'left';
 
@@ -379,6 +399,16 @@ export const BochumMap: React.FC<BochumMapProps> = ({
         <TileLayer
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+        />
+        <GeoJSON
+          data={bochumCityBoundaryGeoJson}
+          style={() => cityBoundaryStyle}
+          interactive={false}
+        />
+        <GeoJSON
+          data={bochumPostalBoundariesGeoJson}
+          style={() => postalBoundaryStyle}
+          interactive={false}
         />
         <GeoJSON
           key={JSON.stringify(zoneFeedback) + JSON.stringify(placeableZones) + (hoveredZoneId || '')}

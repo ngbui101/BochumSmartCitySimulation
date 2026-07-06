@@ -14,7 +14,7 @@ describe('game asset icon configuration', () => {
 
   it('returns accessible alt text for default, build, and selected states', () => {
     expect(getAssetIconAlt('solar')).toBe('Solaranlage');
-    expect(getAssetIconAlt('wind', 'under_construction')).toBe('Windkraftanlage im Bau');
+    expect(getAssetIconAlt('wind', 'under_construction')).toBe('Kleinwindanlage im Bau');
     expect(getAssetIconAlt('storage', 'active', true)).toBe(
       'Ausgewählter Energiespeicher'
     );

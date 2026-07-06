@@ -16,9 +16,9 @@ export const itemDefinitions: ItemDefinition[] = [
   },
   {
     itemType: 'wind',
-    label: 'Windmuehle',
+    label: 'Kleinwindanlage',
     description: 'Hohe Erzeugung, staerker in windigen und winterlichen Monaten.',
-    standardSizeLabel: 'Standard-Windmuehle',
+    standardSizeLabel: 'Standard-Kleinwindanlage',
     cost: 2_800_000,
     buildTimeMonths: 1,
     productionValue: 14,

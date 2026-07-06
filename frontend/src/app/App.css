@@ -723,13 +723,125 @@ textarea {
 }
 
 .weather-forecast h3,
-.buyable-item-list h3 {
+.buyable-item-list h3,
+.subsidy-panel h3 {
   margin: 0;
   color: var(--color-primary-dark);
   font-size: 0.78rem;
   font-weight: 900;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.subsidy-panel {
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: 0 6px 16px rgba(31, 79, 58, 0.08);
+}
+
+.subsidy-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.subsidy-panel__header span {
+  color: var(--color-danger);
+  font-size: 0.68rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.subsidy-panel__programs {
+  display: grid;
+  gap: 7px;
+}
+
+.subsidy-program {
+  display: grid;
+  gap: 5px;
+}
+
+.subsidy-program__button {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 9px;
+  color: var(--color-text);
+  background: var(--color-panel-soft);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.subsidy-program__button span,
+.subsidy-program__button strong,
+.subsidy-program__meta {
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.subsidy-program__button strong {
+  color: var(--color-primary-dark);
+}
+
+.subsidy-program__levels {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.subsidy-level {
+  height: 5px;
+  background: #e6eee7;
+  border-radius: 999px;
+}
+
+.subsidy-level--active {
+  background: var(--color-primary);
+}
+
+.subsidy-program__meta {
+  color: var(--color-muted);
+}
+
+.subsidy-panel__effects {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 0;
+}
+
+.subsidy-panel__effects div {
+  display: grid;
+  gap: 2px;
+  padding: 6px 7px;
+  background: rgba(241, 247, 236, 0.78);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.subsidy-panel__effects dt,
+.subsidy-panel__effects dd {
+  margin: 0;
+  font-size: 0.66rem;
+}
+
+.subsidy-panel__effects dt {
+  color: var(--color-muted);
+  font-weight: 750;
+}
+
+.subsidy-panel__effects dd {
+  color: var(--color-primary-dark);
+  font-weight: 900;
 }
 
 .weather-card-grid {

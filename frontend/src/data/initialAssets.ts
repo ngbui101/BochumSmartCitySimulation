@@ -2,10 +2,10 @@ import type { ExistingAsset } from '../types/assets';
 
 export const initialAssets: ExistingAsset[] = [
   {
-    id: 'placeholder-solar-innenstadt',
-    name: 'MVP-Spielplatzhalter Solarhub Innenstadt',
+    id: 'placeholder-solar-mitte',
+    name: 'MVP-Spielplatzhalter Solarhub Mitte',
     assetTypeLabel: 'Solaranlage',
-    zoneId: 'innenstadt',
+    zoneId: 'mitte',
     position: { lat: 51.481, lng: 7.216 },
     statusLabel: 'Bestand',
     roleDescription: 'Spielplatzhalter für eine bestehende lokale Energieanlage; keine reale Tatsachenbehauptung.',
@@ -24,13 +24,13 @@ export const initialAssets: ExistingAsset[] = [
     dataConfidence: 'mvp-placeholder'
   },
   {
-    id: 'placeholder-wind-gerthe-harpen',
-    name: 'MVP-Spielplatzhalter Windanlage Gerthe / Harpen',
-    assetTypeLabel: 'Windmuehle',
-    zoneId: 'gerthe_harpen',
+    id: 'placeholder-wind-nord',
+    name: 'MVP-Spielplatzhalter Kleinwindanlage Nord',
+    assetTypeLabel: 'Kleinwindanlage',
+    zoneId: 'nord',
     position: { lat: 51.517, lng: 7.255 },
     statusLabel: 'Bestand',
-    roleDescription: 'Spielplatzhalter für eine bestehende Windenergie-Rolle; keine reale Tatsachenbehauptung.',
+    roleDescription: 'Spielplatzhalter für eine bestehende Kleinwindenergie-Rolle; keine reale Tatsachenbehauptung.',
     modifiable: false,
     dataConfidence: 'mvp-placeholder'
   }

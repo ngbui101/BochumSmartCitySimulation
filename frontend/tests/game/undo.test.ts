@@ -10,7 +10,7 @@ function placeSolar(state: GameState, lat = 51.48, lng = 7.21): GameState {
   return gameReducer(state, {
     type: 'PLACE_ASSET',
     itemType: 'solar',
-    zoneId: 'innenstadt',
+    zoneId: 'mitte',
     position: { lat, lng }
   });
 }
@@ -19,7 +19,7 @@ function placeStorage(state: GameState): GameState {
   return gameReducer(state, {
     type: 'PLACE_ASSET',
     itemType: 'storage',
-    zoneId: 'innenstadt',
+    zoneId: 'mitte',
     position: { lat: 51.481, lng: 7.212 }
   });
 }

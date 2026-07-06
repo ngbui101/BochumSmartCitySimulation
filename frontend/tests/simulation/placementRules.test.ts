@@ -9,7 +9,7 @@ function makeAsset(overrides: Partial<PlayerAsset>): PlayerAsset {
   return {
     id: overrides.id ?? 'asset-1',
     itemType: overrides.itemType ?? 'solar',
-    zoneId: overrides.zoneId ?? 'innenstadt',
+    zoneId: overrides.zoneId ?? 'mitte',
     position: overrides.position ?? { lat: 51.48, lng: 7.21 },
     status: overrides.status ?? 'under_construction',
     placedMonthIndex: overrides.placedMonthIndex ?? 0,
@@ -23,8 +23,8 @@ function withPlayerAssets(state: GameState, playerAssets: PlayerAsset[]): GameSt
 }
 
 describe('placementRules', () => {
-  it('rejects wind placement in Innenstadt because the zone does not allow it', () => {
-    const result = canPlaceItem(createInitialGameState(), 'wind', 'innenstadt');
+  it('rejects wind placement in mitte because the zone does not allow it', () => {
+    const result = canPlaceItem(createInitialGameState(), 'wind', 'mitte');
 
     expect(result.allowed).toBe(false);
     expect(result.reason).toContain('nicht erlaubt');
@@ -32,37 +32,37 @@ describe('placementRules', () => {
     expect(result.remaining).toBe(0);
   });
 
-  it('allows solar placement in Innenstadt while budget and capacity are available', () => {
-    const result = canPlaceItem(createInitialGameState(), 'solar', 'innenstadt');
+  it('allows solar placement in mitte while budget and capacity are available', () => {
+    const result = canPlaceItem(createInitialGameState(), 'solar', 'mitte');
 
     expect(result).toEqual({
       allowed: true,
       reason: 'Platzierung möglich.',
-      remaining: 10,
-      capacity: 10
+      remaining: 12,
+      capacity: 12
     });
   });
 
   it('calculates remaining capacity by item type and zone', () => {
     const state = withPlayerAssets(createInitialGameState(), [
-      makeAsset({ id: 'solar-1', itemType: 'solar', zoneId: 'innenstadt' }),
-      makeAsset({ id: 'storage-1', itemType: 'storage', zoneId: 'innenstadt' }),
+      makeAsset({ id: 'solar-1', itemType: 'solar', zoneId: 'mitte' }),
+      makeAsset({ id: 'storage-1', itemType: 'storage', zoneId: 'mitte' }),
       makeAsset({ id: 'solar-2', itemType: 'solar', zoneId: 'wattenscheid' })
     ]);
 
-    expect(getRemainingCapacity(state, 'solar', 'innenstadt')).toBe(9);
-    expect(getRemainingCapacity(state, 'storage', 'innenstadt')).toBe(3);
+    expect(getRemainingCapacity(state, 'solar', 'mitte')).toBe(11);
+    expect(getRemainingCapacity(state, 'storage', 'mitte')).toBe(4);
   });
 
   it('rejects placement when the zone capacity is exhausted', () => {
     const state = withPlayerAssets(
       createInitialGameState(),
-      Array.from({ length: 10 }, (_, index) =>
-        makeAsset({ id: `solar-${index}`, itemType: 'solar', zoneId: 'innenstadt' })
+      Array.from({ length: 12 }, (_, index) =>
+        makeAsset({ id: `solar-${index}`, itemType: 'solar', zoneId: 'mitte' })
       )
     );
 
-    const result = canPlaceItem(state, 'solar', 'innenstadt');
+    const result = canPlaceItem(state, 'solar', 'mitte');
 
     expect(result.allowed).toBe(false);
     expect(result.reason).toContain('Kapazität');
@@ -72,10 +72,10 @@ describe('placementRules', () => {
   it('rejects placement when the current budget is too low', () => {
     const state = { ...createInitialGameState(), budget: 1 };
 
-    const result = canPlaceItem(state, 'solar', 'innenstadt');
+    const result = canPlaceItem(state, 'solar', 'mitte');
 
     expect(result.allowed).toBe(false);
     expect(result.reason).toContain('Budget');
-    expect(result.remaining).toBe(10);
+    expect(result.remaining).toBe(12);
   });
 });

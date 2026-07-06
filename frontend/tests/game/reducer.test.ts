@@ -12,7 +12,7 @@ function makeAsset(overrides: Partial<PlayerAsset>): PlayerAsset {
   return {
     id: overrides.id ?? 'asset-1',
     itemType: overrides.itemType ?? 'solar',
-    zoneId: overrides.zoneId ?? 'innenstadt',
+    zoneId: overrides.zoneId ?? 'mitte',
     position: overrides.position ?? { lat: 51.48, lng: 7.21 },
     status: overrides.status ?? 'under_construction',
     placedMonthIndex: overrides.placedMonthIndex ?? 0,
@@ -31,14 +31,14 @@ describe('gameReducer', () => {
     const next = gameReducer(state, {
       type: 'PLACE_ASSET',
       itemType: 'solar',
-      zoneId: 'innenstadt',
+      zoneId: 'mitte',
       position: { lat: 51.48, lng: 7.21 }
     });
 
     expect(next.playerAssets).toHaveLength(1);
     expect(next.playerAssets[0]).toMatchObject({
       itemType: 'solar',
-      zoneId: 'innenstadt',
+      zoneId: 'mitte',
       position: { lat: 51.48, lng: 7.21 },
       status: 'under_construction',
       placedMonthIndex: 0,
@@ -53,7 +53,7 @@ describe('gameReducer', () => {
     const next = gameReducer(state, {
       type: 'PLACE_ASSET',
       itemType: 'wind',
-      zoneId: 'innenstadt',
+      zoneId: 'mitte',
       position: { lat: 51.48, lng: 7.21 }
     });
 
@@ -65,7 +65,7 @@ describe('gameReducer', () => {
     const next = gameReducer(state, {
       type: 'PLACE_ASSET',
       itemType: 'solar',
-      zoneId: 'innenstadt',
+      zoneId: 'mitte',
       position: { lat: 51.48, lng: 7.21 }
     });
 
@@ -99,5 +99,18 @@ describe('gameReducer', () => {
 
     expect(selected.selectedAssetId).toBe(state.existingAssets[0].id);
     expect(cleared.selectedAssetId).toBeUndefined();
+  });
+
+  it('updates subsidy levels without charging an immediate purchase cost', () => {
+    const state = createInitialGameState();
+    const next = gameReducer(state, {
+      type: 'SET_SUBSIDY_LEVEL',
+      program: 'solar',
+      level: 2
+    });
+
+    expect(next.subsidies?.solar.level).toBe(2);
+    expect(next.subsidies?.storage.level).toBe(0);
+    expect(next.budget).toBe(state.budget);
   });
 });

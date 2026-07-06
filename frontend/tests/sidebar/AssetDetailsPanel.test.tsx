@@ -8,7 +8,7 @@ describe('AssetDetailsPanel component', () => {
   const mockSolarAsset: PlayerAsset = {
     id: 'solar-1',
     itemType: 'solar',
-    zoneId: 'innenstadt',
+    zoneId: 'mitte',
     position: { lat: 51.48, lng: 7.21 },
     status: 'active',
     placedMonthIndex: 0,
@@ -30,7 +30,7 @@ describe('AssetDetailsPanel component', () => {
   const mockStorageAsset: PlayerAsset = {
     id: 'storage-1',
     itemType: 'storage',
-    zoneId: 'querenburg',
+    zoneId: 'sued',
     position: { lat: 51.47, lng: 7.23 },
     status: 'active',
     placedMonthIndex: 1,
@@ -42,7 +42,7 @@ describe('AssetDetailsPanel component', () => {
     id: 'existing-1',
     name: 'Heizkraftwerk Bochum',
     assetTypeLabel: 'Kohlekraftwerk',
-    zoneId: 'langendreer',
+    zoneId: 'ost',
     position: { lat: 51.46, lng: 7.24 },
     statusLabel: 'Bestand',
     roleDescription: 'Generiert Strom und Fernwärme für den Stadtteil.',
@@ -67,8 +67,8 @@ describe('AssetDetailsPanel component', () => {
     expect(screen.getByTestId('asset-title')).toHaveTextContent('Solaranlage');
     expect(screen.getByTestId('asset-type')).toHaveTextContent('Solaranlage');
     
-    // Zone (Innenstadt)
-    expect(screen.getByTestId('asset-zone')).toHaveTextContent('Innenstadt');
+    // Zone (Mitte)
+    expect(screen.getByTestId('asset-zone')).toHaveTextContent('Mitte');
     expect(screen.getByTestId('asset-zone').querySelector('.zone-profile-thumb')).not.toBeInTheDocument();
     expect(screen.getByTestId('asset-zone').querySelector('img')).not.toBeInTheDocument();
     
@@ -94,10 +94,19 @@ describe('AssetDetailsPanel component', () => {
     expect(screen.queryByText(/Keine Änderung möglich/i)).not.toBeInTheDocument();
   });
 
+  it('does not add a nested frame inside the map popup shell', () => {
+    const { container } = render(<AssetDetailsPanel selectedAsset={mockSolarAsset} />);
+    const panel = container.querySelector('.asset-details-panel') as HTMLElement;
+
+    expect(panel.style.border).toBe('0px');
+    expect(panel.style.boxShadow).toBe('none');
+    expect(panel.style.backgroundColor).toBe('transparent');
+  });
+
   it('renders construction status correctly for player wind asset under construction', () => {
     render(<AssetDetailsPanel selectedAsset={mockConstructionWindAsset} />);
     
-    expect(screen.getByTestId('asset-title')).toHaveTextContent('Windmühle');
+    expect(screen.getByTestId('asset-title')).toHaveTextContent('Kleinwindanlage');
     expect(screen.getByTestId('asset-status')).toHaveTextContent(/under_construction/i);
     expect(screen.getByTestId('asset-production-capacity')).toHaveTextContent('14 MW');
     
@@ -125,7 +134,7 @@ describe('AssetDetailsPanel component', () => {
     expect(screen.getByTestId('asset-type')).toHaveTextContent('Kohlekraftwerk');
     
     // Zone
-    expect(screen.getByTestId('asset-zone')).toHaveTextContent('Langendreer');
+    expect(screen.getByTestId('asset-zone')).toHaveTextContent('Ost');
     expect(screen.getByTestId('asset-zone').querySelector('.zone-profile-thumb')).not.toBeInTheDocument();
     expect(screen.getByTestId('asset-zone').querySelector('img')).not.toBeInTheDocument();
     

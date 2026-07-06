@@ -28,7 +28,7 @@ describe('BuyableItemList component', () => {
     const storageCard = screen.getByTestId('buyable-item-storage');
 
     expect(solarCard).toHaveAttribute('title', 'Solaranlage');
-    expect(windCard).toHaveAttribute('title', 'Windkraftanlage');
+    expect(windCard).toHaveAttribute('title', 'Kleinwindanlage');
     expect(storageCard).toHaveAttribute('title', 'Energiespeicher');
 
     expect(solarCard).not.toHaveClass('disabled');
@@ -39,7 +39,7 @@ describe('BuyableItemList component', () => {
     expect(solarCard).toHaveTextContent('1.200.000');
     expect(solarCard).toHaveTextContent('Stark in sonnigen Monaten');
 
-    expect(windCard).toHaveTextContent('Windkraftanlage');
+    expect(windCard).toHaveTextContent('Kleinwindanlage');
     expect(windCard).toHaveTextContent('2.800.000');
     expect(windCard).toHaveTextContent('Nicht überall erlaubt');
 
@@ -51,7 +51,7 @@ describe('BuyableItemList component', () => {
       'src',
       '/icons/Solaranlage.png'
     );
-    expect(screen.getByRole('img', { name: 'Windkraftanlage' })).toHaveAttribute(
+    expect(screen.getByRole('img', { name: 'Kleinwindanlage' })).toHaveAttribute(
       'src',
       '/icons/Windkraftanlage.png'
     );

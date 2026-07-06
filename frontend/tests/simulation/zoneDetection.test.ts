@@ -7,7 +7,7 @@ const zonesGeoJson = {
   features: [
     {
       type: 'Feature',
-      properties: { zoneId: 'innenstadt' },
+      properties: { zoneId: 'mitte' },
       geometry: {
         type: 'Polygon',
         coordinates: [[[7.185, 51.492], [7.235, 51.492], [7.238, 51.465], [7.188, 51.462], [7.185, 51.492]]]
@@ -23,7 +23,7 @@ const zonesGeoJson = {
     },
     {
       type: 'Feature',
-      properties: { zoneId: 'gerthe_harpen' },
+      properties: { zoneId: 'nord' },
       geometry: {
         type: 'Polygon',
         coordinates: [[[7.22, 51.54], [7.305, 51.538], [7.31, 51.495], [7.235, 51.492], [7.22, 51.54]]]
@@ -34,7 +34,7 @@ const zonesGeoJson = {
 
 describe('findZoneForPoint', () => {
   it('returns the zone id for a point inside an MVP game zone', () => {
-    expect(findZoneForPoint({ lat: 51.48, lng: 7.21 }, zonesGeoJson)).toBe('innenstadt');
+    expect(findZoneForPoint({ lat: 51.48, lng: 7.21 }, zonesGeoJson)).toBe('mitte');
     expect(findZoneForPoint({ lat: 51.48, lng: 7.14 }, zonesGeoJson)).toBe('wattenscheid');
   });
 
@@ -46,7 +46,7 @@ describe('findZoneForPoint', () => {
     const hoverZone = findZoneForPoint({ lat: 51.515, lng: 7.26 }, zonesGeoJson);
     const dropZone = findZoneForPoint({ lat: 51.515, lng: 7.26 }, zonesGeoJson);
 
-    expect(hoverZone).toBe('gerthe_harpen');
+    expect(hoverZone).toBe('nord');
     expect(dropZone).toBe(hoverZone);
   });
 });

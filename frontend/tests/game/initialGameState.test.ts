@@ -13,6 +13,10 @@ describe('createInitialGameState', () => {
     expect(state.existingAssets).toEqual(initialAssets);
     expect(state.undoStack).toEqual([]);
     expect(state.monthlyHistory).toEqual([]);
+    expect(state.subsidies).toEqual({
+      solar: { level: 0, privateCapacity: 0 },
+      storage: { level: 0, privateCapacity: 0 }
+    });
     expect(state.forecast).toHaveLength(3);
     expect(state.budget).toBeGreaterThan(0);
     expect(state.kpis).toEqual({

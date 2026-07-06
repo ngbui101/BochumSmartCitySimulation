@@ -1,11 +1,12 @@
 import React from 'react';
 import type { ItemType } from '../types/assets';
-import type { GameKpis } from '../types/game';
+import type { GameKpis, SubsidyLevel, SubsidyProgram, SubsidyState } from '../types/game';
 import type { WeatherForecastMonth } from '../types/weather';
 import { KpiDashboard } from './KpiDashboard';
 import type { EnergyStatusProps } from './KpiDashboard';
 import { WeatherForecast } from './WeatherForecast';
 import { BuyableItemList } from './BuyableItemList';
+import { SubsidyPanel } from './SubsidyPanel';
 
 export interface SidebarProps {
   budget: number;
@@ -18,8 +19,13 @@ export interface SidebarProps {
     supplySecurity?: number;
   };
   forecast: WeatherForecastMonth[];
+  subsidies?: SubsidyState;
+  subsidyCosts?: number;
+  privateSolarProduction?: number;
+  privateStorageDischarge?: number;
   selectedItemType?: ItemType | null;
   onSelectItemType?: (itemType: ItemType | null) => void;
+  onSetSubsidyLevel?: (program: SubsidyProgram, level: SubsidyLevel) => void;
   onPointerDragStart?: (
     itemType: ItemType,
     pointer: {
@@ -36,8 +42,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   energyStatus,
   deltas,
   forecast,
+  subsidies = {
+    solar: { level: 0, privateCapacity: 0 },
+    storage: { level: 0, privateCapacity: 0 }
+  },
+  subsidyCosts = 0,
+  privateSolarProduction = 0,
+  privateStorageDischarge = 0,
   selectedItemType,
   onSelectItemType,
+  onSetSubsidyLevel,
   onPointerDragStart,
 }) => {
   const monthNum = currentMonthIndex + 1;
@@ -82,6 +96,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <KpiDashboard budget={budget} kpis={kpis} energyStatus={energyStatus} deltas={deltas} />
 
       <WeatherForecast forecast={forecast} />
+
+      <SubsidyPanel
+        subsidies={subsidies}
+        subsidyCosts={subsidyCosts}
+        privateSolarProduction={privateSolarProduction}
+        privateStorageDischarge={privateStorageDischarge}
+        onSetSubsidyLevel={onSetSubsidyLevel}
+      />
 
       <BuyableItemList
         budget={budget}

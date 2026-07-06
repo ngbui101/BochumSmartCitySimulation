@@ -11,7 +11,7 @@ interface BuyableItemFlyoutProps {
 
 const friendlyLabels: Record<ItemType, string> = {
   solar: 'Solaranlage',
-  wind: 'Windkraftanlage',
+  wind: 'Kleinwindanlage',
   storage: 'Energiespeicher',
 };
 

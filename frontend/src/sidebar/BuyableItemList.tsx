@@ -19,13 +19,13 @@ export interface BuyableItemListProps {
 
 const friendlyLabels: Record<ItemType, string> = {
   solar: 'Solaranlage',
-  wind: 'Windkraftanlage',
+  wind: 'Kleinwindanlage',
   storage: 'Energiespeicher',
 };
 
 const tooltipLabels: Record<ItemType, string> = {
   solar: 'Solaranlage',
-  wind: 'Windkraftanlage',
+  wind: 'Kleinwindanlage',
   storage: 'Energiespeicher',
 };
 

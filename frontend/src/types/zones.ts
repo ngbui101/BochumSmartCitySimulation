@@ -1,13 +1,12 @@
 import type { ItemType } from './assets';
 
 export type ZoneId =
-  | 'innenstadt'
+  | 'mitte'
   | 'wattenscheid'
-  | 'querenburg'
-  | 'langendreer'
-  | 'gerthe_harpen'
-  | 'weitmar_linden'
-  | 'stiepel';
+  | 'nord'
+  | 'ost'
+  | 'sued'
+  | 'suedwest';
 
 export type ZoneCapacity = Record<ItemType, number>;
 

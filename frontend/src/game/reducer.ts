@@ -1,6 +1,7 @@
 import { itemDefinitions } from '../data/itemDefinitions';
 import { createInitialGameState } from './initialGameState';
 import { getPlayerAssetSellValue } from './selectors';
+import { clampSubsidyLevel } from '../data/subsidyPrograms';
 import { canPlaceItem } from '../simulation/placementRules';
 import { advanceMonth } from '../simulation/monthlySimulation';
 import type { PlayerAsset } from '../types/assets';
@@ -33,6 +34,13 @@ function createPlayerAsset(
     placedMonthIndex: state.currentMonthIndex,
     activeFromMonthIndex: state.currentMonthIndex + itemDefinition.buildTimeMonths,
     purchasePrice: itemDefinition.cost
+  };
+}
+
+function getSubsidies(state: GameState): NonNullable<GameState['subsidies']> {
+  return state.subsidies ?? {
+    solar: { level: 0, privateCapacity: 0 },
+    storage: { level: 0, privateCapacity: 0 }
   };
 }
 
@@ -106,6 +114,22 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         ...state,
         selectedAssetId: undefined
       };
+
+    case 'SET_SUBSIDY_LEVEL':
+      {
+        const subsidies = getSubsidies(state);
+
+        return {
+          ...state,
+          subsidies: {
+            ...subsidies,
+            [action.program]: {
+              ...subsidies[action.program],
+              level: clampSubsidyLevel(action.level)
+            }
+          }
+        };
+      }
 
     case 'UNDO_LAST_ACTION': {
       const latestUndoEntry = state.undoStack[state.undoStack.length - 1];

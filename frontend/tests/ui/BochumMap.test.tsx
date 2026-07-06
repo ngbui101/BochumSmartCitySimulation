@@ -11,13 +11,24 @@ interface MockLayer {
 }
 
 let lastGeoJsonProps: any = null;
+const geoJsonLayers: any[] = [];
 const registeredLayers: { feature: any; layer: MockLayer }[] = [];
 const mockWindowEvents: Record<string, EventListener> = {};
 
 // Mock react-leaflet to prevent JSDOM rendering issues with real Leaflet
 vi.mock('react-leaflet', () => {
   return {
-    MapContainer: ({ children, bounds, maxBounds, minZoom, maxZoom, zoom, center, style }: any) => (
+    MapContainer: ({
+      children,
+      bounds,
+      maxBounds,
+      minZoom,
+      maxZoom,
+      zoom,
+      center,
+      style,
+      maxBoundsViscosity
+    }: any) => (
       <div
         data-testid="mock-map-container"
         data-bounds={JSON.stringify(bounds)}
@@ -26,6 +37,7 @@ vi.mock('react-leaflet', () => {
         data-max-zoom={maxZoom}
         data-zoom={zoom}
         data-center={JSON.stringify(center)}
+        data-max-bounds-viscosity={maxBoundsViscosity}
         style={style}
       >
         {children}
@@ -35,7 +47,10 @@ vi.mock('react-leaflet', () => {
       <div data-testid="mock-tile-layer" data-url={url} data-attribution={attribution} />
     ),
     GeoJSON: (props: any) => {
-      lastGeoJsonProps = props;
+      geoJsonLayers.push(props);
+      if (props.onEachFeature) {
+        lastGeoJsonProps = props;
+      }
       
       React.useEffect(() => {
         if (props.onEachFeature && props.data && props.data.features) {
@@ -54,9 +69,11 @@ vi.mock('react-leaflet', () => {
         }
       }, [props.data, props.onEachFeature]);
 
-      return (
-        <div data-testid="mock-geojson" />
-      );
+      const staticLayerTestId = props.data.features[0].properties.postal_code
+        ? 'mock-postal-boundaries'
+        : 'mock-city-boundary';
+
+      return <div data-testid={props.onEachFeature ? 'mock-geojson' : staticLayerTestId} />;
     },
     useMapEvents: (events: any) => {
       (globalThis as any).mockMapEvents = events;
@@ -91,6 +108,7 @@ describe('BochumMap component', () => {
 
   beforeEach(() => {
     lastGeoJsonProps = null;
+    geoJsonLayers.length = 0;
     registeredLayers.length = 0;
     Object.keys(mockWindowEvents).forEach((key) => {
       delete mockWindowEvents[key];
@@ -110,8 +128,9 @@ describe('BochumMap component', () => {
     render(<BochumMap {...defaultProps} />);
     const mapContainer = screen.getByTestId('mock-map-container');
     expect(mapContainer).toBeInTheDocument();
-    expect(mapContainer.getAttribute('data-bounds')).toContain('51.35');
-    expect(mapContainer.getAttribute('data-bounds')).toContain('7.05');
+    expect(mapContainer.getAttribute('data-bounds')).toBe('[[51.391,7.082],[51.551,7.369]]');
+    expect(mapContainer.getAttribute('data-max-bounds')).toBe('[[51.391,7.082],[51.551,7.369]]');
+    expect(mapContainer.getAttribute('data-max-bounds-viscosity')).toBe('1');
     expect(mapContainer.getAttribute('data-min-zoom')).toBe('12');
     expect(mapContainer.getAttribute('data-max-zoom')).toBe('16');
   });
@@ -141,6 +160,61 @@ describe('BochumMap component', () => {
     });
   });
 
+  it('renders a visible non-interactive city boundary line above the base map', () => {
+    render(<BochumMap {...defaultProps} />);
+
+    expect(screen.getByTestId('mock-city-boundary')).toBeInTheDocument();
+
+    const boundaryLayer = geoJsonLayers.find((layer) => layer.interactive === false);
+    expect(boundaryLayer).toBeDefined();
+    expect(boundaryLayer.data.licence).toContain('OpenStreetMap contributors');
+    expect(boundaryLayer.data.features[0].properties.name).toBe('Bochum');
+    expect(boundaryLayer.data.features[0].properties.osm_id).toBe(62644);
+    expect(boundaryLayer.data.features[0].properties.osm_type).toBe('relation');
+    expect(boundaryLayer.data.features[0].properties.dataConfidence).toBe('osm-boundary');
+
+    const boundaryStyle = boundaryLayer.style();
+    expect(boundaryStyle).toEqual(
+      expect.objectContaining({
+        className: 'bochum-city-boundary',
+        color: '#ef4444',
+        fillOpacity: 0,
+        interactive: false,
+        opacity: 0.95,
+        weight: 2.5
+      })
+    );
+  });
+
+  it('renders visible non-interactive postcode boundary lines from OpenStreetMap', () => {
+    render(<BochumMap {...defaultProps} />);
+
+    expect(screen.getByTestId('mock-postal-boundaries')).toBeInTheDocument();
+
+    const postalLayer = geoJsonLayers.find(
+      (layer) => layer.data.features[0].properties.postal_code
+    );
+    expect(postalLayer).toBeDefined();
+    expect(postalLayer.interactive).toBe(false);
+    expect(postalLayer.data.licence).toContain('OpenStreetMap contributors');
+    expect(postalLayer.data.features).toHaveLength(18);
+    expect(postalLayer.data.features.map((feature: any) => feature.properties.postal_code)).toContain(
+      '44787'
+    );
+
+    const postalStyle = postalLayer.style();
+    expect(postalStyle).toEqual(
+      expect.objectContaining({
+        className: 'bochum-postal-boundary',
+        color: '#2563eb',
+        fillOpacity: 0,
+        interactive: false,
+        opacity: 0.62,
+        weight: 1.4
+      })
+    );
+  });
+
   it('hides zone boundaries by default', () => {
     render(<BochumMap {...defaultProps} />);
     const styleFn = lastGeoJsonProps.style;
@@ -166,13 +240,13 @@ describe('BochumMap component', () => {
 
   it('shows zone information when a zone is clicked and hides it on map click', () => {
     render(<BochumMap {...defaultProps} />);
-    const querenburgLayer = registeredLayers.find(
-      (entry) => entry.feature.properties.zoneId === 'querenburg'
+    const suedLayer = registeredLayers.find(
+      (entry) => entry.feature.properties.zoneId === 'sued'
     )?.layer;
 
-    expect(querenburgLayer).toBeDefined();
+    expect(suedLayer).toBeDefined();
 
-    const clickHandler = (querenburgLayer!.on as any)._events.click;
+    const clickHandler = (suedLayer!.on as any)._events.click;
     expect(clickHandler).toBeDefined();
     const originalEvent = {
       stopPropagation: vi.fn()
@@ -186,7 +260,7 @@ describe('BochumMap component', () => {
     });
 
     const zoneInfoCard = screen.getByTestId('zone-info-card');
-    expect(zoneInfoCard).toHaveTextContent('Querenburg');
+    expect(zoneInfoCard).toHaveTextContent('Süd');
     expect(zoneInfoCard).toHaveTextContent('Solar');
     expect(zoneInfoCard).toHaveTextContent('Speicher');
     expect(zoneInfoCard).toHaveTextContent('Campus');
@@ -201,7 +275,7 @@ describe('BochumMap component', () => {
       });
     });
 
-    expect(screen.getByTestId('zone-info-card')).toHaveTextContent('Querenburg');
+    expect(screen.getByTestId('zone-info-card')).toHaveTextContent('Süd');
 
     act(() => {
       mockMapEvents.click({
@@ -219,13 +293,13 @@ describe('BochumMap component', () => {
     [{ x: 500, y: 880 }, 'top']
   ] as const)('places zone information %s from the selected zone anchor', (containerPoint, placement) => {
     render(<BochumMap {...defaultProps} />);
-    const innenstadtLayer = registeredLayers.find(
-      (entry) => entry.feature.properties.zoneId === 'innenstadt'
+    const mitteLayer = registeredLayers.find(
+      (entry) => entry.feature.properties.zoneId === 'mitte'
     )?.layer;
 
-    expect(innenstadtLayer).toBeDefined();
+    expect(mitteLayer).toBeDefined();
 
-    const clickHandler = (innenstadtLayer!.on as any)._events.click;
+    const clickHandler = (mitteLayer!.on as any)._events.click;
 
     act(() => {
       clickHandler({
@@ -236,19 +310,19 @@ describe('BochumMap component', () => {
       });
     });
 
-    expect(screen.getByTestId('zone-info-card')).toHaveTextContent('Innenstadt');
+    expect(screen.getByTestId('zone-info-card')).toHaveTextContent('Mitte');
     expect(screen.getByTestId('zone-info-card')).toHaveAttribute('data-placement', placement);
   });
 
   it('shows a zone profile image and closes the zone information with the close button', () => {
     render(<BochumMap {...defaultProps} />);
-    const innenstadtLayer = registeredLayers.find(
-      (entry) => entry.feature.properties.zoneId === 'innenstadt'
+    const mitteLayer = registeredLayers.find(
+      (entry) => entry.feature.properties.zoneId === 'mitte'
     )?.layer;
 
-    expect(innenstadtLayer).toBeDefined();
+    expect(mitteLayer).toBeDefined();
 
-    const clickHandler = (innenstadtLayer!.on as any)._events.click;
+    const clickHandler = (mitteLayer!.on as any)._events.click;
 
     act(() => {
       clickHandler({
@@ -259,7 +333,7 @@ describe('BochumMap component', () => {
       });
     });
 
-    const profileImage = screen.getByRole('img', { name: 'Profilbild Innenstadt' });
+    const profileImage = screen.getByRole('img', { name: 'Profilbild Mitte' });
     expect(profileImage).toHaveAttribute('src', '/photos/Innenstadt.png');
     expect(profileImage).toHaveClass('zone-profile-image');
 
@@ -273,15 +347,15 @@ describe('BochumMap component', () => {
     expect(screen.queryByTestId('zone-info-card')).not.toBeInTheDocument();
   });
 
-  it('shows a cozy fallback instead of a broken image when a zone has no profile image', () => {
+  it('shows a district profile image for the new borough zones', () => {
     render(<BochumMap {...defaultProps} />);
-    const stiepelLayer = registeredLayers.find(
-      (entry) => entry.feature.properties.zoneId === 'stiepel'
+    const suedLayer = registeredLayers.find(
+      (entry) => entry.feature.properties.zoneId === 'sued'
     )?.layer;
 
-    expect(stiepelLayer).toBeDefined();
+    expect(suedLayer).toBeDefined();
 
-    const clickHandler = (stiepelLayer!.on as any)._events.click;
+    const clickHandler = (suedLayer!.on as any)._events.click;
 
     act(() => {
       clickHandler({
@@ -292,25 +366,26 @@ describe('BochumMap component', () => {
       });
     });
 
-    expect(screen.getByTestId('zone-photo-fallback')).toHaveTextContent('Stiepel');
-    expect(screen.queryByRole('img', { name: /Profilbild Stiepel/i })).not.toBeInTheDocument();
+    const profileImage = screen.getByRole('img', { name: 'Profilbild Süd' });
+    expect(profileImage).toHaveAttribute('src', '/photos/Querenburg.png');
+    expect(screen.queryByTestId('zone-photo-fallback')).not.toBeInTheDocument();
   });
 
   it('highlights the zone in green if feedback status is allowed', () => {
     const feedback = {
-      zoneId: 'innenstadt' as const,
+      zoneId: 'mitte' as const,
       status: 'allowed' as const,
       message: 'Zone permits this asset type'
     };
     render(<BochumMap {...defaultProps} zoneFeedback={feedback} />);
     
     const styleFn = lastGeoJsonProps.style;
-    const innenstadtFeature = registeredLayers.find(
-      (l) => l.feature.properties.zoneId === 'innenstadt'
+    const mitteFeature = registeredLayers.find(
+      (l) => l.feature.properties.zoneId === 'mitte'
     )?.feature;
     
-    expect(innenstadtFeature).toBeDefined();
-    const style = styleFn(innenstadtFeature);
+    expect(mitteFeature).toBeDefined();
+    const style = styleFn(mitteFeature);
     expect(style.color).toBe('#3BB273');
     expect(style.fillColor).toBe('#3BB273');
   });

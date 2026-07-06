@@ -1,8 +1,8 @@
 import React from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { Sidebar } from '../../src/sidebar/Sidebar';
-import type { GameKpis } from '../../src/types/game';
+import type { GameKpis, SubsidyState } from '../../src/types/game';
 import type { WeatherForecastMonth } from '../../src/types/weather';
 import type { PlayerAsset } from '../../src/types/assets';
 import type { EnergyStatusProps } from '../../src/sidebar/KpiDashboard';
@@ -33,12 +33,17 @@ describe('Sidebar component', () => {
   const mockAsset: PlayerAsset = {
     id: 'solar-p1',
     itemType: 'solar',
-    zoneId: 'innenstadt',
+    zoneId: 'mitte',
     position: { lat: 51.48, lng: 7.21 },
     status: 'active',
     placedMonthIndex: 0,
     activeFromMonthIndex: 1,
     purchasePrice: 1200000,
+  };
+
+  const mockSubsidies: SubsidyState = {
+    solar: { level: 1, privateCapacity: 4 },
+    storage: { level: 0, privateCapacity: 0 }
   };
 
   it('renders the header with correct title and formatted month/year', () => {
@@ -69,6 +74,8 @@ describe('Sidebar component', () => {
   });
 
   it('renders sub-components correctly: KpiDashboard, WeatherForecast, and BuyableItemList', () => {
+    const handleSetSubsidyLevel = vi.fn();
+
     render(
       <Sidebar
         budget={8000000}
@@ -76,6 +83,11 @@ describe('Sidebar component', () => {
         kpis={mockKpis}
         energyStatus={mockEnergyStatus}
         forecast={mockForecast}
+        subsidies={mockSubsidies}
+        subsidyCosts={250000}
+        privateSolarProduction={2.2}
+        privateStorageDischarge={0}
+        onSetSubsidyLevel={handleSetSubsidyLevel}
       />
     );
 
@@ -90,5 +102,11 @@ describe('Sidebar component', () => {
     // BuyableItemList components
     expect(screen.getByText('Bauoptionen')).toBeInTheDocument();
     expect(screen.getByTestId('buyable-item-solar')).toBeInTheDocument();
+
+    expect(screen.getByTestId('subsidy-panel')).toHaveTextContent('Foerderung');
+    expect(screen.getByTestId('subsidy-panel')).toHaveTextContent('250.000');
+
+    fireEvent.click(screen.getByRole('button', { name: /Speicherfoerderung Stufe 1/i }));
+    expect(handleSetSubsidyLevel).toHaveBeenCalledWith('storage', 1);
   });
 });

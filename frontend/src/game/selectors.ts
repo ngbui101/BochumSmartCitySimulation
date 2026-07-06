@@ -1,10 +1,13 @@
 import { itemDefinitions } from '../data/itemDefinitions';
 import { getEnergyDemandForMonth } from '../data/energyDemand';
+import { subsidyPrograms } from '../data/subsidyPrograms';
 import { getWeatherProfileForMonth } from '../simulation/weatherSimulation';
 import type { PlayerAsset } from '../types/assets';
 import type { GameState } from '../types/game';
 
 const SELL_REFUND_RATE = 0.6;
+const IMPORT_COST_PER_UNIT = 60_000;
+const PRIVATE_STORAGE_DISCHARGE_RATE = 0.25;
 
 export function getUndoTooltip(state: GameState): string {
   const latestUndoEntry = state.undoStack[state.undoStack.length - 1];
@@ -18,6 +21,13 @@ export function getPlayerAssetSellValue(asset: PlayerAsset): number {
 
 function getItemDefinition(itemType: PlayerAsset['itemType']) {
   return itemDefinitions.find((item) => item.itemType === itemType);
+}
+
+function getSubsidies(state: GameState): NonNullable<GameState['subsidies']> {
+  return state.subsidies ?? {
+    solar: { level: 0, privateCapacity: 0 },
+    storage: { level: 0, privateCapacity: 0 }
+  };
 }
 
 /** Berechnet die Energieproduktion eines aktiven Assets für den aktuellen Monat. */
@@ -52,6 +62,37 @@ export function getStorageCapacity(state: GameState): number {
     }, 0);
 }
 
+export function getCurrentSubsidyCosts(state: GameState): number {
+  const subsidies = getSubsidies(state);
+
+  return (
+    subsidies.solar.level * subsidyPrograms.solar.monthlyCostPerLevel +
+    subsidies.storage.level * subsidyPrograms.storage.monthlyCostPerLevel
+  );
+}
+
+export function getCurrentPrivateSolarProduction(state: GameState): number {
+  const weatherProfile = getWeatherProfileForMonth(state.currentMonthIndex);
+  return Math.round(getSubsidies(state).solar.privateCapacity * weatherProfile.solarFactor * 10) / 10;
+}
+
+export function getCurrentPrivateStorageDischarge(state: GameState): number {
+  const saldoBeforeStorage =
+    getCurrentEnergyProduction(state) +
+    state.storedEnergy +
+    getCurrentPrivateSolarProduction(state) -
+    getCurrentEnergyDemand(state);
+
+  if (saldoBeforeStorage >= 0) {
+    return 0;
+  }
+
+  return Math.min(
+    Math.abs(saldoBeforeStorage),
+    getSubsidies(state).storage.privateCapacity * PRIVATE_STORAGE_DISCHARGE_RATE
+  );
+}
+
 /**
  * Aktueller Energie-Saldo: (Produktion + gespeicherte Energie) - Bedarf.
  * Negativ = Defizit (Importkosten), Positiv = Überschuss (kann gespeichert werden).
@@ -59,7 +100,13 @@ export function getStorageCapacity(state: GameState): number {
 export function getCurrentEnergySaldo(state: GameState): number {
   const production = getCurrentEnergyProduction(state);
   const demand = getCurrentEnergyDemand(state);
-  return production + state.storedEnergy - demand;
+  return (
+    production +
+    state.storedEnergy +
+    getCurrentPrivateSolarProduction(state) +
+    getCurrentPrivateStorageDischarge(state) -
+    demand
+  );
 }
 
 /**
@@ -69,7 +116,7 @@ export function getCurrentEnergySaldo(state: GameState): number {
 export function getCurrentImportCost(state: GameState): number {
   if (state.currentMonthIndex === 0) return 0;
   const saldo = getCurrentEnergySaldo(state);
-  return saldo < 0 ? Math.abs(saldo) * 60_000 : 0;
+  return saldo < 0 ? Math.abs(saldo) * IMPORT_COST_PER_UNIT : 0;
 }
 
 export function getCurrentRevenueFromSales(state: GameState): number {
@@ -88,7 +135,8 @@ export function getCurrentOperatingCosts(state: GameState): number {
 export function getCurrentNetMonthlyDelta(state: GameState): number {
   const revenue = getCurrentRevenueFromSales(state);
   const saldo = getCurrentEnergySaldo(state);
-  const rawImportCost = saldo < 0 ? Math.abs(saldo) * 60_000 : 0;
+  const rawImportCost = saldo < 0 ? Math.abs(saldo) * IMPORT_COST_PER_UNIT : 0;
   const operatingCosts = getCurrentOperatingCosts(state);
-  return revenue - rawImportCost - operatingCosts;
+  const subsidyCosts = getCurrentSubsidyCosts(state);
+  return revenue - rawImportCost - operatingCosts - subsidyCosts;
 }

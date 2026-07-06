@@ -52,7 +52,7 @@ describe('AssetMarkers component', () => {
     {
       id: 'solar-1',
       itemType: 'solar',
-      zoneId: 'innenstadt',
+      zoneId: 'mitte',
       position: { lat: 51.48, lng: 7.21 },
       status: 'active',
       placedMonthIndex: 0,
@@ -72,7 +72,7 @@ describe('AssetMarkers component', () => {
     {
       id: 'storage-1',
       itemType: 'storage',
-      zoneId: 'querenburg',
+      zoneId: 'sued',
       position: { lat: 51.47, lng: 7.23 },
       status: 'active',
       placedMonthIndex: 1,
@@ -86,7 +86,7 @@ describe('AssetMarkers component', () => {
       id: 'existing-1',
       name: 'Kohlekraftwerk Bochum',
       assetTypeLabel: 'Kohlekraftwerk',
-      zoneId: 'langendreer',
+      zoneId: 'ost',
       position: { lat: 51.46, lng: 7.24 },
       statusLabel: 'Bestand',
       roleDescription: 'Erzeugt Strom',
@@ -152,7 +152,7 @@ describe('AssetMarkers component', () => {
     expect(windHtml).toContain('asset-marker--wind');
     expect(windHtml).toContain('asset-marker--construction');
     expect(windHtml).toContain('/icons/Windkraftanlage_build.png');
-    expect(windHtml).toContain('alt="Windkraftanlage im Bau"');
+    expect(windHtml).toContain('alt="Kleinwindanlage im Bau"');
 
     const storageMarker = getByAttribute('data-id', 'storage-1');
     const storageHtml = storageMarker.getAttribute('data-icon-html') || '';
