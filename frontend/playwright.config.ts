@@ -11,7 +11,7 @@ export default defineConfig({
     ...devices['Desktop Chrome']
   },
   webServer: {
-    command: 'pnpm.cmd preview --host 127.0.0.1 --port 4174',
+    command: '.\\node_modules\\.bin\\vite.cmd preview --host 127.0.0.1 --port 4174',
     url: 'http://127.0.0.1:4174',
     reuseExistingServer: false,
     timeout: 120_000
