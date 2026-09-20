@@ -354,8 +354,9 @@ export function App() {
   const selectedAsset = useMemo(
     () =>
       state.playerAssets.find((asset) => asset.id === state.selectedAssetId) ||
+      state.privateAssets?.find((asset) => asset.id === state.selectedAssetId) ||
       state.existingAssets.find((asset) => asset.id === state.selectedAssetId),
-    [state.existingAssets, state.playerAssets, state.selectedAssetId]
+    [state.existingAssets, state.playerAssets, state.privateAssets, state.selectedAssetId]
   );
 
   const canUndo = state.undoStack.length > 0;
@@ -413,6 +414,7 @@ export function App() {
         <BochumMap
           playerAssets={state.playerAssets}
           existingAssets={state.existingAssets}
+          privateAssets={state.privateAssets}
           selectedAssetId={state.selectedAssetId}
           onSelectAsset={handleSelectAsset}
           onSell={handleSellAsset}

@@ -36,6 +36,23 @@ export type PlayerAsset = {
   purchasePrice: number;
 };
 
+export type PrivateAsset = {
+  id: string;
+  name: string;
+  itemType: Extract<ItemType, 'solar' | 'storage'>;
+  assetTypeLabel: string;
+  zoneId: ZoneId;
+  position: LatLngPosition;
+  statusLabel: string;
+  roleDescription: string;
+  modifiable: false;
+  sellable: false;
+  operatingCost: 0;
+  gridReliefCapacity: number;
+  ownership: 'private';
+  dataConfidence: 'mvp-placeholder';
+};
+
 export type ExistingAsset = {
   id: string;
   name: string;

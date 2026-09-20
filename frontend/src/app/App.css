@@ -783,7 +783,8 @@ textarea {
 
 .subsidy-program__button span,
 .subsidy-program__button strong,
-.subsidy-program__meta {
+.subsidy-program__meta,
+.subsidy-program__progress {
   font-size: 0.72rem;
   font-weight: 850;
 }
@@ -810,6 +811,11 @@ textarea {
 
 .subsidy-program__meta {
   color: var(--color-muted);
+}
+
+.subsidy-program__progress {
+  color: #9a6a3a;
+  font-size: 0.66rem;
 }
 
 .subsidy-panel__effects {
@@ -1326,6 +1332,32 @@ textarea {
 .asset-marker--storage .asset-icon-wrapper {
   background: rgba(229, 250, 242, 0.97) !important;
   border-color: rgba(33, 166, 122, 0.48) !important;
+}
+
+.asset-marker--private-solar .asset-icon-wrapper,
+.asset-marker--private-storage .asset-icon-wrapper {
+  background: linear-gradient(145deg, #fff1cf, #f2d6a7) !important;
+  border-color: #c69253 !important;
+}
+
+.asset-marker--private-solar .asset-icon-wrapper::after,
+.asset-marker--private-storage .asset-icon-wrapper::after {
+  content: 'P';
+  position: absolute;
+  right: -7px;
+  bottom: -7px;
+  width: 17px;
+  height: 17px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #fff;
+  border-radius: 50%;
+  background: #9a6a3a;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  box-shadow: 0 1px 3px rgba(76, 49, 22, 0.22);
 }
 
 .asset-marker--selected .asset-icon-wrapper {
