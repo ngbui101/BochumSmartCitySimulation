@@ -13,6 +13,7 @@ interface MockLayer {
 
 let lastGeoJsonProps: any = null;
 const geoJsonLayers: any[] = [];
+let geoJsonInstanceCounter = 0;
 const registeredLayers: { feature: any; layer: MockLayer }[] = [];
 const mockWindowEvents: Record<string, EventListener> = {};
 const mockPanes: Record<string, {
@@ -58,6 +59,11 @@ vi.mock('react-leaflet', () => {
       />
     ),
     GeoJSON: (props: any) => {
+      const instanceId = React.useRef<number | null>(null);
+      if (instanceId.current === null) {
+        instanceId.current = ++geoJsonInstanceCounter;
+      }
+
       geoJsonLayers.push(props);
       if (props.onEachFeature) {
         lastGeoJsonProps = props;
@@ -84,7 +90,12 @@ vi.mock('react-leaflet', () => {
         ? 'mock-postal-boundaries'
         : 'mock-city-boundary';
 
-      return <div data-testid={props.onEachFeature ? 'mock-geojson' : staticLayerTestId} />;
+      return (
+        <div
+          data-testid={props.onEachFeature ? 'mock-geojson' : staticLayerTestId}
+          data-instance-id={props.onEachFeature ? instanceId.current : undefined}
+        />
+      );
     },
     useMapEvents: (events: any) => {
       (globalThis as any).mockMapEvents = events;
@@ -132,6 +143,7 @@ describe('BochumMap component', () => {
   beforeEach(() => {
     lastGeoJsonProps = null;
     geoJsonLayers.length = 0;
+    geoJsonInstanceCounter = 0;
     registeredLayers.length = 0;
     Object.keys(mockPanes).forEach((key) => {
       delete mockPanes[key];
@@ -300,6 +312,18 @@ describe('BochumMap component', () => {
 
     expect(mouseoverHandler).toBeDefined();
     expect(mouseoutHandler).toBeDefined();
+  });
+
+  it('keeps the zone layer mounted while hovering so open map popups do not jump', () => {
+    render(<BochumMap {...defaultProps} />);
+    const initialInstanceId = screen.getByTestId('mock-geojson').getAttribute('data-instance-id');
+    const mouseoverHandler = (registeredLayers[0].layer.on as any)._events.mouseover;
+
+    act(() => {
+      mouseoverHandler();
+    });
+
+    expect(screen.getByTestId('mock-geojson')).toHaveAttribute('data-instance-id', initialInstanceId);
   });
 
   it('shows zone information when a zone is clicked and hides it on map click', () => {

@@ -431,7 +431,7 @@ export const BochumMap: React.FC<BochumMapProps> = ({
           interactive={false}
         />
         <GeoJSON
-          key={JSON.stringify(zoneFeedback) + JSON.stringify(placeableZones) + (hoveredZoneId || '')}
+          key={JSON.stringify(zoneFeedback) + JSON.stringify(placeableZones)}
           data={bochumZonesGeoJson}
           style={getZoneStyle}
           onEachFeature={onEachFeature}
