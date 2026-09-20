@@ -66,4 +66,48 @@ describe('QuickStart', () => {
     expect(onComplete).toHaveBeenCalledTimes(1);
     expect(onTargetChange).toHaveBeenLastCalledWith(null);
   });
+
+  it('scrolls the active sidebar target into view and anchors the hint beside it', () => {
+    const target = document.createElement('div');
+    target.dataset.onboarding = 'status';
+    const scrollIntoView = vi.fn();
+    const targetRect = {
+      top: 120,
+      bottom: 220,
+      left: 20,
+      right: 320,
+      width: 300,
+      height: 100,
+      x: 20,
+      y: 120,
+      toJSON: () => ({})
+    } as DOMRect;
+
+    Object.defineProperty(target, 'scrollIntoView', { value: scrollIntoView });
+    Object.defineProperty(target, 'getBoundingClientRect', { value: () => targetRect });
+    document.body.appendChild(target);
+
+    try {
+      render(<QuickStart isOpen onComplete={vi.fn()} />);
+
+      act(() => {
+        vi.advanceTimersByTime(700);
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'Anleitung starten' }));
+
+      expect(scrollIntoView).toHaveBeenCalledWith({
+        behavior: 'auto',
+        block: 'center',
+        inline: 'nearest'
+      });
+      expect(screen.getByRole('dialog', { name: 'Spielstatus und Monat' })).toHaveClass(
+        'quick-start-dialog--anchored'
+      );
+      expect(screen.getByRole('dialog', { name: 'Spielstatus und Monat' })).toHaveStyle({
+        left: '340px'
+      });
+    } finally {
+      target.remove();
+    }
+  });
 });

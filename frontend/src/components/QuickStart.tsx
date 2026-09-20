@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 export type QuickStartTarget = 'status' | 'kpis' | 'weather' | 'subsidies' | 'build' | 'controls';
 
@@ -42,6 +42,7 @@ const GUIDE_STEPS: GuideStep[] = [
 ];
 
 type QuickStartPhase = 'loading' | 'welcome' | 'guide';
+type DialogPosition = { top: number; left: number };
 
 export interface QuickStartProps {
   isOpen: boolean;
@@ -56,6 +57,7 @@ export const QuickStart: React.FC<QuickStartProps> = ({
 }) => {
   const [phase, setPhase] = useState<QuickStartPhase>('loading');
   const [stepIndex, setStepIndex] = useState(0);
+  const [dialogPosition, setDialogPosition] = useState<DialogPosition | null>(null);
   const dialogRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -80,6 +82,60 @@ export const QuickStart: React.FC<QuickStartProps> = ({
     dialogRef.current?.focus();
   }, [isOpen, onTargetChange, phase, stepIndex]);
 
+  useLayoutEffect(() => {
+    if (!isOpen || phase !== 'guide') {
+      setDialogPosition(null);
+      return undefined;
+    }
+
+    setDialogPosition(null);
+    const target = GUIDE_STEPS[stepIndex].target;
+    const targetElement = document.querySelector<HTMLElement>(`[data-onboarding="${target}"]`);
+
+    if (!targetElement) {
+      return undefined;
+    }
+
+    targetElement.scrollIntoView({ behavior: 'auto', block: 'center', inline: 'nearest' });
+
+    const updateDialogPosition = () => {
+      const dialog = dialogRef.current;
+      if (!dialog) {
+        return;
+      }
+
+      const targetRect = targetElement.getBoundingClientRect();
+      const dialogRect = dialog.getBoundingClientRect();
+      const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 1024;
+      const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 768;
+      const viewportPadding = 16;
+      const gap = 20;
+      const dialogWidth = dialogRect.width || Math.min(520, viewportWidth - viewportPadding * 2);
+      const dialogHeight = dialogRect.height;
+      const rightPosition = targetRect.right + gap;
+      const leftPosition = targetRect.left - dialogWidth - gap;
+      const maxLeft = Math.max(viewportPadding, viewportWidth - dialogWidth - viewportPadding);
+      const preferredLeft = rightPosition + dialogWidth <= viewportWidth - viewportPadding
+        ? rightPosition
+        : leftPosition;
+      const left = Math.min(Math.max(preferredLeft, viewportPadding), maxLeft);
+      const maxTop = Math.max(viewportPadding, viewportHeight - dialogHeight - viewportPadding);
+      const preferredTop = targetRect.top + (targetRect.height - dialogHeight) / 2;
+      const top = Math.min(Math.max(preferredTop, viewportPadding), maxTop);
+
+      setDialogPosition({ top, left });
+    };
+
+    updateDialogPosition();
+    window.addEventListener('resize', updateDialogPosition);
+    document.addEventListener('scroll', updateDialogPosition, true);
+
+    return () => {
+      window.removeEventListener('resize', updateDialogPosition);
+      document.removeEventListener('scroll', updateDialogPosition, true);
+    };
+  }, [isOpen, phase, stepIndex]);
+
   if (!isOpen) {
     return null;
   }
@@ -99,6 +155,7 @@ export const QuickStart: React.FC<QuickStartProps> = ({
   const isWelcome = phase === 'welcome';
   const currentStep = GUIDE_STEPS[stepIndex];
   const isLastStep = stepIndex === GUIDE_STEPS.length - 1;
+  const dialogClassName = `quick-start-dialog${dialogPosition ? ' quick-start-dialog--anchored' : ' quick-start-dialog--centered'}`;
   const handleComplete = () => {
     onTargetChange?.(null);
     onComplete();
@@ -108,7 +165,8 @@ export const QuickStart: React.FC<QuickStartProps> = ({
     <div className="quick-start-overlay">
       <div
         ref={dialogRef}
-        className="quick-start-dialog"
+        className={dialogClassName}
+        style={dialogPosition ? { top: `${dialogPosition.top}px`, left: `${dialogPosition.left}px` } : undefined}
         role="dialog"
         aria-modal="true"
         aria-labelledby="quick-start-title"
