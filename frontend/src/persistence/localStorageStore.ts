@@ -35,6 +35,7 @@ function isStoredGameState(value: unknown): value is StoredGameState {
 function withStateDefaults(state: GameState): GameState {
   return {
     ...state,
+    existingAssets: [],
     subsidies: state.subsidies ?? {
       solar: { level: 0, privateCapacity: 0 },
       storage: { level: 0, privateCapacity: 0 }

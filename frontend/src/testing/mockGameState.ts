@@ -1,5 +1,4 @@
 import type { GameState } from '../types/game';
-import { initialAssets } from '../data/initialAssets';
 
 export const initialMockState: GameState = {
   gameId: 'mock-initial-game',
@@ -11,7 +10,7 @@ export const initialMockState: GameState = {
     supplySecurity: 58
   },
   playerAssets: [],
-  existingAssets: initialAssets,
+  existingAssets: [],
   undoStack: [],
   monthlyHistory: [],
   forecast: [
@@ -54,7 +53,7 @@ export const midgameMockState: GameState = {
       purchasePrice: 3400000
     }
   ],
-  existingAssets: initialAssets,
+  existingAssets: [],
   undoStack: [],
   monthlyHistory: [
     { monthIndex: 0,  budget: 18000000, kpis: { energyAutarky: 18, citizenSatisfaction: 72, supplySecurity: 58 }, energyDemand: 95, energyProduction: 0, energySaldo: -95, importCost: 5700000, storedEnergy: 0, revenueFromSales: 3800000, operatingCosts: 0, netMonthlyDelta: -1900000 },
@@ -121,7 +120,7 @@ export const finishMockState: GameState = {
       purchasePrice: 2500000
     }
   ],
-  existingAssets: initialAssets,
+  existingAssets: [],
   undoStack: [],
   monthlyHistory: [],
   forecast: [

@@ -81,23 +81,23 @@ describe('gameReducer', () => {
     expect(next.budget).toBe(state.budget + 600_000);
   });
 
-  it('does not sell existing assets', () => {
+  it('does not sell a non-player asset id', () => {
     const state = createInitialGameState();
-    const existingAssetId = state.existingAssets[0].id;
-    const next = gameReducer(state, { type: 'SELL_ASSET', assetId: existingAssetId });
+    const next = gameReducer(state, { type: 'SELL_ASSET', assetId: 'non-player-asset' });
 
     expect(next).toBe(state);
   });
 
   it('stores and clears the selected asset id', () => {
     const state = createInitialGameState();
+    const selectedAssetId = 'asset-selection';
     const selected = gameReducer(state, {
       type: 'SELECT_ASSET',
-      assetId: state.existingAssets[0].id
+      assetId: selectedAssetId
     });
     const cleared = gameReducer(selected, { type: 'CLEAR_SELECTION' });
 
-    expect(selected.selectedAssetId).toBe(state.existingAssets[0].id);
+    expect(selected.selectedAssetId).toBe(selectedAssetId);
     expect(cleared.selectedAssetId).toBeUndefined();
   });
 

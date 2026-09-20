@@ -62,11 +62,11 @@ describe('current-month undo', () => {
     expect(undone.budget).toBe(state.budget);
   });
 
-  it('does not undo existing assets because they cannot be sold', () => {
+  it('does not create an undo entry for a non-player asset id', () => {
     const state = createInitialGameState();
     const unchanged = gameReducer(state, {
       type: 'SELL_ASSET',
-      assetId: state.existingAssets[0].id
+      assetId: 'non-player-asset'
     });
 
     expect(unchanged).toBe(state);

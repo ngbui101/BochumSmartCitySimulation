@@ -106,7 +106,7 @@ describe('Sidebar component', () => {
     expect(screen.getByTestId('subsidy-panel')).toHaveTextContent('Foerderung');
     expect(screen.getByTestId('subsidy-panel')).toHaveTextContent('250.000');
 
-    fireEvent.click(screen.getByRole('button', { name: /Speicherfoerderung Stufe 1/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Speicherförderung Stufe 1/i }));
     expect(handleSetSubsidyLevel).toHaveBeenCalledWith('storage', 1);
   });
 });

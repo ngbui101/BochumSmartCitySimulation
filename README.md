@@ -9,6 +9,10 @@ Spieler platzieren Solaranlagen, Windmuehlen und Energiespeicher auf einer verei
 - React + TypeScript + Vite Single Page App
 - Leaflet-Karte mit begrenztem Bochum-Ausschnitt
 - Vereinfachte MVP-Spielzonen als statische Daten
+- Cozy-Kartenstil mit CARTO-Light-Kacheln und OpenStreetMap-Fallback
+- Sichtbare Stadtgrenze und dauerhaft sichtbare Stadtteilgrenzen
+- Dauerhaft sichtbare Stadtteilnamen unterhalb der Karten-Overlay-Layer
+- Keine vorplatzierten Bestandsanlagen; alle Anlagen werden im Spiel platziert
 - Platzierung per Pointer-Drag mit eigener Drag Preview
 - Live-Zonenfeedback fuer erlaubte und blockierte Platzierungen
 - Budget-, Zonen- und Kapazitaetsvalidierung im Reducer
@@ -18,7 +22,7 @@ Spieler platzieren Solaranlagen, Windmuehlen und Energiespeicher auf einer verei
 - Verkauf von Spieleranlagen mit Undo
 - Endscreen mit Gesamt-Score und vier Einzelwerten
 - Lokale Persistenz ueber `localStorage`
-- Keine API, kein Backend, keine Datenbank
+- Keine eigene API, kein Backend, keine Datenbank
 
 ## Voraussetzungen
 
@@ -31,6 +35,14 @@ Spieler platzieren Solaranlagen, Windmuehlen und Energiespeicher auf einer verei
 cd frontend
 npm install
 ```
+
+Optional kann im Projektroot eine `.env` mit einem CARTO-Key angelegt werden:
+
+```text
+CARTO_API_KEY=dein-carto-api-key
+```
+
+Die `.env` ist in `.gitignore` eingetragen und darf nicht committed werden. Ohne Key nutzt die Karte den OpenStreetMap-Fallback.
 
 ## Entwicklung
 
@@ -52,6 +64,8 @@ cd frontend
 npm run test:run
 npm run build
 ```
+
+Die heutigen Architektur- und UI-Entscheidungen sind in [docs/DECISIONS-2026-09-20.md](docs/DECISIONS-2026-09-20.md) dokumentiert.
 
 Production Preview nach erfolgreichem Build:
 
@@ -95,7 +109,7 @@ frontend/
 
 ## Datenhinweis
 
-Die Zonen, Bestandsanlagen und Balancing-Werte sind MVP-Spielwerte. Nicht verifizierte reale Anlagen sind als MVP-Spielplatzhalter markiert und duerfen nicht als reale Tatsachenbehauptung verstanden werden.
+Die Zonen und Balancing-Werte sind MVP-Spielwerte und duerfen nicht als reale Tatsachenbehauptung verstanden werden.
 
 ## QA-Status
 
@@ -114,3 +128,5 @@ Die App ist statisch baubar. Fuer Vercel oder vergleichbares Static Hosting:
 - Build Command: `npm run build`
 - Output Directory: `dist`
 - Project Root: `frontend`
+
+Für ein Deployment muss `CARTO_API_KEY` als Client-Build-Variable gesetzt sein, wenn CARTO statt des OpenStreetMap-Fallbacks verwendet werden soll. Der Key sollte beim Anbieter auf die erlaubte Domain bzw. Nutzung eingeschränkt werden.

@@ -11,6 +11,7 @@ describe('mockGameState', () => {
     expect(initialMockState.kpis.supplySecurity).toBe(58);
     expect(initialMockState.forecast).toHaveLength(3);
     expect(initialMockState.status).toBe('running');
+    expect(initialMockState.existingAssets).toEqual([]);
   });
 
   it('should export a valid midgameMockState with 2 player assets', () => {
@@ -23,6 +24,7 @@ describe('mockGameState', () => {
     expect(midgameMockState.playerAssets).toHaveLength(2);
     expect(midgameMockState.forecast).toHaveLength(3);
     expect(midgameMockState.status).toBe('running');
+    expect(midgameMockState.existingAssets).toEqual([]);
   });
 
   it('should export a valid finishMockState in finished status', () => {
@@ -31,5 +33,6 @@ describe('mockGameState', () => {
     expect(finishMockState.status).toBe('finished');
     expect(finishMockState.finalScore).toBeDefined();
     expect(finishMockState.finalScore?.totalScore).toBeGreaterThan(0);
+    expect(finishMockState.existingAssets).toEqual([]);
   });
 });

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import { initialAssets } from '../../src/data/initialAssets';
 import { createInitialGameState } from '../../src/game/initialGameState';
 
 describe('createInitialGameState', () => {
@@ -10,7 +9,7 @@ describe('createInitialGameState', () => {
     expect(state.currentMonthIndex).toBe(0);
     expect(state.status).toBe('running');
     expect(state.playerAssets).toEqual([]);
-    expect(state.existingAssets).toEqual(initialAssets);
+    expect(state.existingAssets).toEqual([]);
     expect(state.undoStack).toEqual([]);
     expect(state.monthlyHistory).toEqual([]);
     expect(state.subsidies).toEqual({

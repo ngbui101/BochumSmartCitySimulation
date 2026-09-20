@@ -21,6 +21,7 @@ vi.mock('../../src/map/BochumMap', async () => {
         'div',
         { 'data-testid': 'mock-bochum-map' },
         React.createElement('span', { 'data-testid': 'player-asset-count' }, props.playerAssets.length),
+        React.createElement('span', { 'data-testid': 'existing-asset-count' }, props.existingAssets.length),
         React.createElement('span', { 'data-testid': 'selected-asset-id' }, props.selectedAssetId ?? 'none'),
         props.zoneFeedback
           ? React.createElement('span', { 'data-testid': 'zone-feedback' }, props.zoneFeedback.message)
@@ -287,14 +288,11 @@ describe('App integrated game flow', () => {
     expect(screen.getByTestId('placeable-zones-state')).toHaveTextContent('shown');
   });
 
-  it('selects, clears, sells, and undoes player assets while existing assets remain read-only', () => {
+  it('starts without existing assets and still sells and undoes player assets', () => {
     render(<App />);
 
+    expect(screen.getByTestId('existing-asset-count')).toHaveTextContent('0');
     fireEvent.click(screen.getByRole('button', { name: 'select existing' }));
-    expect(screen.getByText(/Bestandsanlage/i)).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /Verkaufen/i })).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole('button', { name: 'clear selection' }));
     expect(screen.queryByTestId('asset-title')).not.toBeInTheDocument();
 
     fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {

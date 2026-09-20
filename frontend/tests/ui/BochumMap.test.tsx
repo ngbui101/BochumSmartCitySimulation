@@ -1,6 +1,7 @@
 import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { act, fireEvent, render, screen } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { BochumMap } from '../../src/map/BochumMap';
 
 // Mock layer interface for simulating leaflet events in test
@@ -14,6 +15,11 @@ let lastGeoJsonProps: any = null;
 const geoJsonLayers: any[] = [];
 const registeredLayers: { feature: any; layer: MockLayer }[] = [];
 const mockWindowEvents: Record<string, EventListener> = {};
+const mockPanes: Record<string, {
+  style: Record<string, string>;
+  attached: boolean;
+  remove: ReturnType<typeof vi.fn>;
+}> = {};
 
 // Mock react-leaflet to prevent JSDOM rendering issues with real Leaflet
 vi.mock('react-leaflet', () => {
@@ -43,8 +49,13 @@ vi.mock('react-leaflet', () => {
         {children}
       </div>
     ),
-    TileLayer: ({ url, attribution }: any) => (
-      <div data-testid="mock-tile-layer" data-url={url} data-attribution={attribution} />
+    TileLayer: ({ url, attribution, className }: any) => (
+      <div
+        data-testid="mock-tile-layer"
+        data-url={url}
+        data-attribution={attribution}
+        data-class-name={className}
+      />
     ),
     GeoJSON: (props: any) => {
       geoJsonLayers.push(props);
@@ -93,6 +104,18 @@ vi.mock('react-leaflet', () => {
       containerPointToLatLng: (point: { x: number; y: number }) => ({
         lat: 51 + point.y / 1000,
         lng: 7 + point.x / 1000
+      }),
+      getPane: (name: string) => mockPanes[name],
+      createPane: vi.fn((name: string) => {
+        const pane = {
+          style: {},
+          attached: true,
+          remove: vi.fn(() => {
+            pane.attached = false;
+          })
+        };
+        mockPanes[name] = pane;
+        return pane;
       })
     })
   };
@@ -110,6 +133,9 @@ describe('BochumMap component', () => {
     lastGeoJsonProps = null;
     geoJsonLayers.length = 0;
     registeredLayers.length = 0;
+    Object.keys(mockPanes).forEach((key) => {
+      delete mockPanes[key];
+    });
     Object.keys(mockWindowEvents).forEach((key) => {
       delete mockWindowEvents[key];
     });
@@ -135,14 +161,16 @@ describe('BochumMap component', () => {
     expect(mapContainer.getAttribute('data-max-zoom')).toBe('16');
   });
 
-  it('renders TileLayer with CartoDB url and proper attribution', () => {
+  it('renders TileLayer with a public OpenStreetMap url and attribution', () => {
     render(<BochumMap {...defaultProps} />);
     const tileLayer = screen.getByTestId('mock-tile-layer');
     expect(tileLayer).toBeInTheDocument();
-    expect(tileLayer.getAttribute('data-url')).toBe(
-      'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+    expect(tileLayer.getAttribute('data-url')).toMatch(
+      /^https:\/\/\{s\}\.(?:basemaps\.cartocdn\.com\/rastertiles\/light_all|tile\.openstreetmap\.org)\//
     );
-    expect(tileLayer.getAttribute('data-attribution')).toContain('CARTO');
+    expect(tileLayer.getAttribute('data-attribution')).toContain('OpenStreetMap');
+    expect(tileLayer.getAttribute('data-attribution')).toMatch(/OpenStreetMap|CARTO/);
+    expect(tileLayer.getAttribute('data-class-name')).toBe('cozy-map-tiles');
   });
 
   it('renders GeoJSON layer and binds tooltips to features', () => {
@@ -158,6 +186,42 @@ describe('BochumMap component', () => {
         expect.any(Object)
       );
     });
+  });
+
+  it('shows every zone label permanently behind the zone layer', () => {
+    render(<BochumMap {...defaultProps} />);
+
+    registeredLayers.forEach(({ feature, layer }) => {
+      expect(layer.bindTooltip).toHaveBeenCalledWith(
+        feature.properties.label,
+        expect.objectContaining({
+          className: 'zone-label-tooltip',
+          direction: 'center',
+          interactive: false,
+          pane: 'zone-labels',
+          permanent: true
+        })
+      );
+    });
+
+    expect(mockPanes['zone-labels']).toEqual({
+      style: {
+        pointerEvents: 'none',
+        zIndex: '350'
+      },
+      attached: true,
+      remove: expect.any(Function)
+    });
+  });
+
+  it('keeps the zone label pane attached when StrictMode re-runs effects', () => {
+    render(
+      <StrictMode>
+        <BochumMap {...defaultProps} />
+      </StrictMode>
+    );
+
+    expect(mockPanes['zone-labels']?.attached).toBe(true);
   });
 
   it('renders a visible non-interactive city boundary line above the base map', () => {
@@ -186,7 +250,7 @@ describe('BochumMap component', () => {
     );
   });
 
-  it('renders visible non-interactive postcode boundary lines from OpenStreetMap', () => {
+  it('keeps postcode boundary data hidden from the map', () => {
     render(<BochumMap {...defaultProps} />);
 
     expect(screen.getByTestId('mock-postal-boundaries')).toBeInTheDocument();
@@ -209,13 +273,13 @@ describe('BochumMap component', () => {
         color: '#2563eb',
         fillOpacity: 0,
         interactive: false,
-        opacity: 0.62,
+        opacity: 0,
         weight: 1.4
       })
     );
   });
 
-  it('hides zone boundaries by default', () => {
+  it('shows zone boundaries by default', () => {
     render(<BochumMap {...defaultProps} />);
     const styleFn = lastGeoJsonProps.style;
     const feature = registeredLayers[0].feature;
@@ -225,7 +289,7 @@ describe('BochumMap component', () => {
     expect(style.color).toBe('#2F7A55');
     expect(style.fillColor).toBe('#2F7A55');
     expect(style.fillOpacity).toBe(0);
-    expect(style.opacity).toBe(0);
+    expect(style.opacity).toBe(0.34);
   });
 
   it('handles zone hover events correctly', () => {

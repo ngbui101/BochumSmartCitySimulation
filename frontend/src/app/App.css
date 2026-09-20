@@ -1125,7 +1125,8 @@ textarea {
   filter: saturate(1.08) contrast(1.03) sepia(0.06);
 }
 
-.zone-tooltip {
+.zone-tooltip,
+.zone-label-tooltip {
   padding: 7px 9px;
   color: var(--color-text);
   background: rgba(255, 253, 246, 0.96);
@@ -1133,6 +1134,12 @@ textarea {
   border-radius: 999px;
   box-shadow: var(--shadow-soft);
   font-weight: 800;
+}
+
+.zone-label-tooltip {
+  pointer-events: none;
+  font-size: 0.72rem;
+  opacity: 0.9;
 }
 
 .zone-info-card {

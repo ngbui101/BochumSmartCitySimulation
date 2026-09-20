@@ -1,4 +1,3 @@
-import { initialAssets } from '../data/initialAssets';
 import { createForecast } from '../simulation/weatherSimulation';
 import type { GameState } from '../types/game';
 
@@ -21,7 +20,7 @@ export function createInitialGameState(): GameState {
     budget: STARTING_BUDGET,
     kpis: STARTING_KPIS,
     playerAssets: [],
-    existingAssets: initialAssets,
+    existingAssets: [],
     undoStack: [],
     monthlyHistory: [],
     subsidies: {

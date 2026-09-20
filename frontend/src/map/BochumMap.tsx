@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, GeoJSON, useMap, useMapEvents } from 'react-leaflet';
 import { bochumBounds, minZoom, maxZoom } from './mapBounds';
 import { bochumCityBoundaryGeoJson } from '../data/bochumCityBoundary';
@@ -10,6 +10,7 @@ import type { ZoneId } from '../types/zones';
 import { ZoneProfileMedia } from '../ui/ZoneProfileMedia';
 import L, { type PathOptions } from 'leaflet';
 import { AssetMarkers } from './AssetMarkers';
+import { getMapTileLayerConfig } from './mapTiles';
 
 export type ZoneFeedback = {
   zoneId: ZoneId;
@@ -146,6 +147,18 @@ const PointerPlacementHandler: React.FC<DragDropHandlerProps> = ({
   return null;
 };
 
+const ZoneLabelPane: React.FC = () => {
+  const map = useMap();
+
+  useLayoutEffect(() => {
+    const pane = map.getPane('zone-labels') ?? map.createPane('zone-labels');
+    pane.style.zIndex = '350';
+    pane.style.pointerEvents = 'none';
+  }, [map]);
+
+  return null;
+};
+
 const itemTypeLabels: Record<ItemType, string> = {
   solar: 'Solar',
   wind: 'Wind',
@@ -178,7 +191,7 @@ const cityBoundaryStyle: PathOptions = {
 const postalBoundaryStyle: PathOptions = {
   color: '#2563eb',
   weight: 1.4,
-  opacity: 0.62,
+  opacity: 0,
   fillOpacity: 0,
   interactive: false,
   className: 'bochum-postal-boundary'
@@ -293,6 +306,7 @@ export const BochumMap: React.FC<BochumMapProps> = ({
   const mapRootRef = useRef<HTMLDivElement | null>(null);
   const [hoveredZoneId, setHoveredZoneId] = useState<string | null>(null);
   const [selectedZoneInfo, setSelectedZoneInfo] = useState<ZoneInfoSelection | null>(null);
+  const tileLayerConfig = getMapTileLayerConfig(import.meta.env.CARTO_API_KEY);
 
   const getZoneStyle = (feature: any): PathOptions => {
     if (!feature || !feature.properties) return {};
@@ -331,7 +345,7 @@ export const BochumMap: React.FC<BochumMapProps> = ({
       color: '#2F7A55',
       className: 'bochum-zone-path',
       weight: isHovered ? 1.75 : 1,
-      opacity: isHovered ? 0.34 : 0
+      opacity: 0.34
     };
   };
 
@@ -344,9 +358,11 @@ export const BochumMap: React.FC<BochumMapProps> = ({
         : label;
 
     layer.bindTooltip(tooltipText, {
-      sticky: true,
+      permanent: true,
       direction: 'center',
-      className: 'zone-tooltip'
+      className: 'zone-label-tooltip',
+      pane: 'zone-labels',
+      interactive: false
     });
 
     layer.on({
@@ -396,9 +412,11 @@ export const BochumMap: React.FC<BochumMapProps> = ({
         style={{ height: '100%', width: '100%' }}
         maxBoundsViscosity={1.0}
       >
+        <ZoneLabelPane />
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url={tileLayerConfig.url}
+          attribution={tileLayerConfig.attribution}
+          className={tileLayerConfig.className}
         />
         <GeoJSON
           data={bochumCityBoundaryGeoJson}

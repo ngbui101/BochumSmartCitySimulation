@@ -43,4 +43,33 @@ describe('localStorageStore', () => {
 
     expect(loadGameState()).toBeNull();
   });
+
+  it('removes legacy existing assets when loading a saved game', () => {
+    const state = createInitialGameState();
+
+    localStorage.setItem(
+      GAME_STATE_STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        state: {
+          ...state,
+          existingAssets: [
+            {
+              id: 'legacy-existing-asset',
+              name: 'Legacy-Anlage',
+              assetTypeLabel: 'Solaranlage',
+              zoneId: 'mitte',
+              position: { lat: 51.48, lng: 7.22 },
+              statusLabel: 'Bestand',
+              roleDescription: 'Legacy',
+              modifiable: false,
+              dataConfidence: 'mvp-placeholder'
+            }
+          ]
+        }
+      })
+    );
+
+    expect(loadGameState()?.existingAssets).toEqual([]);
+  });
 });
