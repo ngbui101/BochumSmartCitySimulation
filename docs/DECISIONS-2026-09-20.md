@@ -27,6 +27,22 @@ Dieses Protokoll hält die heute gemeinsam festgelegten Produkt- und Technikents
 - Ein Klick auf einen Stadtteil öffnet weiterhin die vorhandene Detailkarte; Hover bleibt für visuelles Feedback verfügbar.
 - Der React-StrictMode-Lifecycle ist berücksichtigt: Die Label-Pane wird nicht beim Effect-Cleanup entfernt, weil Leaflet sie intern weiterverwaltet.
 
+### Quick-Start-Anleitung
+
+- Beim ersten Spielstart erscheint zunächst ein kurzer Loading Screen, danach ein Willkommen-Fenster mit den Aktionen „Anleitung starten“ und „Anleitung überspringen“.
+- Die Anleitung erklärt die sechs Sidebar-Gruppen in fester Reihenfolge: Spielstatus, Kennzahlen, Wetter, Förderungen, Bauoptionen sowie Monatswechsel und Zurücksetzen.
+- Die Quick-Start-Erledigung wird getrennt vom Spielstand in `localStorage` gespeichert. Ein Browser-Refresh zeigt die Anleitung daher nicht erneut; ein bewusstes Zurücksetzen oder ein Neustart über den Endscreen öffnet sie wieder.
+- Während eines Erklärungsschritts wird der Hinweis direkt neben dem markierten Sidebar-Element angezeigt. Das aktive Element wird automatisch in den sichtbaren Sidebar-Bereich gescrollt.
+- Das aktive Element bleibt über dem Blur des Overlays scharf sichtbar; der Hinweis liegt in einer darüberliegenden Ebene. Willkommen und Loading bleiben zentriert.
+
+### Verlust und Punkte
+
+- Das Spiel endet sofort mit „Bankrott“, wenn das Budget auf null oder darunter fällt.
+- Das Spiel endet sofort mit „Abgewählt“, wenn die Bürgerzufriedenheit auf null oder darunter fällt.
+- Der Endscreen zeigt auch bei einer Niederlage die erreichten Punkte und die Einzelwerte.
+- Je volle 1.000.000 Euro Budget zählt ein Punkt.
+- Je volle 10 Prozent Energieautarkie, Bürgerzufriedenheit und Versorgungssicherheit zählt jeweils ein Punkt. Negative Werte werden für die Punkteberechnung auf null begrenzt.
+
 ## Kartenanbieter und API-Key
 
 - Für die helle Kartengrundlage wird CARTO verwendet, wenn `CARTO_API_KEY` gesetzt ist.
@@ -59,7 +75,8 @@ Dieses Protokoll hält die heute gemeinsam festgelegten Produkt- und Technikents
   npm run build
   ```
 
-- Stand der heutigen Prüfung: 27 Testdateien und 133 Tests bestanden, TypeScript-Prüfung bestanden, Produktions-Build bestanden und Dev-Server mit HTTP 200 erreichbar.
+- Stand der heutigen Prüfung: 31 Testdateien und 163 Tests bestanden, TypeScript-Prüfung bestanden, Produktions-Build bestanden und der Playwright-Produktions-Smoke-Test bestanden.
+- `main` ist der Produktions-Branch und wurde nach GitHub gepusht. Die App ist für statisches Vercel-Hosting ohne eigenes Backend und ohne Datenbank vorbereitet.
 
 ## Relevante Dateien
 
@@ -68,5 +85,9 @@ Dieses Protokoll hält die heute gemeinsam festgelegten Produkt- und Technikents
 - `frontend/vite.config.ts` – Root-`.env` und `CARTO_API_KEY`
 - `frontend/src/game/initialGameState.ts` – leerer Startbestand
 - `frontend/src/persistence/localStorageStore.ts` – Normalisierung geladener Spielstände
+- `frontend/src/persistence/quickStartStore.ts` – separater Quick-Start-Marker
+- `frontend/src/components/QuickStart.tsx` – Loading Screen, Willkommen und geführte Anleitung
+- `frontend/src/sidebar/Sidebar.tsx` – stabile Quick-Start-Ziele in der Sidebar
 - `frontend/src/app/App.css` – Cozy-Karten- und Label-Styling
+- `frontend/tests/components/QuickStart.test.tsx` – Reihenfolge, Positionierung und Auto-Scroll
 - `frontend/tests/ui/BochumMap.test.tsx` – Layer-, Label- und StrictMode-Regressionstests

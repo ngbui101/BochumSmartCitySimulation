@@ -3,7 +3,7 @@
 ## Project settings
 
 - Repository: `BochumSmartCitySimulation`
-- Production branch: `production`
+- Production branch: `main`
 - Root Directory: `frontend`
 - Install Command: `npm ci`
 - Build Command: `npm run build`
@@ -17,10 +17,11 @@ Add `CARTO_API_KEY` to the Vercel Production environment. Do not commit `.env` o
 
 1. Run `npm ci` and `npm run test:run` in `frontend`.
 2. Run `npm run build` in `frontend`.
-3. Review the Vercel preview deployment.
-4. Confirm the game starts at month 1, survives reload, and reset works.
-5. Promote the reviewed deployment to production.
+3. Run `npm run test:e2e` against the production preview.
+4. Review the Vercel preview deployment.
+5. Confirm the game starts at month 1, survives reload, and reset works.
+6. Merge or push the reviewed change to `main`; Vercel deploys `main` as production.
 
 ## Rollback
 
-Promote the previous successful Vercel deployment. The `production` branch and Git history remain available; no database migration or server state rollback is required.
+Promote the previous successful Vercel deployment. The `main` branch and Git history remain available; no database migration or server state rollback is required. Browser-local Spielstände werden durch ein Deployment nicht zentral zurückgesetzt.
