@@ -20,9 +20,9 @@ describe('createInitialGameState', () => {
     expect(state.forecast).toHaveLength(3);
     expect(state.budget).toBeGreaterThan(0);
     expect(state.kpis).toEqual({
-      energyAutarky: 18,
-      citizenSatisfaction: 72,
-      supplySecurity: 58
+      energyAutarky: 0,
+      citizenSatisfaction: 50,
+      supplySecurity: 0
     });
   });
 

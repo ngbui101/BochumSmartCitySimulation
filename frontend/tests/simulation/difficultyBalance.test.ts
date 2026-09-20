@@ -11,5 +11,7 @@ describe('production sweet spot balance', () => {
     expect(itemDefinitions.find((item) => item.itemType === 'wind')?.operatingCost).toBe(400_000);
     expect(subsidyPrograms.solar.adoptionPerLevel).toBe(0.1);
     expect(subsidyPrograms.storage.adoptionPerLevel).toBe(0.1);
+    expect(subsidyPrograms.solar.capacityPerAsset).toBe(7);
+    expect(subsidyPrograms.storage.capacityPerAsset).toBe(10);
   });
 });

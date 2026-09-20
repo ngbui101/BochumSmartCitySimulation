@@ -1,4 +1,5 @@
 import { itemDefinitions } from '../data/itemDefinitions';
+import { getZoneCongestionPenalty } from '../data/gameBalance';
 import { createInitialGameState } from './initialGameState';
 import { getPlayerAssetSellValue } from './selectors';
 import { clampSubsidyLevel } from '../data/subsidyPrograms';
@@ -62,16 +63,28 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         return state;
       }
 
+      const zoneAssetCount = state.playerAssets.filter((asset) => asset.zoneId === action.zoneId).length;
+      const citizenSatisfactionPenalty =
+        getZoneCongestionPenalty(zoneAssetCount + 1) - getZoneCongestionPenalty(zoneAssetCount);
+
       return applyLossState({
         ...state,
         budget: state.budget - itemDefinition.cost,
         playerAssets: [...state.playerAssets, playerAsset],
+        kpis: {
+          ...state.kpis,
+          citizenSatisfaction: Math.max(
+            0,
+            state.kpis.citizenSatisfaction - citizenSatisfactionPenalty
+          )
+        },
         undoStack: [
           ...state.undoStack,
           {
             type: 'placed_asset',
             description: `${getItemLabel(playerAsset.itemType)} platzieren rückgängig machen.`,
-            asset: playerAsset
+            asset: playerAsset,
+            citizenSatisfactionPenalty
           }
         ],
         selectedAssetId: playerAsset.id
@@ -146,6 +159,13 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           ...state,
           budget: state.budget + latestUndoEntry.asset.purchasePrice,
           playerAssets: state.playerAssets.filter((asset) => asset.id !== latestUndoEntry.asset.id),
+          kpis: {
+            ...state.kpis,
+            citizenSatisfaction: Math.min(
+              100,
+              state.kpis.citizenSatisfaction + latestUndoEntry.citizenSatisfactionPenalty
+            )
+          },
           undoStack: remainingUndoStack,
           selectedAssetId:
             state.selectedAssetId === latestUndoEntry.asset.id ? undefined : state.selectedAssetId

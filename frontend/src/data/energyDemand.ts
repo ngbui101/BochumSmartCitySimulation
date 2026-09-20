@@ -1,3 +1,5 @@
+import { DEMAND_GROWTH_CAP, GAME_DURATION_MONTHS } from './gameBalance';
+
 /**
  * Monatlicher Strombedarf der Stadt Bochum in Energieeinheiten.
  * Saisonal variierend: Winter höher (Heizung, weniger Tageslicht), Sommer niedriger.
@@ -27,5 +29,11 @@ function normalizeMonthOfYear(monthIndex: number): number {
  * Wird auf den Kalendermonat (0–11) normalisiert.
  */
 export function getEnergyDemandForMonth(monthIndex: number): number {
-  return MONTHLY_ENERGY_DEMAND[normalizeMonthOfYear(monthIndex)];
+  const baseDemand = MONTHLY_ENERGY_DEMAND[normalizeMonthOfYear(monthIndex)];
+  const progress =
+    Math.min(Math.max(monthIndex, 0), GAME_DURATION_MONTHS - 1) /
+    (GAME_DURATION_MONTHS - 1);
+  const growthFactor = 1 + (DEMAND_GROWTH_CAP - 1) * progress;
+
+  return Math.round(baseDemand * growthFactor);
 }

@@ -111,31 +111,31 @@ describe('advanceMonth', () => {
 
     const next = advanceMonth(state);
 
-    expect(next.subsidies?.solar.privateCapacity).toBe(0.2);
-    expect(next.subsidies?.storage.privateCapacity).toBe(0.1);
+    expect(next.subsidies?.solar.privateCapacity).toBe(0);
+    expect(next.subsidies?.storage.privateCapacity).toBe(0);
     expect(next.monthlyHistory[0]).toMatchObject({
       subsidyCosts: 680000,
-      privateSolarProduction: 0.1,
-      privateStorageDischarge: 0.025
+      privateSolarProduction: 0,
+      privateStorageDischarge: 0
     });
-    expect(next.monthlyHistory[0].netMonthlyDelta).toBe(-3711250);
-    expect(next.budget).toBe(14288750);
+    expect(next.monthlyHistory[0].netMonthlyDelta).toBe(-3720000);
+    expect(next.budget).toBe(14280000);
   });
 
   it('private solar reduces import costs without increasing city electricity sales', () => {
     const state: GameState = {
       ...createInitialGameState(0),
       subsidies: {
-        solar: { level: 3, privateCapacity: 12 },
+        solar: { level: 3, privateCapacity: 7 },
         storage: { level: 0, privateCapacity: 0 }
       }
     };
 
     const next = advanceMonth(state);
 
-    expect(next.monthlyHistory[0].privateSolarProduction).toBe(6.8);
-    expect(next.monthlyHistory[0].revenueFromSales).toBe(3610000);
-    expect(next.monthlyHistory[0].importCost).toBe(6174000);
+    expect(next.monthlyHistory[0].privateSolarProduction).toBe(7.7);
+    expect(next.monthlyHistory[0].revenueFromSales).toBe(3317400);
+    expect(next.monthlyHistory[0].importCost).toBe(6111000);
     expect(next.monthlyHistory[0].subsidyCosts).toBe(750000);
   });
 
@@ -152,6 +152,7 @@ describe('advanceMonth', () => {
     const secondMonth = advanceMonth(firstMonth);
 
     expect(firstMonth.privateAssets).toHaveLength(1);
+    expect(firstMonth.subsidies?.solar.privateCapacity).toBe(7);
     expect(firstMonth.privateAssets?.[0]).toMatchObject({
       itemType: 'solar',
       assetTypeLabel: 'Solaranlage (privat)',
@@ -164,6 +165,7 @@ describe('advanceMonth', () => {
     );
     expect(firstMonth.subsidies?.solar.spendAccumulator).toBe(150000);
     expect(secondMonth.privateAssets).toHaveLength(2);
+    expect(secondMonth.subsidies?.solar.privateCapacity).toBe(14);
     expect(secondMonth.subsidies?.solar.spendAccumulator).toBe(300000);
   });
 
@@ -199,6 +201,14 @@ describe('advanceMonth', () => {
 
     expect(next.currentMonthIndex).toBe(60);
     expect(next.status).toBe('finished');
+  });
+
+  it('grows the monthly demand to 135 percent by month 60', () => {
+    const state = { ...createInitialGameState(0), currentMonthIndex: 59 };
+
+    const next = advanceMonth(state);
+
+    expect(next.monthlyHistory[0].energyDemand).toBe(135);
   });
 
   it('ends the game as bankrupt when the monthly result reaches zero budget', () => {

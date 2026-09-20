@@ -124,7 +124,9 @@ export function getCurrentImportCost(state: GameState): number {
 
 export function getCurrentRevenueFromSales(state: GameState): number {
   const demand = getCurrentEnergyDemand(state);
-  return demand * REVENUE_PER_UNIT;
+  const privateSupply =
+    getCurrentPrivateSolarProduction(state) + getCurrentPrivateStorageDischarge(state);
+  return Math.round(Math.max(0, demand - privateSupply) * REVENUE_PER_UNIT);
 }
 
 export function getCurrentOperatingCosts(state: GameState): number {

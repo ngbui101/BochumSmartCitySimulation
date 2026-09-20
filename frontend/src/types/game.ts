@@ -59,6 +59,7 @@ export type UndoEntry =
       type: 'placed_asset';
       description: string;
       asset: PlayerAsset;
+      citizenSatisfactionPenalty: number;
     }
   | {
       type: 'sold_asset';

@@ -1,5 +1,5 @@
 import { bochumZonesGeoJson } from '../data/bochumZones';
-import { subsidyPrograms } from '../data/subsidyPrograms';
+import { itemDefinitions } from '../data/itemDefinitions';
 import type { PrivateAsset } from '../types/assets';
 import type { SubsidyProgram } from '../types/game';
 import type { ZoneId } from '../types/zones';
@@ -87,7 +87,9 @@ export function createPrivateAsset(
   const position = randomPositionInZone(zoneId, ring, monthIndex * 1009 + ordinal * 31 + existingCount * 13);
   const isSolar = program === 'solar';
   const label = isSolar ? 'Solaranlage' : 'Energiespeicher';
-  const gridReliefCapacity = subsidyPrograms[program].adoptionPerLevel;
+  const itemDefinition = itemDefinitions.find((item) => item.itemType === program);
+  const gridReliefCapacity =
+    program === 'solar' ? itemDefinition?.productionValue ?? 0 : itemDefinition?.storageValue ?? 0;
 
   return {
     id: `private-${program}-${monthIndex}-${existingCount + ordinal}`,

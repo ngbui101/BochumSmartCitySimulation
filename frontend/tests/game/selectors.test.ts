@@ -44,6 +44,6 @@ describe('energy finance selectors', () => {
 
     expect(getCurrentSubsidyCosts(state)).toBe(680000);
     expect(getCurrentPrivateSolarProduction(state)).toBe(2.2);
-    expect(getCurrentNetMonthlyDelta(state)).toBe(-3513500);
+    expect(getCurrentNetMonthlyDelta(state)).toBe(-3625600);
   });
 });

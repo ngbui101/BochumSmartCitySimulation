@@ -65,7 +65,7 @@ npm run test:run
 npm run build
 ```
 
-Die heutigen Architektur- und UI-Entscheidungen sind in [docs/DECISIONS-2026-09-20.md](docs/DECISIONS-2026-09-20.md) dokumentiert.
+Die heutigen Architektur- und UI-Entscheidungen sind in [docs/DECISIONS-2026-09-20.md](docs/DECISIONS-2026-09-20.md) dokumentiert. Die daraus abgeleiteten Entscheidungswege und Spielstrategien stehen in [docs/strategy-guide.md](docs/strategy-guide.md); das editierbare Abhängigkeitsdiagramm liegt in [docs/decision-dependencies.drawio](docs/decision-dependencies.drawio).
 
 Production Preview nach erfolgreichem Build:
 

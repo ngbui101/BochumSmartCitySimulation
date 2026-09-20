@@ -128,4 +128,20 @@ describe('gameReducer', () => {
     expect(next.subsidies?.storage.level).toBe(0);
     expect(next.budget).toBe(state.budget);
   });
+
+  it('reduces citizen satisfaction when a zone receives more than two public assets', () => {
+    const state = withPlayerAssets(createInitialGameState(), [
+      makeAsset({ id: 'existing-1', zoneId: 'mitte' }),
+      makeAsset({ id: 'existing-2', zoneId: 'mitte' })
+    ]);
+
+    const next = gameReducer(state, {
+      type: 'PLACE_ASSET',
+      itemType: 'solar',
+      zoneId: 'mitte',
+      position: { lat: 51.48, lng: 7.21 }
+    });
+
+    expect(next.kpis.citizenSatisfaction).toBe(state.kpis.citizenSatisfaction - 1);
+  });
 });

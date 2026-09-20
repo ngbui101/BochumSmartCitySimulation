@@ -412,7 +412,7 @@ describe('App integrated game flow', () => {
 
     render(<App />);
 
-    expect(screen.getByText('31')).toBeInTheDocument();
+    expect(screen.getByText('23')).toBeInTheDocument();
     expect(screen.getByText('Budgetpunkte')).toBeInTheDocument();
   });
 

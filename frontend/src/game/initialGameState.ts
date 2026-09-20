@@ -3,9 +3,9 @@ import { createForecast, createRandomWeatherSeed } from '../simulation/weatherSi
 import type { GameState } from '../types/game';
 
 const STARTING_KPIS = {
-  energyAutarky: 18,
-  citizenSatisfaction: 72,
-  supplySecurity: 58
+  energyAutarky: 0,
+  citizenSatisfaction: 50,
+  supplySecurity: 0
 };
 
 function createGameId(): string {

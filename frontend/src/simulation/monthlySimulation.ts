@@ -118,7 +118,7 @@ function calculateNextSubsidies(state: GameState): {
     return {
       ...programState,
       privateCapacity:
-        programState.privateCapacity + programState.level * subsidyPrograms[program].adoptionPerLevel,
+        programState.privateCapacity + newAssetCount * subsidyPrograms[program].capacityPerAsset,
       spendAccumulator: accumulatedSpend - newAssetCount * PRIVATE_ASSET_THRESHOLD
     };
   };
@@ -246,7 +246,11 @@ export function advanceMonth(state: GameState): GameState {
 
   const energyBalance = calculateEnergyBalance(state, activeAssets, state.currentMonthIndex, subsidies);
 
-  const revenueFromSales = energyBalance.demand * REVENUE_PER_UNIT;
+  const privateSupply =
+    energyBalance.privateSolarProduction + energyBalance.privateStorageDischarge;
+  const revenueFromSales = Math.round(
+    Math.max(0, energyBalance.demand - privateSupply) * REVENUE_PER_UNIT
+  );
   const subsidyCosts = calculateSubsidyCosts(state);
   const operatingCosts = activeAssets.reduce((sum, asset) => {
     const itemDefinition = getItemDefinition(asset.itemType);

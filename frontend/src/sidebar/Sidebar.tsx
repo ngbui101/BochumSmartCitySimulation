@@ -7,6 +7,7 @@ import type { EnergyStatusProps } from './KpiDashboard';
 import { WeatherForecast } from './WeatherForecast';
 import { BuyableItemList } from './BuyableItemList';
 import { SubsidyPanel } from './SubsidyPanel';
+import { StrategySweepPanel } from './StrategySweepPanel';
 import type { QuickStartTarget } from '../components/QuickStart';
 
 export interface SidebarProps {
@@ -131,6 +132,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           onSetSubsidyLevel={onSetSubsidyLevel}
         />
       </div>
+
+      <StrategySweepPanel />
 
       <div
         className={onboardingTarget === 'build' ? 'onboarding-highlight' : ''}
