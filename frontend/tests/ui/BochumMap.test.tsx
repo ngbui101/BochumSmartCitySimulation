@@ -326,6 +326,26 @@ describe('BochumMap component', () => {
     expect(screen.getByTestId('mock-geojson')).toHaveAttribute('data-instance-id', initialInstanceId);
   });
 
+  it('updates hover styling imperatively without rerendering the zone layer', () => {
+    render(<BochumMap {...defaultProps} />);
+    const layerEntry = registeredLayers[0];
+    const initialInteractiveRenderCount = geoJsonLayers.filter(
+      (props) => typeof props.onEachFeature === 'function'
+    ).length;
+    const mouseoverHandler = (layerEntry.layer.on as any)._events.mouseover;
+    const mouseoutHandler = (layerEntry.layer.on as any)._events.mouseout;
+
+    act(() => {
+      mouseoverHandler();
+      mouseoutHandler();
+    });
+
+    expect(layerEntry.layer.setStyle).toHaveBeenCalledTimes(2);
+    expect(
+      geoJsonLayers.filter((props) => typeof props.onEachFeature === 'function')
+    ).toHaveLength(initialInteractiveRenderCount);
+  });
+
   it('shows zone information when a zone is clicked and hides it on map click', () => {
     render(<BochumMap {...defaultProps} />);
     const suedLayer = registeredLayers.find(

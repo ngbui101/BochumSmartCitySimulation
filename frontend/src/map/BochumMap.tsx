@@ -306,11 +306,10 @@ export const BochumMap: React.FC<BochumMapProps> = ({
   placeableZones
 }) => {
   const mapRootRef = useRef<HTMLDivElement | null>(null);
-  const [hoveredZoneId, setHoveredZoneId] = useState<string | null>(null);
   const [selectedZoneInfo, setSelectedZoneInfo] = useState<ZoneInfoSelection | null>(null);
   const tileLayerConfig = getMapTileLayerConfig(import.meta.env.CARTO_API_KEY);
 
-  const getZoneStyle = (feature: any): PathOptions => {
+  const getZoneStyle = (feature: any, hoveredZoneId?: string): PathOptions => {
     if (!feature || !feature.properties) return {};
     const zoneId = feature.properties.zoneId;
     const isFeedback = zoneFeedback && zoneFeedback.zoneId === zoneId;
@@ -369,10 +368,10 @@ export const BochumMap: React.FC<BochumMapProps> = ({
 
     layer.on({
       mouseover: () => {
-        setHoveredZoneId(zoneId);
+        layer.setStyle(getZoneStyle(feature, zoneId));
       },
       mouseout: () => {
-        setHoveredZoneId(null);
+        layer.setStyle(getZoneStyle(feature));
       },
       click: (event: any) => {
         if (!zoneId) {
