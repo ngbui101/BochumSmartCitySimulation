@@ -314,8 +314,6 @@ describe('App integrated game flow', () => {
   });
 
   it('resets the running game, transient selections and persisted state after confirmation', () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
-
     render(<App />);
 
     fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
@@ -334,10 +332,10 @@ describe('App integrated game flow', () => {
     expect(screen.getByRole('button', { name: /Rückgängig/i })).not.toBeDisabled();
 
     fireEvent.click(screen.getByRole('button', { name: /Spiel zurücksetzen/i }));
+    const resetDialog = screen.getByRole('dialog', { name: 'Spiel zurücksetzen?' });
+    expect(resetDialog).toBeInTheDocument();
+    fireEvent.click(within(resetDialog).getByRole('button', { name: 'Spiel zurücksetzen' }));
 
-    expect(confirmSpy).toHaveBeenCalledWith(
-      'Möchtest du das laufende Spiel wirklich zurücksetzen?'
-    );
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('0');
     expect(screen.getByTestId('selected-asset-id')).toHaveTextContent('none');
     expect(screen.getByTestId('budget-value')).toHaveTextContent('18.000.000 Euro');

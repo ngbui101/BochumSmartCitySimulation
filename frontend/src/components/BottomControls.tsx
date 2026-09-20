@@ -5,7 +5,6 @@ export interface BottomControlsProps {
   undoTooltip: string;
   onUndo: () => void;
   onNextMonth: () => void;
-  onReset: () => void;
 }
 
 export const BottomControls: React.FC<BottomControlsProps> = ({
@@ -13,7 +12,6 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
   undoTooltip,
   onUndo,
   onNextMonth,
-  onReset,
 }) => {
   const [showCurtain, setShowCurtain] = useState(false);
 
@@ -45,10 +43,6 @@ export const BottomControls: React.FC<BottomControlsProps> = ({
         >
           <span>Nächster Monat</span>
           <span aria-hidden="true">→</span>
-        </button>
-        <button className="btn-reset" onClick={onReset} aria-label="Spiel zurücksetzen">
-          <span aria-hidden="true">↻</span>
-          <span>Spiel zurücksetzen</span>
         </button>
       </div>
 

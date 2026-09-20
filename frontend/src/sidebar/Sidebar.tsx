@@ -26,6 +26,7 @@ export interface SidebarProps {
   selectedItemType?: ItemType | null;
   onSelectItemType?: (itemType: ItemType | null) => void;
   onSetSubsidyLevel?: (program: SubsidyProgram, level: SubsidyLevel) => void;
+  onRequestReset?: () => void;
   onPointerDragStart?: (
     itemType: ItemType,
     pointer: {
@@ -52,6 +53,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   selectedItemType,
   onSelectItemType,
   onSetSubsidyLevel,
+  onRequestReset,
   onPointerDragStart,
 }) => {
   const monthNum = currentMonthIndex + 1;
@@ -111,6 +113,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
         onSelectItemType={handleSelectItemTypeWrapper}
         onPointerDragStart={handlePointerDragStartWrapper}
       />
+
+      {onRequestReset && (
+        <div className="sidebar-reset-area">
+          <button
+            type="button"
+            className="sidebar-reset-button"
+            onClick={onRequestReset}
+            aria-label="Spiel zurücksetzen"
+          >
+            <span aria-hidden="true">↻</span>
+            <span>Spiel zurücksetzen</span>
+          </button>
+        </div>
+      )}
     </aside>
   );
 };

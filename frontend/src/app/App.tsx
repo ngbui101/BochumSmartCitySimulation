@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { BochumMap } from '../map/BochumMap';
 import { BottomControls } from '../components/BottomControls';
+import { ResetConfirmationModal } from '../components/ResetConfirmationModal';
 import { EndScreen } from '../sidebar/EndScreen';
 import { initialMockState, midgameMockState, finishMockState } from '../testing/mockGameState';
 import { bochumZonesGeoJson } from '../data/bochumZones';
@@ -151,6 +152,7 @@ export function App() {
     undefined
   );
   const [resetVersion, setResetVersion] = useState(0);
+  const [isResetConfirmationOpen, setIsResetConfirmationOpen] = useState(false);
 
   const isRealStateMode = devStateMode === 'real';
   const state = isRealStateMode ? realState : mockState;
@@ -300,10 +302,15 @@ export function App() {
   };
 
   const handleResetRequest = () => {
-    if (!window.confirm('Möchtest du das laufende Spiel wirklich zurücksetzen?')) {
-      return;
-    }
+    setIsResetConfirmationOpen(true);
+  };
 
+  const handleResetCancel = () => {
+    setIsResetConfirmationOpen(false);
+  };
+
+  const handleResetConfirm = () => {
+    setIsResetConfirmationOpen(false);
     handleRestart();
   };
 
@@ -422,6 +429,7 @@ export function App() {
         selectedItemType={selectedItemType}
         onSelectItemType={setSelectedItemType}
         onSetSubsidyLevel={handleSetSubsidyLevel}
+        onRequestReset={handleResetRequest}
         onPointerDragStart={handlePointerDragStart}
       />
 
@@ -453,7 +461,6 @@ export function App() {
           undoTooltip={undoTooltip}
           onUndo={handleUndo}
           onNextMonth={handleNextMonth}
-          onReset={handleResetRequest}
         />
       </section>
 
@@ -485,6 +492,12 @@ export function App() {
       )}
 
       {finalScore && <EndScreen finalScore={finalScore} onRestart={handleRestart} />}
+
+      <ResetConfirmationModal
+        isOpen={isResetConfirmationOpen}
+        onCancel={handleResetCancel}
+        onConfirm={handleResetConfirm}
+      />
     </main>
   );
 }

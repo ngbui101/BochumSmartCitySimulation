@@ -75,6 +75,7 @@ describe('Sidebar component', () => {
 
   it('renders sub-components correctly: KpiDashboard, WeatherForecast, and BuyableItemList', () => {
     const handleSetSubsidyLevel = vi.fn();
+    const handleRequestReset = vi.fn();
 
     render(
       <Sidebar
@@ -88,6 +89,7 @@ describe('Sidebar component', () => {
         privateSolarProduction={2.2}
         privateStorageDischarge={0}
         onSetSubsidyLevel={handleSetSubsidyLevel}
+        onRequestReset={handleRequestReset}
       />
     );
 
@@ -105,6 +107,8 @@ describe('Sidebar component', () => {
 
     expect(screen.getByTestId('subsidy-panel')).toHaveTextContent('Foerderung');
     expect(screen.getByTestId('subsidy-panel')).toHaveTextContent('250.000');
+    fireEvent.click(screen.getByRole('button', { name: 'Spiel zurücksetzen' }));
+    expect(handleRequestReset).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByRole('button', { name: /Speicherförderung Stufe 1/i }));
     expect(handleSetSubsidyLevel).toHaveBeenCalledWith('storage', 1);

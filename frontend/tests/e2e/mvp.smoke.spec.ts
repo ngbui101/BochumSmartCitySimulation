@@ -15,12 +15,10 @@ test('persists a real game action, resets it, and restarts the endscreen', async
   await page.reload();
   await expect(page.getByTestId('month-display')).toContainText('Monat 2 / 60');
 
-  page.once('dialog', async (dialog) => {
-    expect(dialog.type()).toBe('confirm');
-    expect(dialog.message()).toContain('laufende Spiel wirklich zurücksetzen');
-    await dialog.accept();
-  });
   await page.getByRole('button', { name: 'Spiel zurücksetzen' }).click();
+  const resetDialog = page.getByRole('dialog', { name: 'Spiel zurücksetzen?' });
+  await expect(resetDialog).toBeVisible();
+  await resetDialog.getByRole('button', { name: 'Spiel zurücksetzen' }).click();
   await expect(page.getByTestId('month-display')).toContainText('Monat 1 / 60');
 
   await page.reload();
