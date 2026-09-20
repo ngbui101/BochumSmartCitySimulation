@@ -313,6 +313,38 @@ describe('App integrated game flow', () => {
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('1');
   });
 
+  it('resets the running game, transient selections and persisted state after confirmation', () => {
+    render(<App />);
+
+    fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
+      clientX: 24,
+      clientY: 48
+    });
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'drop mitte' }));
+    fireEvent.click(screen.getByRole('button', { name: 'select player' }));
+    expect(screen.getByTestId('asset-title')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('buyable-item-wind'));
+    expect(screen.getByTestId('item-info-flyout')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Rückgängig/i })).not.toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: /Spiel zurücksetzen/i }));
+    const resetDialog = screen.getByRole('dialog', { name: 'Spiel zurücksetzen?' });
+    expect(resetDialog).toBeInTheDocument();
+    fireEvent.click(within(resetDialog).getByRole('button', { name: 'Spiel zurücksetzen' }));
+
+    expect(screen.getByTestId('player-asset-count')).toHaveTextContent('0');
+    expect(screen.getByTestId('selected-asset-id')).toHaveTextContent('none');
+    expect(screen.getByTestId('budget-value')).toHaveTextContent('18.000.000 Euro');
+    expect(screen.queryByTestId('asset-title')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('item-info-flyout')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Rückgängig/i })).toBeDisabled();
+    expect(storedState()?.playerAssets).toHaveLength(0);
+  });
+
   it('renders the real endscreen from finalScore and restarts by clearing persisted state', () => {
     saveGameState(
       finishedState({
@@ -338,5 +370,17 @@ describe('App integrated game flow', () => {
     expect(screen.queryByTestId('endscreen-overlay')).not.toBeInTheDocument();
     expect(screen.getByTestId('budget-value')).toHaveTextContent('18.000.000 Euro');
     expect(storedState()?.status).toBe('running');
+  });
+
+  it('shows a non-blocking warning when browser storage is unavailable', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('quota exceeded', 'QuotaExceededError');
+    });
+
+    render(<App />);
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      /Spielstand kann in diesem Browser nicht gespeichert werden/i
+    );
   });
 });

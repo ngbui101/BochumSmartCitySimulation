@@ -4,6 +4,10 @@ export const GAME_STATE_STORAGE_KEY = 'bochum-smart-city:mvp1:v1';
 
 const STORAGE_VERSION = 1;
 
+export type StorageStatus = 'available' | 'unavailable';
+
+let storageStatus: StorageStatus = 'available';
+
 type StoredGameState = {
   version: number;
   state: GameState;
@@ -57,7 +61,15 @@ function withStateDefaults(state: GameState): GameState {
 }
 
 export function loadGameState(): GameState | null {
-  const storedValue = localStorage.getItem(GAME_STATE_STORAGE_KEY);
+  let storedValue: string | null;
+
+  try {
+    storedValue = localStorage.getItem(GAME_STATE_STORAGE_KEY);
+    storageStatus = 'available';
+  } catch {
+    storageStatus = 'unavailable';
+    return null;
+  }
 
   if (!storedValue) {
     return null;
@@ -71,16 +83,34 @@ export function loadGameState(): GameState | null {
   }
 }
 
-export function saveGameState(state: GameState): void {
-  localStorage.setItem(
-    GAME_STATE_STORAGE_KEY,
-    JSON.stringify({
-      version: STORAGE_VERSION,
-      state
-    })
-  );
+export function saveGameState(state: GameState): boolean {
+  try {
+    localStorage.setItem(
+      GAME_STATE_STORAGE_KEY,
+      JSON.stringify({
+        version: STORAGE_VERSION,
+        state
+      })
+    );
+    storageStatus = 'available';
+    return true;
+  } catch {
+    storageStatus = 'unavailable';
+    return false;
+  }
 }
 
-export function clearGameState(): void {
-  localStorage.removeItem(GAME_STATE_STORAGE_KEY);
+export function clearGameState(): boolean {
+  try {
+    localStorage.removeItem(GAME_STATE_STORAGE_KEY);
+    storageStatus = 'available';
+    return true;
+  } catch {
+    storageStatus = 'unavailable';
+    return false;
+  }
+}
+
+export function getStorageStatus(): StorageStatus {
+  return storageStatus;
 }

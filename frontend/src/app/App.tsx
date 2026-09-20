@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { BochumMap } from '../map/BochumMap';
 import { BottomControls } from '../components/BottomControls';
+import { ResetConfirmationModal } from '../components/ResetConfirmationModal';
 import { EndScreen } from '../sidebar/EndScreen';
 import { initialMockState, midgameMockState, finishMockState } from '../testing/mockGameState';
 import { bochumZonesGeoJson } from '../data/bochumZones';
@@ -136,7 +137,12 @@ function validateDropPosition(
 }
 
 export function App() {
-  const { state: realState, dispatch: realDispatch, resetGame } = useAppState();
+  const {
+    state: realState,
+    dispatch: realDispatch,
+    resetGame,
+    storageStatus
+  } = useAppState();
   const [devStateMode, setDevStateMode] = useState<DevStateMode>('real');
   const [mockState, setMockState] = useState<GameState>(initialMockState);
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(null);
@@ -145,6 +151,8 @@ export function App() {
   const [placementFeedback, setPlacementFeedback] = useState<PlacementFeedback | undefined>(
     undefined
   );
+  const [resetVersion, setResetVersion] = useState(0);
+  const [isResetConfirmationOpen, setIsResetConfirmationOpen] = useState(false);
 
   const isRealStateMode = devStateMode === 'real';
   const state = isRealStateMode ? realState : mockState;
@@ -281,6 +289,8 @@ export function App() {
   const handleRestart = () => {
     clearPlacementFeedback();
     setPlacementDrag(null);
+    setSelectedItemType(null);
+    setResetVersion((version) => version + 1);
 
     if (isRealStateMode) {
       resetGame();
@@ -289,6 +299,19 @@ export function App() {
 
     setDevStateMode('initial');
     setMockState(initialMockState);
+  };
+
+  const handleResetRequest = () => {
+    setIsResetConfirmationOpen(true);
+  };
+
+  const handleResetCancel = () => {
+    setIsResetConfirmationOpen(false);
+  };
+
+  const handleResetConfirm = () => {
+    setIsResetConfirmationOpen(false);
+    handleRestart();
   };
 
   const handleDragLeave = () => {
@@ -407,11 +430,19 @@ export function App() {
         selectedItemType={selectedItemType}
         onSelectItemType={setSelectedItemType}
         onSetSubsidyLevel={handleSetSubsidyLevel}
+        onRequestReset={handleResetRequest}
         onPointerDragStart={handlePointerDragStart}
       />
 
       <section className="map-stage" aria-label="Bochum-Karte">
+        {storageStatus === 'unavailable' && (
+          <div className="storage-warning" role="status" data-testid="storage-warning">
+            Der Spielstand kann in diesem Browser nicht gespeichert werden. Das Spiel läuft weiter,
+            kann aber beim Aktualisieren der Seite verloren gehen.
+          </div>
+        )}
         <BochumMap
+          key={resetVersion}
           playerAssets={state.playerAssets}
           existingAssets={state.existingAssets}
           privateAssets={state.privateAssets}
@@ -463,6 +494,12 @@ export function App() {
       )}
 
       {finalScore && <EndScreen finalScore={finalScore} onRestart={handleRestart} />}
+
+      <ResetConfirmationModal
+        isOpen={isResetConfirmationOpen}
+        onCancel={handleResetCancel}
+        onConfirm={handleResetConfirm}
+      />
     </main>
   );
 }

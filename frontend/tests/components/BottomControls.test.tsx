@@ -102,4 +102,5 @@ describe('BottomControls component', () => {
 
     vi.useRealTimers();
   });
+
 });

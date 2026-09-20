@@ -5,12 +5,10 @@ export default defineConfig({
   plugins: [react()],
   envDir: '..',
   envPrefix: ['VITE_', 'CARTO_'],
-  build: {
-    emptyOutDir: false
-  },
   test: {
     environment: 'jsdom',
     globals: true,
-    setupFiles: './src/test/setup.ts'
+    setupFiles: './src/test/setup.ts',
+    exclude: ['**/node_modules/**', '**/dist/**', 'tests/e2e/**']
   }
 });
