@@ -5,6 +5,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../../src/app/App';
 import { createInitialGameState } from '../../src/game/initialGameState';
 import { GAME_STATE_STORAGE_KEY, saveGameState } from '../../src/persistence/localStorageStore';
+import {
+  clearQuickStart,
+  completeQuickStart,
+  QUICK_START_STORAGE_KEY
+} from '../../src/persistence/quickStartStore';
 import type { FinalScore, GameState } from '../../src/types/game';
 
 vi.mock('../../src/map/BochumMap', async () => {
@@ -104,7 +109,26 @@ function finishedState(finalScore: FinalScore): GameState {
 describe('App integrated game flow', () => {
   beforeEach(() => {
     localStorage.clear();
+    completeQuickStart();
     vi.useFakeTimers();
+  });
+
+  it('shows the first-run quick start and remembers when it is skipped', () => {
+    clearQuickStart();
+
+    render(<App />);
+
+    expect(screen.getByTestId('quick-start-loading')).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(700);
+    });
+    expect(screen.getByRole('dialog', { name: 'Willkommen in Bochum' })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Anleitung überspringen' }));
+
+    expect(screen.queryByRole('dialog', { name: 'Willkommen in Bochum' })).not.toBeInTheDocument();
+    expect(localStorage.getItem(QUICK_START_STORAGE_KEY)).toBe('completed');
   });
 
   afterEach(() => {
@@ -334,6 +358,7 @@ describe('App integrated game flow', () => {
     expect(screen.queryByTestId('item-info-flyout')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Rückgängig/i })).toBeDisabled();
     expect(storedState()?.playerAssets).toHaveLength(0);
+    expect(screen.getByTestId('quick-start-loading')).toBeInTheDocument();
   });
 
   it('renders the real endscreen from finalScore and restarts by clearing persisted state', () => {
@@ -341,10 +366,10 @@ describe('App integrated game flow', () => {
       finishedState({
         totalScore: 77,
         breakdown: {
-          energyAutarky: 66,
-          budgetEfficiency: 44,
-          citizenSatisfaction: 71,
-          supplySecurity: 82
+          budgetPoints: 8,
+          energyAutarkyPoints: 6,
+          citizenSatisfactionPoints: 7,
+          supplySecurityPoints: 8
         },
         qualitativeSummary: 'Persisted score summary.'
       })
@@ -354,13 +379,41 @@ describe('App integrated game flow', () => {
 
     expect(screen.getByTestId('endscreen-overlay')).toBeInTheDocument();
     expect(screen.getByText('77')).toBeInTheDocument();
-    expect(screen.getByText('Budgeteffizienz')).toBeInTheDocument();
+    expect(screen.getByText('Budgetpunkte')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /Neustart/i }));
 
     expect(screen.queryByTestId('endscreen-overlay')).not.toBeInTheDocument();
     expect(screen.getByTestId('budget-value')).toHaveTextContent('18.000.000 Euro');
     expect(storedState()?.status).toBe('running');
+    expect(screen.getByTestId('quick-start-loading')).toBeInTheDocument();
+  });
+
+  it('recalculates an old persisted endscore with the current point system', () => {
+    const state = {
+      ...createInitialGameState(),
+      currentMonthIndex: 60,
+      status: 'finished' as const,
+      finalScore: {
+        totalScore: 99,
+        breakdown: {
+          energyAutarky: 99,
+          budgetEfficiency: 99,
+          citizenSatisfaction: 99,
+          supplySecurity: 99
+        },
+        qualitativeSummary: 'Old score format'
+      }
+    };
+    localStorage.setItem(
+      GAME_STATE_STORAGE_KEY,
+      JSON.stringify({ version: 1, state })
+    );
+
+    render(<App />);
+
+    expect(screen.getByText('31')).toBeInTheDocument();
+    expect(screen.getByText('Budgetpunkte')).toBeInTheDocument();
   });
 
   it('shows a non-blocking warning when browser storage is unavailable', () => {

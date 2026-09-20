@@ -12,10 +12,10 @@ describe('EndScreen component', () => {
   const mockFinalScore: FinalScore = {
     totalScore: 78,
     breakdown: {
-      energyAutarky: 65,
-      budgetEfficiency: 82,
-      citizenSatisfaction: 70,
-      supplySecurity: 78,
+      budgetPoints: 12,
+      energyAutarkyPoints: 6,
+      citizenSatisfactionPoints: 7,
+      supplySecurityPoints: 8,
     },
     qualitativeSummary: 'Great job! Bochum is now significantly more autarkic with satisfied citizens.',
   };
@@ -30,21 +30,21 @@ describe('EndScreen component', () => {
 
     // Individual breakdown categories and values
     expect(screen.getByText(/Energieautarkie/i)).toBeInTheDocument();
-    expect(screen.getByText('65%')).toBeInTheDocument();
+    expect(screen.getByText('+6 Punkte')).toBeInTheDocument();
 
-    expect(screen.getByText(/Budgeteffizienz/i)).toBeInTheDocument();
-    expect(screen.getByText('82%')).toBeInTheDocument();
+    expect(screen.getByText(/Budgetpunkte/i)).toBeInTheDocument();
+    expect(screen.getByText('+12 Punkte')).toBeInTheDocument();
 
     expect(screen.getByText(/Bürgerzufriedenheit/i)).toBeInTheDocument();
-    expect(screen.getByText('70%')).toBeInTheDocument();
+    expect(screen.getByText('+7 Punkte')).toBeInTheDocument();
 
     expect(screen.getByText(/Versorgungssicherheit/i)).toBeInTheDocument();
-    expect(screen.getByText('78%')).toBeInTheDocument();
+    expect(screen.getByText('+8 Punkte')).toBeInTheDocument();
 
     // Qualitative Summary
     expect(screen.getByText(mockFinalScore.qualitativeSummary)).toBeInTheDocument();
     // German qualitative feedback text (e.g. "Gute Arbeit!")
-    expect(screen.getByText(/Gute Arbeit!/i)).toBeInTheDocument();
+    expect(screen.getByText(/Hervorragende Leistung!/i)).toBeInTheDocument();
   });
 
   it('calls onRestart when clicking the Restart button', () => {
@@ -55,5 +55,34 @@ describe('EndScreen component', () => {
     fireEvent.click(restartBtn);
 
     expect(onRestart).toHaveBeenCalledTimes(1);
+  });
+
+  it('explains bankruptcy and keeps the score breakdown visible', () => {
+    render(
+      <EndScreen
+        finalScore={mockFinalScore}
+        status="lost"
+        lossReason="bankrupt"
+        onRestart={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Bankrott')).toBeInTheDocument();
+    expect(screen.getByText(/Budget ist aufgebraucht/i)).toBeInTheDocument();
+    expect(screen.getByText('+12 Punkte')).toBeInTheDocument();
+  });
+
+  it('explains when the citizens vote the city government out', () => {
+    render(
+      <EndScreen
+        finalScore={mockFinalScore}
+        status="lost"
+        lossReason="voted_out"
+        onRestart={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText('Abgewählt')).toBeInTheDocument();
+    expect(screen.getByText(/Bürgerzufriedenheit ist auf 0 gefallen/i)).toBeInTheDocument();
   });
 });

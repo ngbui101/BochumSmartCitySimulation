@@ -7,6 +7,9 @@ test('persists a real game action, resets it, and restarts the endscreen', async
 
   await expect(page.getByRole('main', { name: 'Bochum Smart City Simulation' })).toBeVisible();
   await expect(page.getByTestId('dev-mock-harness')).toHaveCount(0);
+  await expect(page.getByTestId('quick-start-loading')).toBeVisible();
+  await expect(page.getByRole('dialog', { name: 'Willkommen in Bochum' })).toBeVisible();
+  await page.getByRole('button', { name: 'Anleitung überspringen' }).click();
   await expect(page.getByTestId('month-display')).toContainText('Monat 1 / 60');
 
   await page.getByRole('button', { name: 'Nächster Monat' }).click();
@@ -38,10 +41,10 @@ test('persists a real game action, resets it, and restarts the endscreen', async
     stored.state.finalScore = {
       totalScore: 72,
       breakdown: {
-        energyAutarky: 70,
-        budgetEfficiency: 68,
-        citizenSatisfaction: 75,
-        supplySecurity: 74
+        budgetPoints: 8,
+        energyAutarkyPoints: 7,
+        citizenSatisfactionPoints: 7,
+        supplySecurityPoints: 7
       },
       qualitativeSummary: 'Browser smoke test'
     };

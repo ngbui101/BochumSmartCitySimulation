@@ -8,6 +8,7 @@ import {
   loadGameState,
   saveGameState
 } from '../persistence/localStorageStore';
+import { clearQuickStart } from '../persistence/quickStartStore';
 import type { StorageStatus } from '../persistence/localStorageStore';
 import type { GameAction, GameState } from '../types/game';
 
@@ -34,6 +35,7 @@ export function useAppState(): AppStateContextValue {
 
   const resetGame = useCallback(() => {
     setStorageStatus(clearGameState() ? 'available' : 'unavailable');
+    clearQuickStart();
     dispatch({ type: 'RESET_GAME' });
   }, []);
 

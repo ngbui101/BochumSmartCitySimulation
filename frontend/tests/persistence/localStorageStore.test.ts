@@ -26,6 +26,18 @@ describe('localStorageStore', () => {
     expect(loadGameState()).toEqual(state);
   });
 
+  it('loads a persisted lost game with its loss reason', () => {
+    const state = {
+      ...createInitialGameState(),
+      status: 'lost' as const,
+      lossReason: 'bankrupt' as const
+    };
+
+    saveGameState(state);
+
+    expect(loadGameState()).toEqual(state);
+  });
+
   it('clears the saved game state', () => {
     saveGameState(createInitialGameState());
 
