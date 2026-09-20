@@ -33,4 +33,18 @@ describe('weatherSimulation', () => {
 
     expect(january.windFactor).toBeGreaterThan(july.windFactor);
   });
+
+  it('uses the production sweet spot probabilities for seeded sessions', () => {
+    const summerProfiles = Array.from({ length: 100 }, (_, index) =>
+      getWeatherProfileForMonth(6, index + 1)
+    );
+    const winterProfiles = Array.from({ length: 100 }, (_, index) =>
+      getWeatherProfileForMonth(0, index + 1)
+    );
+
+    expect(getWeatherProfileForMonth(6, 42)).toEqual(getWeatherProfileForMonth(6, 42));
+    expect(summerProfiles.filter((profile) => profile.weatherType === 'sunny')).toHaveLength(70);
+    expect(winterProfiles.filter((profile) => profile.weatherType === 'sunny')).toHaveLength(20);
+    expect(new Set(summerProfiles.map((profile) => profile.weatherType)).size).toBeGreaterThan(1);
+  });
 });

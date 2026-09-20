@@ -10,12 +10,12 @@ export const subsidyPrograms: Record<SubsidyProgram, {
   solar: {
     label: 'Solarförderung',
     monthlyCostPerLevel: 250_000,
-    adoptionPerLevel: 2
+    adoptionPerLevel: 0.1
   },
   storage: {
     label: 'Speicherförderung',
     monthlyCostPerLevel: 180_000,
-    adoptionPerLevel: 3
+    adoptionPerLevel: 0.1
   }
 };
 

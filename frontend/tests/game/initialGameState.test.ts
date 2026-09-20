@@ -4,8 +4,9 @@ import { createInitialGameState } from '../../src/game/initialGameState';
 
 describe('createInitialGameState', () => {
   it('creates a reproducible new running game state', () => {
-    const state = createInitialGameState();
+    const state = createInitialGameState(42);
 
+    expect(state.weatherSeed).toBe(42);
     expect(state.currentMonthIndex).toBe(0);
     expect(state.status).toBe('running');
     expect(state.playerAssets).toEqual([]);
@@ -23,5 +24,9 @@ describe('createInitialGameState', () => {
       citizenSatisfaction: 72,
       supplySecurity: 58
     });
+  });
+
+  it('creates a non-zero seed for a new session when no seed is supplied', () => {
+    expect(createInitialGameState().weatherSeed).toBeGreaterThan(0);
   });
 });

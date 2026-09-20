@@ -86,6 +86,8 @@ export type MonthlySnapshot = {
 
 export type GameState = {
   gameId: string;
+  /** Seed für die pro Spiel zufällige, reproduzierbare Wetterfolge. */
+  weatherSeed?: number;
   currentMonthIndex: number;
   budget: number;
   kpis: GameKpis;

@@ -8,6 +8,7 @@ import {
   loadGameState,
   saveGameState
 } from '../../src/persistence/localStorageStore';
+import { deriveWeatherSeed } from '../../src/simulation/weatherSimulation';
 
 describe('localStorageStore', () => {
   beforeEach(() => {
@@ -88,6 +89,25 @@ describe('localStorageStore', () => {
     );
 
     expect(loadGameState()?.existingAssets).toEqual([]);
+  });
+
+  it('migrates legacy saves to a stable weather seed and forecast', () => {
+    const state = createInitialGameState(42);
+    const { weatherSeed: _weatherSeed, ...legacyState } = state;
+
+    localStorage.setItem(
+      GAME_STATE_STORAGE_KEY,
+      JSON.stringify({ version: 1, state: legacyState })
+    );
+
+    const loaded = loadGameState();
+
+    expect(loaded?.weatherSeed).toBe(deriveWeatherSeed(state.gameId));
+    expect(loaded?.forecast).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ monthIndex: state.currentMonthIndex })
+      ])
+    );
   });
 
   it('reports unavailable storage when reading localStorage fails', () => {

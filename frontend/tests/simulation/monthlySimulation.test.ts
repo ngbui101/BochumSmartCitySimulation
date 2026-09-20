@@ -93,16 +93,16 @@ describe('advanceMonth', () => {
   });
 
   it('updates budget by net monthly delta on advanceMonth', () => {
-    const state = createInitialGameState();
-    // Initially, demand is 95. Revenue = 3.8M. Import cost = 5.7M. Operating cost = 0.
-    // Net delta = -1.9M.
+    const state = createInitialGameState(0);
+    // Initially, demand is 95. Revenue = 3.61M. Import cost = 6.65M. Operating cost = 0.
+    // Net delta = -3.04M.
     const next = advanceMonth(state);
-    expect(next.budget).toBe(18000000 - 1900000);
+    expect(next.budget).toBe(18000000 - 3040000);
   });
 
   it('charges active subsidy programs monthly and grows private adoption', () => {
     const state: GameState = {
-      ...createInitialGameState(),
+      ...createInitialGameState(0),
       subsidies: {
         solar: { level: 2, privateCapacity: 0 },
         storage: { level: 1, privateCapacity: 0 }
@@ -111,20 +111,20 @@ describe('advanceMonth', () => {
 
     const next = advanceMonth(state);
 
-    expect(next.subsidies?.solar.privateCapacity).toBe(4);
-    expect(next.subsidies?.storage.privateCapacity).toBe(3);
+    expect(next.subsidies?.solar.privateCapacity).toBe(0.2);
+    expect(next.subsidies?.storage.privateCapacity).toBe(0.1);
     expect(next.monthlyHistory[0]).toMatchObject({
       subsidyCosts: 680000,
-      privateSolarProduction: 2.2,
-      privateStorageDischarge: 0.75
+      privateSolarProduction: 0.1,
+      privateStorageDischarge: 0.025
     });
-    expect(next.monthlyHistory[0].netMonthlyDelta).toBe(-2403000);
-    expect(next.budget).toBe(15597000);
+    expect(next.monthlyHistory[0].netMonthlyDelta).toBe(-3711250);
+    expect(next.budget).toBe(14288750);
   });
 
   it('private solar reduces import costs without increasing city electricity sales', () => {
     const state: GameState = {
-      ...createInitialGameState(),
+      ...createInitialGameState(0),
       subsidies: {
         solar: { level: 3, privateCapacity: 12 },
         storage: { level: 0, privateCapacity: 0 }
@@ -133,9 +133,9 @@ describe('advanceMonth', () => {
 
     const next = advanceMonth(state);
 
-    expect(next.monthlyHistory[0].privateSolarProduction).toBe(9.9);
-    expect(next.monthlyHistory[0].revenueFromSales).toBe(3800000);
-    expect(next.monthlyHistory[0].importCost).toBe(5106000);
+    expect(next.monthlyHistory[0].privateSolarProduction).toBe(6.8);
+    expect(next.monthlyHistory[0].revenueFromSales).toBe(3610000);
+    expect(next.monthlyHistory[0].importCost).toBe(6174000);
     expect(next.monthlyHistory[0].subsidyCosts).toBe(750000);
   });
 

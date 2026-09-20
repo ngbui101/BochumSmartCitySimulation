@@ -4,6 +4,7 @@ import { getPlayerAssetSellValue } from './selectors';
 import { clampSubsidyLevel } from '../data/subsidyPrograms';
 import { canPlaceItem } from '../simulation/placementRules';
 import { advanceMonth } from '../simulation/monthlySimulation';
+import { createRandomWeatherSeed } from '../simulation/weatherSimulation';
 import { applyLossState } from './lossRules';
 import type { PlayerAsset } from '../types/assets';
 import type { GameAction, GameState } from '../types/game';
@@ -164,7 +165,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
       return advanceMonth(state);
 
     case 'RESET_GAME':
-      return createInitialGameState();
+      return createInitialGameState(createRandomWeatherSeed());
 
     default:
       return state;

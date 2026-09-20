@@ -1,7 +1,6 @@
-import { createForecast } from '../simulation/weatherSimulation';
+import { STARTING_BUDGET } from '../data/gameBalance';
+import { createForecast, createRandomWeatherSeed } from '../simulation/weatherSimulation';
 import type { GameState } from '../types/game';
-
-const STARTING_BUDGET = 18_000_000;
 
 const STARTING_KPIS = {
   energyAutarky: 18,
@@ -13,9 +12,10 @@ function createGameId(): string {
   return `mvp1-${Date.now().toString(36)}`;
 }
 
-export function createInitialGameState(): GameState {
+export function createInitialGameState(weatherSeed = createRandomWeatherSeed()): GameState {
   return {
     gameId: createGameId(),
+    weatherSeed,
     currentMonthIndex: 0,
     budget: STARTING_BUDGET,
     kpis: STARTING_KPIS,
@@ -28,7 +28,7 @@ export function createInitialGameState(): GameState {
       solar: { level: 0, privateCapacity: 0 },
       storage: { level: 0, privateCapacity: 0 }
     },
-    forecast: createForecast(0),
+    forecast: createForecast(0, weatherSeed),
     storedEnergy: 0,
     status: 'running'
   };
