@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run --passWithNoTests",
-    "test:e2e": "pnpm.cmd build && playwright test"
+    "test:e2e": "npm run build && playwright test"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
