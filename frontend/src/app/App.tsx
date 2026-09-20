@@ -4,10 +4,8 @@ import { BochumMap } from '../map/BochumMap';
 import { BottomControls } from '../components/BottomControls';
 import { ResetConfirmationModal } from '../components/ResetConfirmationModal';
 import { EndScreen } from '../sidebar/EndScreen';
-import { initialMockState, midgameMockState, finishMockState } from '../testing/mockGameState';
 import { bochumZonesGeoJson } from '../data/bochumZones';
 import { itemDefinitions } from '../data/itemDefinitions';
-import { gameReducer } from '../game/reducer';
 import { getUndoTooltip, getCurrentEnergySaldo, getStorageCapacity, getCurrentImportCost, getCurrentNetMonthlyDelta, getCurrentRevenueFromSales, getCurrentSubsidyCosts, getCurrentPrivateSolarProduction, getCurrentPrivateStorageDischarge } from '../game/selectors';
 import { canPlaceItem } from '../simulation/placementRules';
 import { calculateFinalScore } from '../simulation/scoring';
@@ -18,8 +16,6 @@ import type { ItemType, LatLngPosition } from '../types/assets';
 import type { GameAction, GameKpis, GameState, SubsidyLevel, SubsidyProgram } from '../types/game';
 import type { ZoneId } from '../types/zones';
 import type { PlacementFeedback, ZoneFeedback } from '../map/BochumMap';
-
-type DevStateMode = 'real' | 'initial' | 'midgame' | 'finished';
 
 type PlacementDragState = {
   itemType: ItemType;
@@ -33,16 +29,6 @@ type PlacementDragState = {
   currentZoneId?: ZoneId | null;
   placementResult?: ReturnType<typeof canPlaceItem>;
 };
-
-const mockStates: Record<Exclude<DevStateMode, 'real'>, GameState> = {
-  initial: initialMockState,
-  midgame: midgameMockState,
-  finished: finishMockState
-};
-
-function isMockStateMode(value: DevStateMode): value is Exclude<DevStateMode, 'real'> {
-  return value !== 'real';
-}
 
 function getKpiDeltas(state: GameState):
   | {
@@ -143,8 +129,6 @@ export function App() {
     resetGame,
     storageStatus
   } = useAppState();
-  const [devStateMode, setDevStateMode] = useState<DevStateMode>('real');
-  const [mockState, setMockState] = useState<GameState>(initialMockState);
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(null);
   const [selectedItemType, setSelectedItemType] = useState<ItemType | null>(null);
   const [zoneFeedback, setZoneFeedback] = useState<ZoneFeedback | undefined>(undefined);
@@ -154,30 +138,10 @@ export function App() {
   const [resetVersion, setResetVersion] = useState(0);
   const [isResetConfirmationOpen, setIsResetConfirmationOpen] = useState(false);
 
-  const isRealStateMode = devStateMode === 'real';
-  const state = isRealStateMode ? realState : mockState;
-
-  const handleMockStateChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = event.target.value as DevStateMode;
-
-    setDevStateMode(value);
-    setZoneFeedback(undefined);
-    setPlacementFeedback(undefined);
-    setPlacementDrag(null);
-    setSelectedItemType(null);
-
-    if (isMockStateMode(value)) {
-      setMockState(mockStates[value]);
-    }
-  };
+  const state = realState;
 
   const dispatchToActiveState = (action: GameAction) => {
-    if (isRealStateMode) {
-      realDispatch(action);
-      return;
-    }
-
-    setMockState((currentState) => gameReducer(currentState, action));
+    realDispatch(action);
   };
 
   const clearPlacementFeedback = () => {
@@ -292,13 +256,7 @@ export function App() {
     setSelectedItemType(null);
     setResetVersion((version) => version + 1);
 
-    if (isRealStateMode) {
-      resetGame();
-      return;
-    }
-
-    setDevStateMode('initial');
-    setMockState(initialMockState);
+    resetGame();
   };
 
   const handleResetRequest = () => {
@@ -465,18 +423,6 @@ export function App() {
           onNextMonth={handleNextMonth}
         />
       </section>
-
-      {import.meta.env.DEV && (
-        <div className="dev-mock-harness" data-testid="dev-mock-harness">
-          <label htmlFor="mock-state-select">Dev State-Modus</label>
-          <select id="mock-state-select" onChange={handleMockStateChange} value={devStateMode}>
-            <option value="real">Real-State</option>
-            <option value="initial">Mock Preview: Initial</option>
-            <option value="midgame">Mock Preview: Midgame</option>
-            <option value="finished">Mock Preview: Finished</option>
-          </select>
-        </div>
-      )}
 
       {placementDrag && (
         <div
