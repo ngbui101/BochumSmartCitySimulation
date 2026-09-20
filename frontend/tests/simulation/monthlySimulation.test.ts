@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { createInitialGameState } from '../../src/game/initialGameState';
 import { gameReducer } from '../../src/game/reducer';
 import { advanceMonth } from '../../src/simulation/monthlySimulation';
+import { findZoneForPoint } from '../../src/simulation/zoneDetection';
+import { bochumZonesGeoJson } from '../../src/data/bochumZones';
 import type { PlayerAsset } from '../../src/types/assets';
 import type { GameState } from '../../src/types/game';
 
@@ -135,6 +137,59 @@ describe('advanceMonth', () => {
     expect(next.monthlyHistory[0].revenueFromSales).toBe(3800000);
     expect(next.monthlyHistory[0].importCost).toBe(5106000);
     expect(next.monthlyHistory[0].subsidyCosts).toBe(750000);
+  });
+
+  it('plots a private solar asset at each cumulative 600k solar subsidy threshold and keeps the remainder', () => {
+    const state: GameState = {
+      ...createInitialGameState(),
+      subsidies: {
+        solar: { level: 3, privateCapacity: 0, spendAccumulator: 0 },
+        storage: { level: 0, privateCapacity: 0, spendAccumulator: 0 }
+      }
+    };
+
+    const firstMonth = advanceMonth(state);
+    const secondMonth = advanceMonth(firstMonth);
+
+    expect(firstMonth.privateAssets).toHaveLength(1);
+    expect(firstMonth.privateAssets?.[0]).toMatchObject({
+      itemType: 'solar',
+      assetTypeLabel: 'Solaranlage (privat)',
+      operatingCost: 0,
+      modifiable: false,
+      sellable: false
+    });
+    expect(findZoneForPoint(firstMonth.privateAssets![0].position, bochumZonesGeoJson)).toBe(
+      firstMonth.privateAssets![0].zoneId
+    );
+    expect(firstMonth.subsidies?.solar.spendAccumulator).toBe(150000);
+    expect(secondMonth.privateAssets).toHaveLength(2);
+    expect(secondMonth.subsidies?.solar.spendAccumulator).toBe(300000);
+  });
+
+  it('keeps solar and storage subsidy thresholds separate', () => {
+    const state: GameState = {
+      ...createInitialGameState(),
+      subsidies: {
+        solar: { level: 0, privateCapacity: 0, spendAccumulator: 0 },
+        storage: { level: 3, privateCapacity: 0, spendAccumulator: 0 }
+      }
+    };
+
+    const firstMonth = advanceMonth(state);
+    const secondMonth = advanceMonth(firstMonth);
+
+    expect(firstMonth.privateAssets).toHaveLength(0);
+    expect(firstMonth.subsidies?.storage.spendAccumulator).toBe(540000);
+    expect(secondMonth.privateAssets).toHaveLength(1);
+    expect(secondMonth.privateAssets?.[0]).toMatchObject({
+      itemType: 'storage',
+      assetTypeLabel: 'Energiespeicher (privat)',
+      operatingCost: 0,
+      modifiable: false,
+      sellable: false
+    });
+    expect(secondMonth.subsidies?.storage.spendAccumulator).toBe(480000);
   });
 
   it('finishes the game after month 60', () => {

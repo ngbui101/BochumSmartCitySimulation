@@ -21,6 +21,7 @@ export function createInitialGameState(): GameState {
     kpis: STARTING_KPIS,
     playerAssets: [],
     existingAssets: [],
+    privateAssets: [],
     undoStack: [],
     monthlyHistory: [],
     subsidies: {

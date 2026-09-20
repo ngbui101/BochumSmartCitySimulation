@@ -2,7 +2,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AssetDetailsPanel } from '../../src/sidebar/AssetDetailsPanel';
-import type { PlayerAsset, ExistingAsset } from '../../src/types/assets';
+import type { PlayerAsset, ExistingAsset, PrivateAsset } from '../../src/types/assets';
 
 describe('AssetDetailsPanel component', () => {
   const mockSolarAsset: PlayerAsset = {
@@ -48,6 +48,23 @@ describe('AssetDetailsPanel component', () => {
     roleDescription: 'Generiert Strom und Fernwärme für den Stadtteil.',
     modifiable: false,
     dataConfidence: 'verified-real-data'
+  };
+
+  const mockPrivateAsset: PrivateAsset = {
+    id: 'private-solar-1',
+    name: 'Private Solaranlage #1',
+    itemType: 'solar',
+    assetTypeLabel: 'Solaranlage (privat)',
+    zoneId: 'mitte',
+    position: { lat: 51.48, lng: 7.22 },
+    statusLabel: 'Privat aktiv',
+    roleDescription: 'Bürgeranlage: erzeugt Strom privat und entlastet das Netz.',
+    modifiable: false,
+    sellable: false,
+    operatingCost: 0,
+    gridReliefCapacity: 2,
+    ownership: 'private',
+    dataConfidence: 'mvp-placeholder'
   };
 
   beforeEach(() => {
@@ -148,6 +165,18 @@ describe('AssetDetailsPanel component', () => {
     expect(screen.getByText('Keine Änderung möglich (Bestandsanlage)')).toBeInTheDocument();
     
     // No sell button
+    expect(screen.queryByRole('button', { name: /Verkaufen/i })).not.toBeInTheDocument();
+  });
+
+  it('renders private assets with zero operating costs, grid relief, and no sell button', () => {
+    const onSell = vi.fn();
+    render(<AssetDetailsPanel selectedAsset={mockPrivateAsset} onSell={onSell} />);
+
+    expect(screen.getByTestId('asset-title')).toHaveTextContent('Private Solaranlage #1');
+    expect(screen.getByTestId('asset-type')).toHaveTextContent('Solaranlage (privat)');
+    expect(screen.getByTestId('asset-operating-costs')).toHaveTextContent('0 €/Monat');
+    expect(screen.getByTestId('asset-grid-relief')).toHaveTextContent('2 Einh.');
+    expect(screen.getByText('Keine Änderung möglich (Privatanlage)')).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: /Verkaufen/i })).not.toBeInTheDocument();
   });
 });

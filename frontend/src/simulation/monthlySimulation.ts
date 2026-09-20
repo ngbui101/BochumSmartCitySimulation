@@ -5,6 +5,7 @@ import { getEnergyDemandForMonth } from '../data/energyDemand';
 import type { PlayerAsset } from '../types/assets';
 import type { GameKpis, GameState } from '../types/game';
 import { calculateFinalScore } from './scoring';
+import { createPrivateAsset, PRIVATE_ASSET_THRESHOLD } from './privateAssets';
 import { createForecast, getWeatherProfileForMonth } from './weatherSimulation';
 
 /** Importkosten pro fehlender Energieeinheit in Euro. */
@@ -88,25 +89,42 @@ function calculateSubsidyCosts(state: GameState): number {
   );
 }
 
-function calculateNextSubsidies(state: GameState): NonNullable<GameState['subsidies']> {
+function calculateNextSubsidies(state: GameState): {
+  subsidies: NonNullable<GameState['subsidies']>;
+  privateAssets: NonNullable<GameState['privateAssets']>;
+} {
   const subsidies = state.subsidies ?? {
     solar: { level: 0, privateCapacity: 0 },
     storage: { level: 0, privateCapacity: 0 }
   };
+  const privateAssets = [...(state.privateAssets ?? [])];
+
+  const nextProgramState = (program: 'solar' | 'storage') => {
+    const programState = subsidies[program];
+    const accumulatedSpend =
+      (programState.spendAccumulator ?? 0) +
+      programState.level * subsidyPrograms[program].monthlyCostPerLevel;
+    const newAssetCount = Math.floor(accumulatedSpend / PRIVATE_ASSET_THRESHOLD);
+    const nextPrivateAssets = Array.from({ length: newAssetCount }, (_, index) =>
+      createPrivateAsset(program, state.currentMonthIndex + 1, index + 1, privateAssets.length)
+    );
+
+    privateAssets.push(...nextPrivateAssets);
+
+    return {
+      ...programState,
+      privateCapacity:
+        programState.privateCapacity + programState.level * subsidyPrograms[program].adoptionPerLevel,
+      spendAccumulator: accumulatedSpend - newAssetCount * PRIVATE_ASSET_THRESHOLD
+    };
+  };
 
   return {
-    solar: {
-      ...subsidies.solar,
-      privateCapacity:
-        subsidies.solar.privateCapacity +
-        subsidies.solar.level * subsidyPrograms.solar.adoptionPerLevel
+    subsidies: {
+      solar: nextProgramState('solar'),
+      storage: nextProgramState('storage')
     },
-    storage: {
-      ...subsidies.storage,
-      privateCapacity:
-        subsidies.storage.privateCapacity +
-        subsidies.storage.level * subsidyPrograms.storage.adoptionPerLevel
-    }
+    privateAssets
   };
 }
 
@@ -219,7 +237,8 @@ export function advanceMonth(state: GameState): GameState {
   const playerAssets = activateCompletedAssets(state, nextMonthIndex);
   const activeAssets = playerAssets.filter((asset) => asset.status === 'active');
   const status = nextMonthIndex >= 60 ? 'finished' : state.status;
-  const subsidies = calculateNextSubsidies(state);
+  const subsidyResult = calculateNextSubsidies(state);
+  const subsidies = subsidyResult.subsidies;
 
   const energyBalance = calculateEnergyBalance(state, activeAssets, state.currentMonthIndex, subsidies);
 
@@ -237,6 +256,7 @@ export function advanceMonth(state: GameState): GameState {
     budget: calculateNextBudget(state, netMonthlyDelta),
     kpis: calculateNextKpis(state, activeAssets, subsidies),
     playerAssets,
+    privateAssets: subsidyResult.privateAssets,
     subsidies,
     storedEnergy: energyBalance.newStoredEnergy,
     undoStack: [],

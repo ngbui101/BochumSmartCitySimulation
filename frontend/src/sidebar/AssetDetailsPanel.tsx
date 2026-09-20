@@ -1,12 +1,12 @@
 import React from 'react';
-import type { PlayerAsset, ExistingAsset } from '../types/assets';
+import type { PlayerAsset, ExistingAsset, PrivateAsset } from '../types/assets';
 import { zoneRules } from '../data/zoneRules';
 import { itemDefinitions } from '../data/itemDefinitions';
 import { getPlayerAssetSellValue } from '../game/selectors';
 import { AssetIconImage } from '../ui/gameAssetIcons';
 
 export interface AssetDetailsPanelProps {
-  selectedAsset?: PlayerAsset | ExistingAsset;
+  selectedAsset?: PlayerAsset | ExistingAsset | PrivateAsset;
   onSell?: (id: string) => void;
 }
 
@@ -75,9 +75,87 @@ export const AssetDetailsPanel: React.FC<AssetDetailsPanelProps> = ({
     return null;
   }
 
-  const isPlayer = 'itemType' in selectedAsset;
+  const isPrivate = 'ownership' in selectedAsset;
+  const isPlayer = !isPrivate && 'itemType' in selectedAsset;
   const zoneRule = zoneRules.find((z) => z.zoneId === selectedAsset.zoneId);
   const zoneLabel = zoneRule ? zoneRule.label : selectedAsset.zoneId;
+
+  if (isPrivate) {
+    const privateAsset = selectedAsset as PrivateAsset;
+
+    return (
+      <div className="asset-details-panel asset-details-panel--private" style={panelStyle}>
+        <div style={headerRowStyle}>
+          <AssetIconImage
+            itemType={privateAsset.itemType}
+            status="active"
+            isSelected
+            size={50}
+          />
+          <h3 style={headerStyle} data-testid="asset-title">
+            {privateAsset.name}
+          </h3>
+        </div>
+
+        <div style={detailGroupStyle}>
+          <div style={rowStyle}>
+            <span style={labelStyle}>Typ:</span>
+            <span style={valueStyle} data-testid="asset-type">{privateAsset.assetTypeLabel}</span>
+          </div>
+
+          <div style={rowStyle}>
+            <span style={labelStyle}>Zone:</span>
+            <span style={valueStyle} data-testid="asset-zone">{zoneLabel}</span>
+          </div>
+
+          <div style={rowStyle}>
+            <span style={labelStyle}>Status:</span>
+            <span
+              className="status-badge status-private"
+              style={{ ...valueStyle, color: '#8b5e34' }}
+              data-testid="asset-status"
+            >
+              {privateAsset.statusLabel}
+            </span>
+          </div>
+
+          <div style={rowStyle}>
+            <span style={labelStyle}>Betriebskosten:</span>
+            <span style={valueStyle} data-testid="asset-operating-costs">0 €/Monat</span>
+          </div>
+
+          <div style={rowStyle}>
+            <span style={labelStyle}>Entlastung an Netz:</span>
+            <span style={valueStyle} data-testid="asset-grid-relief">
+              {privateAsset.gridReliefCapacity.toLocaleString('de-DE')} Einh.
+            </span>
+          </div>
+
+          <div style={{ ...rowStyle, flexDirection: 'column', gap: '4px', borderBottom: 'none' }}>
+            <span style={labelStyle}>Beschreibung:</span>
+            <span
+              style={{
+                ...valueStyle,
+                textAlign: 'left',
+                fontWeight: 500,
+                color: '#374151',
+                lineHeight: 1.4,
+                backgroundColor: '#f9fafb',
+                padding: '8px',
+                borderRadius: '6px',
+                border: '1px solid #f3f4f6'
+              }}
+              data-testid="asset-role-description"
+            >
+              {privateAsset.roleDescription}
+            </span>
+          </div>
+        </div>
+
+        <div className="readonly-notice">Keine Änderung möglich (Privatanlage)</div>
+      </div>
+    );
+  }
 
   if (isPlayer) {
     const playerAsset = selectedAsset as PlayerAsset;

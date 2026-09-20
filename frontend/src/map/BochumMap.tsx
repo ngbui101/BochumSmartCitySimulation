@@ -5,7 +5,7 @@ import { bochumCityBoundaryGeoJson } from '../data/bochumCityBoundary';
 import { bochumPostalBoundariesGeoJson } from '../data/bochumPostalBoundaries';
 import { bochumZonesGeoJson } from '../data/bochumZones';
 import { zoneRules } from '../data/zoneRules';
-import type { ItemType, LatLngPosition, PlayerAsset, ExistingAsset } from '../types/assets';
+import type { ItemType, LatLngPosition, PlayerAsset, ExistingAsset, PrivateAsset } from '../types/assets';
 import type { ZoneId } from '../types/zones';
 import { ZoneProfileMedia } from '../ui/ZoneProfileMedia';
 import L, { type PathOptions } from 'leaflet';
@@ -26,6 +26,7 @@ export type PlacementFeedback = {
 export interface BochumMapProps {
   playerAssets: PlayerAsset[];
   existingAssets: ExistingAsset[];
+  privateAssets?: PrivateAsset[];
   selectedAssetId?: string;
   onSelectAsset: (id: string | undefined) => void;
   zoneFeedback?: ZoneFeedback;
@@ -291,6 +292,7 @@ const getZoneInfoPosition = (
 export const BochumMap: React.FC<BochumMapProps> = ({
   playerAssets,
   existingAssets,
+  privateAssets = [],
   selectedAssetId,
   onSelectAsset,
   zoneFeedback,
@@ -437,6 +439,7 @@ export const BochumMap: React.FC<BochumMapProps> = ({
         <AssetMarkers
           playerAssets={playerAssets}
           existingAssets={existingAssets}
+          privateAssets={privateAssets}
           selectedAssetId={selectedAssetId}
           onSelectAsset={onSelectAsset}
           onSell={onSell}

@@ -1,4 +1,4 @@
-import type { ExistingAsset, PlayerAsset } from './assets';
+import type { ExistingAsset, PlayerAsset, PrivateAsset } from './assets';
 import type { ItemType, LatLngPosition } from './assets';
 import type { ZoneId } from './zones';
 import type { WeatherForecastMonth } from './weather';
@@ -12,6 +12,8 @@ export type SubsidyLevel = 0 | 1 | 2 | 3;
 export type SubsidyProgramState = {
   level: SubsidyLevel;
   privateCapacity: number;
+  /** Cumulative public subsidy spend that counts toward the next private asset. */
+  spendAccumulator?: number;
 };
 
 export type SubsidyState = Record<SubsidyProgram, SubsidyProgramState>;
@@ -87,6 +89,7 @@ export type GameState = {
   kpis: GameKpis;
   playerAssets: PlayerAsset[];
   existingAssets: ExistingAsset[];
+  privateAssets?: PrivateAsset[];
   undoStack: UndoEntry[];
   monthlyHistory: MonthlySnapshot[];
   subsidies?: SubsidyState;

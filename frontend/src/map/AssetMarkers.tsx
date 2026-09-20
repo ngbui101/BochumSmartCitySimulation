@@ -2,7 +2,7 @@ import React from 'react';
 import { Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import { renderToString } from 'react-dom/server';
-import type { PlayerAsset, ExistingAsset } from '../types/assets';
+import type { PlayerAsset, ExistingAsset, PrivateAsset } from '../types/assets';
 import { AssetDetailsPanel } from '../sidebar/AssetDetailsPanel';
 import { AssetIconImage } from '../ui/gameAssetIcons';
 import {
@@ -14,6 +14,7 @@ import {
 export interface AssetMarkersProps {
   playerAssets: PlayerAsset[];
   existingAssets: ExistingAsset[];
+  privateAssets?: PrivateAsset[];
   selectedAssetId?: string;
   onSelectAsset: (id: string | undefined) => void;
   onSell?: (id: string) => void;
@@ -21,14 +22,21 @@ export interface AssetMarkersProps {
 
 // Function to render the React component structure for the asset marker
 export const AssetMarkerIcon: React.FC<{
-  asset: PlayerAsset | ExistingAsset;
+  asset: PlayerAsset | ExistingAsset | PrivateAsset;
   isSelected: boolean;
 }> = ({ asset, isSelected }) => {
-  const isPlayer = 'itemType' in asset;
+  const isPrivate = 'ownership' in asset;
+  const isPlayer = 'purchasePrice' in asset;
   const playerAsset = isPlayer ? (asset as PlayerAsset) : null;
-  const markerSize = isPlayer ? (isSelected ? 58 : 48) : 34;
-  const iconSize = isPlayer ? (isSelected ? 52 : 42) : 30;
-  const itemClass = playerAsset ? `asset-marker--${playerAsset.itemType}` : 'asset-marker--existing';
+  const privateAsset = isPrivate ? (asset as PrivateAsset) : null;
+  const iconAsset = playerAsset ?? privateAsset;
+  const markerSize = isPlayer ? (isSelected ? 58 : 48) : isPrivate ? (isSelected ? 52 : 44) : 34;
+  const iconSize = isPlayer ? (isSelected ? 52 : 42) : isPrivate ? (isSelected ? 46 : 38) : 30;
+  const itemClass = playerAsset
+    ? `asset-marker--${playerAsset.itemType}`
+    : privateAsset
+      ? `asset-marker--private-${privateAsset.itemType}`
+      : 'asset-marker--existing';
   const statusClass =
     playerAsset?.status === 'under_construction' ? 'asset-marker--construction' : '';
   const selectedClass = isSelected ? 'asset-marker--selected' : '';
@@ -48,11 +56,11 @@ export const AssetMarkerIcon: React.FC<{
     justifyContent: 'center',
     width: `${iconSize}px`,
     height: `${iconSize}px`,
-    borderRadius: isPlayer ? '16px' : '50%',
+    borderRadius: isPlayer || isPrivate ? '16px' : '50%',
     position: 'relative',
     color: '#ffffff',
-    backgroundColor: isPlayer ? 'rgba(255, 253, 246, 0.95)' : '#60736A',
-    border: isPlayer ? '1px solid rgba(16, 35, 27, 0.12)' : '2.5px solid #60736A',
+    backgroundColor: isPlayer ? 'rgba(255, 253, 246, 0.95)' : isPrivate ? '#F2D6A7' : '#60736A',
+    border: isPlayer ? '1px solid rgba(16, 35, 27, 0.12)' : isPrivate ? '2px solid #C69253' : '2.5px solid #60736A',
     boxShadow: isSelected
       ? '0 10px 24px rgba(31, 79, 58, 0.26)'
       : '0 8px 18px rgba(16, 35, 27, 0.18)',
@@ -90,10 +98,10 @@ export const AssetMarkerIcon: React.FC<{
       )}
 
       <div style={wrapperStyle} className="asset-icon-wrapper">
-        {playerAsset ? (
+        {iconAsset ? (
           <AssetIconImage
-            itemType={playerAsset.itemType}
-            status={playerAsset.status}
+            itemType={iconAsset.itemType}
+            status={playerAsset?.status ?? 'active'}
             isSelected={isSelected}
             size={iconSize}
           />
@@ -131,6 +139,7 @@ export const AssetMarkerIcon: React.FC<{
 export const AssetMarkers: React.FC<AssetMarkersProps> = ({
   playerAssets,
   existingAssets,
+  privateAssets = [],
   selectedAssetId,
   onSelectAsset,
   onSell,
@@ -149,9 +158,13 @@ export const AssetMarkers: React.FC<AssetMarkersProps> = ({
     `}</style>
   );
 
-  const renderMarker = (asset: PlayerAsset | ExistingAsset) => {
+  const renderMarker = (asset: PlayerAsset | ExistingAsset | PrivateAsset) => {
     const isSelected = asset.id === selectedAssetId;
-    const markerSize = 'itemType' in asset ? (isSelected ? 58 : 48) : 34;
+    const markerSize = 'purchasePrice' in asset
+      ? (isSelected ? 58 : 48)
+      : 'ownership' in asset
+        ? (isSelected ? 52 : 44)
+        : 34;
     const markerAnchor = markerSize / 2;
     
     // Create Leaflet divIcon using the string representation of our React component
@@ -195,6 +208,7 @@ export const AssetMarkers: React.FC<AssetMarkersProps> = ({
     <>
       {styleBlock}
       {existingAssets.map(renderMarker)}
+      {privateAssets.map(renderMarker)}
       {playerAssets.map(renderMarker)}
     </>
   );

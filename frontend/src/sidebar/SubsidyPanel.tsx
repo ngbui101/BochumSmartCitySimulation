@@ -1,5 +1,6 @@
 import React from 'react';
 import { subsidyPrograms } from '../data/subsidyPrograms';
+import { PRIVATE_ASSET_THRESHOLD } from '../simulation/privateAssets';
 import type { SubsidyLevel, SubsidyProgram, SubsidyState } from '../types/game';
 
 export interface SubsidyPanelProps {
@@ -69,6 +70,9 @@ export const SubsidyPanel: React.FC<SubsidyPanelProps> = ({
               </div>
               <span className="subsidy-program__meta">
                 Privat: {formatEnergy(programState.privateCapacity)} Einh.
+              </span>
+              <span className="subsidy-program__progress">
+                Nächste Privatanlage: {formatEuro(programState.spendAccumulator ?? 0)} / {formatEuro(PRIVATE_ASSET_THRESHOLD)} €
               </span>
             </div>
           );

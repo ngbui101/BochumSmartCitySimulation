@@ -2,7 +2,7 @@ import React from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { AssetMarkers } from '../../src/map/AssetMarkers';
-import type { PlayerAsset, ExistingAsset } from '../../src/types/assets';
+import type { PlayerAsset, ExistingAsset, PrivateAsset } from '../../src/types/assets';
 
 // Mock leaflet
 vi.mock('leaflet', () => {
@@ -95,9 +95,29 @@ describe('AssetMarkers component', () => {
     }
   ];
 
+  const mockPrivateAssets: PrivateAsset[] = [
+    {
+      id: 'private-1',
+      name: 'Private Solaranlage #1',
+      itemType: 'solar',
+      assetTypeLabel: 'Solaranlage (privat)',
+      zoneId: 'mitte',
+      position: { lat: 51.481, lng: 7.211 },
+      statusLabel: 'Privat aktiv',
+      roleDescription: 'Bürgeranlage entlastet das Netz.',
+      modifiable: false,
+      sellable: false,
+      operatingCost: 0,
+      gridReliefCapacity: 2,
+      ownership: 'private',
+      dataConfidence: 'mvp-placeholder'
+    }
+  ];
+
   const defaultProps = {
     playerAssets: mockPlayerAssets,
     existingAssets: mockExistingAssets,
+    privateAssets: mockPrivateAssets,
     selectedAssetId: undefined,
     onSelectAsset: vi.fn(),
   };
@@ -109,7 +129,7 @@ describe('AssetMarkers component', () => {
   it('renders a Marker for every player and existing asset', () => {
     render(<AssetMarkers {...defaultProps} />);
     const markers = screen.getAllByTestId('mock-marker');
-    expect(markers.length).toBe(mockPlayerAssets.length + mockExistingAssets.length);
+    expect(markers.length).toBe(mockPlayerAssets.length + mockExistingAssets.length + mockPrivateAssets.length);
   });
 
   it('renders markers at correct positions', () => {
@@ -168,6 +188,16 @@ describe('AssetMarkers component', () => {
     const existingHtml = existingMarker.getAttribute('data-icon-html') || '';
     expect(existingHtml).toContain('asset-marker--existing');
     expect(existingHtml).toContain('#60736A');
+  });
+
+  it('renders private assets with a distinct private marker style', () => {
+    render(<AssetMarkers {...defaultProps} />);
+    const privateMarker = getByAttribute('data-id', 'private-1');
+    const privateHtml = privateMarker.getAttribute('data-icon-html') || '';
+
+    expect(privateHtml).toContain('asset-marker--private-solar');
+    expect(privateHtml).toContain('Solaranlage.png');
+    expect(privateHtml).toContain('background-color:#F2D6A7');
   });
 
   it('uses build icon and construction badge overlay for assets under construction', () => {

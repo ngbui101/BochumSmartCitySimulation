@@ -33,12 +33,18 @@ function isStoredGameState(value: unknown): value is StoredGameState {
 }
 
 function withStateDefaults(state: GameState): GameState {
+  const subsidies = state.subsidies ?? {
+    solar: { level: 0, privateCapacity: 0 },
+    storage: { level: 0, privateCapacity: 0 }
+  };
+
   return {
     ...state,
     existingAssets: [],
-    subsidies: state.subsidies ?? {
-      solar: { level: 0, privateCapacity: 0 },
-      storage: { level: 0, privateCapacity: 0 }
+    privateAssets: state.privateAssets ?? [],
+    subsidies: {
+      solar: { ...subsidies.solar },
+      storage: { ...subsidies.storage }
     },
     storedEnergy: state.storedEnergy ?? 0,
     monthlyHistory: state.monthlyHistory.map((snapshot) => ({
