@@ -150,6 +150,7 @@ export function App() {
   const [placementFeedback, setPlacementFeedback] = useState<PlacementFeedback | undefined>(
     undefined
   );
+  const [resetVersion, setResetVersion] = useState(0);
 
   const isRealStateMode = devStateMode === 'real';
   const state = isRealStateMode ? realState : mockState;
@@ -286,6 +287,8 @@ export function App() {
   const handleRestart = () => {
     clearPlacementFeedback();
     setPlacementDrag(null);
+    setSelectedItemType(null);
+    setResetVersion((version) => version + 1);
 
     if (isRealStateMode) {
       resetGame();
@@ -294,6 +297,14 @@ export function App() {
 
     setDevStateMode('initial');
     setMockState(initialMockState);
+  };
+
+  const handleResetRequest = () => {
+    if (!window.confirm('Möchtest du das laufende Spiel wirklich zurücksetzen?')) {
+      return;
+    }
+
+    handleRestart();
   };
 
   const handleDragLeave = () => {
@@ -422,6 +433,7 @@ export function App() {
           </div>
         )}
         <BochumMap
+          key={resetVersion}
           playerAssets={state.playerAssets}
           existingAssets={state.existingAssets}
           selectedAssetId={state.selectedAssetId}
@@ -441,6 +453,7 @@ export function App() {
           undoTooltip={undoTooltip}
           onUndo={handleUndo}
           onNextMonth={handleNextMonth}
+          onReset={handleResetRequest}
         />
       </section>
 

@@ -1409,6 +1409,16 @@ textarea {
   background: linear-gradient(180deg, #358d62, var(--color-primary-dark));
 }
 
+.btn-reset {
+  color: #8a3f3f;
+  background: #fff0ee;
+  border: 1px solid rgba(240, 106, 106, 0.42) !important;
+}
+
+.btn-reset:hover {
+  background: #ffe2df;
+}
+
 .transition-curtain {
   background: rgba(16, 35, 27, 0.82);
 }

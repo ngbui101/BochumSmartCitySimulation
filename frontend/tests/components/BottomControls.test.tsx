@@ -11,24 +11,28 @@ describe('BottomControls component', () => {
   it('renders undo and next month buttons in the correct order with German umlauts', () => {
     const onUndo = vi.fn();
     const onNextMonth = vi.fn();
+    const onReset = vi.fn();
     const { container } = render(
       <BottomControls
         canUndo={true}
         undoTooltip="Letzten Schritt rückgängig machen"
         onUndo={onUndo}
         onNextMonth={onNextMonth}
+        onReset={onReset}
       />
     );
 
     const buttons = container.querySelectorAll('button');
-    expect(buttons).toHaveLength(2);
+    expect(buttons).toHaveLength(3);
     expect(buttons[0]).toHaveTextContent(/Rückgängig/i);
     expect(buttons[1]).toHaveTextContent(/Nächster Monat/i);
+    expect(buttons[2]).toHaveTextContent(/Spiel zurücksetzen/i);
   });
 
   it('sets the title/tooltip and disabled state on the Undo button', () => {
     const onUndo = vi.fn();
     const onNextMonth = vi.fn();
+    const onReset = vi.fn();
 
     const { rerender } = render(
       <BottomControls
@@ -36,6 +40,7 @@ describe('BottomControls component', () => {
         undoTooltip="Letzten Schritt rückgängig machen"
         onUndo={onUndo}
         onNextMonth={onNextMonth}
+        onReset={onReset}
       />
     );
 
@@ -49,6 +54,7 @@ describe('BottomControls component', () => {
         undoTooltip="Kein Schritt zum Rückgängig machen"
         onUndo={onUndo}
         onNextMonth={onNextMonth}
+        onReset={onReset}
       />
     );
     expect(undoBtn).toHaveAttribute('title', 'Kein Schritt zum Rückgängig machen');
@@ -58,12 +64,14 @@ describe('BottomControls component', () => {
   it('calls onUndo when clicking the Undo button and canUndo is true', () => {
     const onUndo = vi.fn();
     const onNextMonth = vi.fn();
+    const onReset = vi.fn();
     render(
       <BottomControls
         canUndo={true}
         undoTooltip="Undo"
         onUndo={onUndo}
         onNextMonth={onNextMonth}
+        onReset={onReset}
       />
     );
 
@@ -75,12 +83,14 @@ describe('BottomControls component', () => {
     vi.useFakeTimers();
     const onUndo = vi.fn();
     const onNextMonth = vi.fn();
+    const onReset = vi.fn();
     render(
       <BottomControls
         canUndo={true}
         undoTooltip="Undo"
         onUndo={onUndo}
         onNextMonth={onNextMonth}
+        onReset={onReset}
       />
     );
 
@@ -101,5 +111,23 @@ describe('BottomControls component', () => {
     expect(document.querySelector('.transition-curtain')).not.toBeInTheDocument();
 
     vi.useRealTimers();
+  });
+
+  it('calls onReset from the visible reset button', () => {
+    const onReset = vi.fn();
+
+    render(
+      <BottomControls
+        canUndo={false}
+        undoTooltip="Undo"
+        onUndo={vi.fn()}
+        onNextMonth={vi.fn()}
+        onReset={onReset}
+      />
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /Spiel zurücksetzen/i }));
+
+    expect(onReset).toHaveBeenCalledTimes(1);
   });
 });

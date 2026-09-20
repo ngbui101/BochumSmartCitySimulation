@@ -313,6 +313,40 @@ describe('App integrated game flow', () => {
     expect(screen.getByTestId('player-asset-count')).toHaveTextContent('1');
   });
 
+  it('resets the running game, transient selections and persisted state after confirmation', () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true);
+
+    render(<App />);
+
+    fireEvent.pointerDown(screen.getByTestId('buyable-item-solar'), {
+      clientX: 24,
+      clientY: 48
+    });
+    act(() => {
+      vi.advanceTimersByTime(200);
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'drop mitte' }));
+    fireEvent.click(screen.getByRole('button', { name: 'select player' }));
+    expect(screen.getByTestId('asset-title')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId('buyable-item-wind'));
+    expect(screen.getByTestId('item-info-flyout')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Rückgängig/i })).not.toBeDisabled();
+
+    fireEvent.click(screen.getByRole('button', { name: /Spiel zurücksetzen/i }));
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Möchtest du das laufende Spiel wirklich zurücksetzen?'
+    );
+    expect(screen.getByTestId('player-asset-count')).toHaveTextContent('0');
+    expect(screen.getByTestId('selected-asset-id')).toHaveTextContent('none');
+    expect(screen.getByTestId('budget-value')).toHaveTextContent('18.000.000 Euro');
+    expect(screen.queryByTestId('asset-title')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('item-info-flyout')).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Rückgängig/i })).toBeDisabled();
+    expect(storedState()?.playerAssets).toHaveLength(0);
+  });
+
   it('renders the real endscreen from finalScore and restarts by clearing persisted state', () => {
     saveGameState(
       finishedState({
