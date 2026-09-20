@@ -40,6 +40,49 @@ body {
   overflow: hidden;
 }
 
+.app-error-screen {
+  display: grid;
+  width: 100vw;
+  min-width: 320px;
+  height: 100vh;
+  place-items: center;
+  padding: 24px;
+  background: var(--color-bg);
+}
+
+.app-error-card {
+  display: grid;
+  gap: 12px;
+  width: min(520px, 100%);
+  padding: 28px;
+  color: var(--color-text);
+  background: var(--color-panel);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+}
+
+.app-error-card h1,
+.app-error-card p {
+  margin: 0;
+}
+
+.app-error-card h1 {
+  color: var(--color-primary-dark);
+}
+
+.app-error-card button {
+  justify-self: center;
+  padding: 10px 16px;
+  color: #ffffff;
+  background: linear-gradient(180deg, var(--color-primary), var(--color-primary-dark));
+  border: 0;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 800;
+}
+
 button,
 input,
 select,
