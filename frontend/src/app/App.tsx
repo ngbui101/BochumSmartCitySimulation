@@ -136,7 +136,12 @@ function validateDropPosition(
 }
 
 export function App() {
-  const { state: realState, dispatch: realDispatch, resetGame } = useAppState();
+  const {
+    state: realState,
+    dispatch: realDispatch,
+    resetGame,
+    storageStatus
+  } = useAppState();
   const [devStateMode, setDevStateMode] = useState<DevStateMode>('real');
   const [mockState, setMockState] = useState<GameState>(initialMockState);
   const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(null);
@@ -410,6 +415,12 @@ export function App() {
       />
 
       <section className="map-stage" aria-label="Bochum-Karte">
+        {storageStatus === 'unavailable' && (
+          <div className="storage-warning" role="status" data-testid="storage-warning">
+            Der Spielstand kann in diesem Browser nicht gespeichert werden. Das Spiel läuft weiter,
+            kann aber beim Aktualisieren der Seite verloren gehen.
+          </div>
+        )}
         <BochumMap
           playerAssets={state.playerAssets}
           existingAssets={state.existingAssets}

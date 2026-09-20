@@ -1,9 +1,10 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { createInitialGameState } from '../../src/game/initialGameState';
 import {
   clearGameState,
   GAME_STATE_STORAGE_KEY,
+  getStorageStatus,
   loadGameState,
   saveGameState
 } from '../../src/persistence/localStorageStore';
@@ -11,6 +12,10 @@ import {
 describe('localStorageStore', () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('saves and loads a valid game state', () => {
@@ -71,5 +76,32 @@ describe('localStorageStore', () => {
     );
 
     expect(loadGameState()?.existingAssets).toEqual([]);
+  });
+
+  it('reports unavailable storage when reading localStorage fails', () => {
+    vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('storage blocked');
+    });
+
+    expect(loadGameState()).toBeNull();
+    expect(getStorageStatus()).toBe('unavailable');
+  });
+
+  it('reports a failed save when localStorage rejects writes', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('quota exceeded', 'QuotaExceededError');
+    });
+
+    expect(saveGameState(createInitialGameState())).toBe(false);
+    expect(getStorageStatus()).toBe('unavailable');
+  });
+
+  it('reports a failed clear when localStorage rejects removal', () => {
+    vi.spyOn(Storage.prototype, 'removeItem').mockImplementation(() => {
+      throw new Error('storage blocked');
+    });
+
+    expect(clearGameState()).toBe(false);
+    expect(getStorageStatus()).toBe('unavailable');
   });
 });

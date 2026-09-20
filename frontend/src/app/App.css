@@ -119,6 +119,25 @@ textarea {
   overflow: hidden;
 }
 
+.storage-warning {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  z-index: 1100;
+  width: min(520px, calc(100% - 48px));
+  padding: 10px 14px;
+  color: #6d5520;
+  background: rgba(255, 248, 220, 0.97);
+  border: 1px solid rgba(244, 180, 0, 0.55);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  font-size: 0.82rem;
+  font-weight: 750;
+  line-height: 1.35;
+  text-align: center;
+  transform: translateX(-50%);
+}
+
 .map-stage .bochum-zone-path:focus {
   outline: none;
 }

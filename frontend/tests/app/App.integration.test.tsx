@@ -339,4 +339,16 @@ describe('App integrated game flow', () => {
     expect(screen.getByTestId('budget-value')).toHaveTextContent('18.000.000 Euro');
     expect(storedState()?.status).toBe('running');
   });
+
+  it('shows a non-blocking warning when browser storage is unavailable', () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('quota exceeded', 'QuotaExceededError');
+    });
+
+    render(<App />);
+
+    expect(screen.getByRole('status')).toHaveTextContent(
+      /Spielstand kann in diesem Browser nicht gespeichert werden/i
+    );
+  });
 });
