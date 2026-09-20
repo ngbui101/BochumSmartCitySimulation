@@ -1,44 +1,29 @@
 import type { FinalScore, GameState, ScoreBreakdown } from '../types/game';
 
-const STARTING_BUDGET = 18_000_000;
-
-function clampScore(value: number): number {
-  return Math.max(0, Math.min(100, Math.round(value)));
-}
-
-function calculateBudgetEfficiency(budget: number): number {
-  return clampScore((budget / STARTING_BUDGET) * 100);
-}
-
 function getQualitativeSummary(totalScore: number): string {
-  if (totalScore >= 85) {
-    return 'Exzellente Smart-City-Balance.';
+  if (totalScore >= 36) {
+    return 'Hervorragende Smart-City-Balance.';
   }
 
-  if (totalScore >= 70) {
-    return 'Starke Energiewende mit kleinen Zielkonflikten.';
+  if (totalScore >= 26) {
+    return 'Starke Entwicklung mit guter Balance.';
   }
 
-  if (totalScore >= 50) {
-    return 'Solide Entwicklung mit erkennbarem Verbesserungsbedarf.';
+  if (totalScore >= 16) {
+    return 'Solide Entwicklung mit weiterem Potenzial.';
   }
 
-  return 'Riskanter Ausbau mit deutlichen Schwachstellen.';
+  return 'Ein schwieriger Start – beim nächsten Versuch wird es besser.';
 }
 
 export function calculateFinalScore(state: GameState): FinalScore {
   const breakdown: ScoreBreakdown = {
-    energyAutarky: clampScore(state.kpis.energyAutarky),
-    budgetEfficiency: calculateBudgetEfficiency(state.budget),
-    citizenSatisfaction: clampScore(state.kpis.citizenSatisfaction),
-    supplySecurity: clampScore(state.kpis.supplySecurity)
+    budgetPoints: Math.floor(Math.max(0, state.budget) / 1_000_000),
+    energyAutarkyPoints: Math.floor(Math.max(0, state.kpis.energyAutarky) / 10),
+    citizenSatisfactionPoints: Math.floor(Math.max(0, state.kpis.citizenSatisfaction) / 10),
+    supplySecurityPoints: Math.floor(Math.max(0, state.kpis.supplySecurity) / 10)
   };
-  const totalScore = clampScore(
-    breakdown.energyAutarky * 0.35 +
-      breakdown.budgetEfficiency * 0.2 +
-      breakdown.citizenSatisfaction * 0.2 +
-      breakdown.supplySecurity * 0.25
-  );
+  const totalScore = Object.values(breakdown).reduce((sum, points) => sum + points, 0);
 
   return {
     totalScore,

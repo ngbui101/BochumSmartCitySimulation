@@ -32,7 +32,9 @@ function isStoredGameState(value: unknown): value is StoredGameState {
     Array.isArray(value.state.undoStack) &&
     Array.isArray(value.state.monthlyHistory) &&
     Array.isArray(value.state.forecast) &&
-    (value.state.status === 'running' || value.state.status === 'finished')
+    (value.state.status === 'running' ||
+      value.state.status === 'finished' ||
+      value.state.status === 'lost')
   );
 }
 

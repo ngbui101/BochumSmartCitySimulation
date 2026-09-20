@@ -3,7 +3,9 @@ import type { ItemType, LatLngPosition } from './assets';
 import type { ZoneId } from './zones';
 import type { WeatherForecastMonth } from './weather';
 
-export type GameStatus = 'running' | 'finished';
+export type GameStatus = 'running' | 'finished' | 'lost';
+
+export type LossReason = 'bankrupt' | 'voted_out';
 
 export type SubsidyProgram = 'solar' | 'storage';
 
@@ -25,10 +27,10 @@ export type GameKpis = {
 };
 
 export type ScoreBreakdown = {
-  energyAutarky: number;
-  budgetEfficiency: number;
-  citizenSatisfaction: number;
-  supplySecurity: number;
+  budgetPoints: number;
+  energyAutarkyPoints: number;
+  citizenSatisfactionPoints: number;
+  supplySecurityPoints: number;
 };
 
 export type FinalScore = {
@@ -95,6 +97,7 @@ export type GameState = {
   subsidies?: SubsidyState;
   forecast: WeatherForecastMonth[];
   status: GameStatus;
+  lossReason?: LossReason;
   /** Persistenter Energiepuffer aller Speicher-Assets in Einheiten. */
   storedEnergy: number;
   selectedAssetId?: string;

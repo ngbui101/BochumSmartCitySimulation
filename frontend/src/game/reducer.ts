@@ -4,6 +4,7 @@ import { getPlayerAssetSellValue } from './selectors';
 import { clampSubsidyLevel } from '../data/subsidyPrograms';
 import { canPlaceItem } from '../simulation/placementRules';
 import { advanceMonth } from '../simulation/monthlySimulation';
+import { applyLossState } from './lossRules';
 import type { PlayerAsset } from '../types/assets';
 import type { GameAction, GameState } from '../types/game';
 
@@ -60,7 +61,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
         return state;
       }
 
-      return {
+      return applyLossState({
         ...state,
         budget: state.budget - itemDefinition.cost,
         playerAssets: [...state.playerAssets, playerAsset],
@@ -73,7 +74,7 @@ export function gameReducer(state: GameState, action: GameAction): GameState {
           }
         ],
         selectedAssetId: playerAsset.id
-      };
+      });
     }
 
     case 'SELL_ASSET': {

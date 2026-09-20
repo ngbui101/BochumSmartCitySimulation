@@ -3,6 +3,8 @@ import { Sidebar } from '../sidebar/Sidebar';
 import { BochumMap } from '../map/BochumMap';
 import { BottomControls } from '../components/BottomControls';
 import { ResetConfirmationModal } from '../components/ResetConfirmationModal';
+import { QuickStart } from '../components/QuickStart';
+import type { QuickStartTarget } from '../components/QuickStart';
 import { EndScreen } from '../sidebar/EndScreen';
 import { bochumZonesGeoJson } from '../data/bochumZones';
 import { itemDefinitions } from '../data/itemDefinitions';
@@ -11,9 +13,20 @@ import { canPlaceItem } from '../simulation/placementRules';
 import { calculateFinalScore } from '../simulation/scoring';
 import { findZoneForPoint } from '../simulation/zoneDetection';
 import { useAppState } from './appState';
+import {
+  completeQuickStart,
+  hasCompletedQuickStart
+} from '../persistence/quickStartStore';
 import { AssetIconImage } from '../ui/gameAssetIcons';
 import type { ItemType, LatLngPosition } from '../types/assets';
-import type { GameAction, GameKpis, GameState, SubsidyLevel, SubsidyProgram } from '../types/game';
+import type {
+  FinalScore,
+  GameAction,
+  GameKpis,
+  GameState,
+  SubsidyLevel,
+  SubsidyProgram
+} from '../types/game';
 import type { ZoneId } from '../types/zones';
 import type { PlacementFeedback, ZoneFeedback } from '../map/BochumMap';
 
@@ -56,6 +69,19 @@ function getItemLabel(itemType: ItemType): string {
 
 function getItemIcon(itemType: ItemType): React.ReactNode {
   return <AssetIconImage itemType={itemType} size={64} />;
+}
+
+function hasCurrentScoreFormat(score: FinalScore | undefined): score is FinalScore {
+  if (!score) {
+    return false;
+  }
+
+  return [
+    score.breakdown.budgetPoints,
+    score.breakdown.energyAutarkyPoints,
+    score.breakdown.citizenSatisfactionPoints,
+    score.breakdown.supplySecurityPoints
+  ].every((value) => typeof value === 'number');
 }
 
 function getPlacementMessage(itemType: ItemType, result: ReturnType<typeof canPlaceItem>): string {
@@ -137,6 +163,10 @@ export function App() {
   );
   const [resetVersion, setResetVersion] = useState(0);
   const [isResetConfirmationOpen, setIsResetConfirmationOpen] = useState(false);
+  const [isQuickStartOpen, setIsQuickStartOpen] = useState(
+    () => realState.status === 'running' && !hasCompletedQuickStart()
+  );
+  const [onboardingTarget, setOnboardingTarget] = useState<QuickStartTarget | null>(null);
 
   const state = realState;
 
@@ -255,8 +285,16 @@ export function App() {
     setPlacementDrag(null);
     setSelectedItemType(null);
     setResetVersion((version) => version + 1);
+    setOnboardingTarget(null);
+    setIsQuickStartOpen(true);
 
     resetGame();
+  };
+
+  const handleQuickStartComplete = () => {
+    completeQuickStart();
+    setOnboardingTarget(null);
+    setIsQuickStartOpen(false);
   };
 
   const handleResetRequest = () => {
@@ -344,7 +382,11 @@ export function App() {
   const undoTooltip = getUndoTooltip(state);
   const deltas: Partial<GameKpis> | undefined = getKpiDeltas(state);
   const finalScore =
-    state.status === 'finished' ? state.finalScore ?? calculateFinalScore(state) : undefined;
+    state.status === 'finished' || state.status === 'lost'
+      ? hasCurrentScoreFormat(state.finalScore)
+        ? state.finalScore
+        : calculateFinalScore(state)
+      : undefined;
 
   const placeableZones = useMemo(() => {
     const itemType = placementDrag?.itemType ?? selectedItemType;
@@ -390,6 +432,7 @@ export function App() {
         onSetSubsidyLevel={handleSetSubsidyLevel}
         onRequestReset={handleResetRequest}
         onPointerDragStart={handlePointerDragStart}
+        onboardingTarget={onboardingTarget}
       />
 
       <section className="map-stage" aria-label="Bochum-Karte">
@@ -439,7 +482,20 @@ export function App() {
         </div>
       )}
 
-      {finalScore && <EndScreen finalScore={finalScore} onRestart={handleRestart} />}
+      {finalScore && (
+        <EndScreen
+          finalScore={finalScore}
+          status={state.status}
+          lossReason={state.lossReason}
+          onRestart={handleRestart}
+        />
+      )}
+
+      <QuickStart
+        isOpen={isQuickStartOpen}
+        onComplete={handleQuickStartComplete}
+        onTargetChange={setOnboardingTarget}
+      />
 
       <ResetConfirmationModal
         isOpen={isResetConfirmationOpen}

@@ -113,4 +113,20 @@ describe('Sidebar component', () => {
     fireEvent.click(screen.getByRole('button', { name: /Speicherförderung Stufe 1/i }));
     expect(handleSetSubsidyLevel).toHaveBeenCalledWith('storage', 1);
   });
+
+  it('marks the requested quick-start group for highlighting', () => {
+    render(
+      <Sidebar
+        budget={8000000}
+        currentMonthIndex={5}
+        kpis={mockKpis}
+        energyStatus={mockEnergyStatus}
+        forecast={mockForecast}
+        onboardingTarget="weather"
+      />
+    );
+
+    expect(screen.getByTestId('onboarding-target-weather')).toHaveClass('onboarding-highlight');
+    expect(screen.getByTestId('onboarding-target-weather')).toHaveAttribute('data-onboarding', 'weather');
+  });
 });

@@ -5,6 +5,7 @@ import { getEnergyDemandForMonth } from '../data/energyDemand';
 import type { PlayerAsset } from '../types/assets';
 import type { GameKpis, GameState } from '../types/game';
 import { calculateFinalScore } from './scoring';
+import { resolveLossReason } from '../game/lossRules';
 import { createPrivateAsset, PRIVATE_ASSET_THRESHOLD } from './privateAssets';
 import { createForecast, getWeatherProfileForMonth } from './weatherSimulation';
 
@@ -229,14 +230,14 @@ function calculateNextBudget(
 }
 
 export function advanceMonth(state: GameState): GameState {
-  if (state.status === 'finished') {
+  if (state.status !== 'running') {
     return state;
   }
 
   const nextMonthIndex = state.currentMonthIndex + 1;
   const playerAssets = activateCompletedAssets(state, nextMonthIndex);
   const activeAssets = playerAssets.filter((asset) => asset.status === 'active');
-  const status = nextMonthIndex >= 60 ? 'finished' : state.status;
+  const status = nextMonthIndex >= 60 ? 'finished' : 'running';
   const subsidyResult = calculateNextSubsidies(state);
   const subsidies = subsidyResult.subsidies;
 
@@ -283,10 +284,18 @@ export function advanceMonth(state: GameState): GameState {
     status
   };
 
+  const lossReason = resolveLossReason(nextState);
+
+  if (lossReason) {
+    return {
+      ...nextState,
+      status: 'lost',
+      lossReason,
+      finalScore: calculateFinalScore(nextState)
+    };
+  }
+
   return status === 'finished'
-    ? {
-        ...nextState,
-        finalScore: calculateFinalScore(nextState)
-      }
+    ? { ...nextState, finalScore: calculateFinalScore(nextState) }
     : nextState;
 }

@@ -1,32 +1,43 @@
 import React from 'react';
-import type { FinalScore } from '../types/game';
+import type { FinalScore, GameStatus, LossReason } from '../types/game';
 
 export interface EndScreenProps {
   finalScore: FinalScore;
+  status?: GameStatus;
+  lossReason?: LossReason;
   onRestart: () => void;
 }
 
-export const EndScreen: React.FC<EndScreenProps> = ({ finalScore, onRestart }) => {
+export const EndScreen: React.FC<EndScreenProps> = ({
+  finalScore,
+  status = 'finished',
+  lossReason,
+  onRestart
+}) => {
   const { totalScore, breakdown, qualitativeSummary } = finalScore;
 
-  // Qualitative German feedback based on total score
-  let germanSummary = '';
-  if (totalScore >= 80) {
-    germanSummary = 'Hervorragende Leistung! Bochum ist eine moderne, grüne und zukunftssichere Stadt geworden.';
-  } else if (totalScore >= 60) {
-    germanSummary = 'Gute Arbeit! Sie haben wichtige Fortschritte erzielt und die Lebensqualität spürbar verbessert.';
-  } else if (totalScore >= 40) {
-    germanSummary = 'Solide Leistung. Einige Bereiche bieten jedoch noch deutliches Verbesserungspotenzial.';
-  } else {
-    germanSummary = 'Bochum steht vor großen Herausforderungen. Versuchen Sie es noch einmal, um eine stabilere und nachhaltigere Stadt aufzubauen.';
-  }
+  const isLost = status === 'lost';
+  const lossTitle = lossReason === 'bankrupt' ? 'Bankrott' : 'Abgewählt';
+  const lossSummary =
+    lossReason === 'bankrupt'
+      ? 'Dein Budget ist aufgebraucht. Mit einer neuen Runde kannst du Bochum wieder aufbauen.'
+      : 'Die Bürgerzufriedenheit ist auf 0 gefallen. Mit einer neuen Runde kannst du das Vertrauen zurückgewinnen.';
+  const germanSummary = isLost
+    ? lossSummary
+    : totalScore >= 36
+      ? 'Hervorragende Leistung! Bochum ist eine moderne, grüne und zukunftssichere Stadt geworden.'
+      : totalScore >= 26
+        ? 'Gute Arbeit! Du hast wichtige Fortschritte erzielt und die Lebensqualität verbessert.'
+        : totalScore >= 16
+          ? 'Solide Leistung. Einige Bereiche bieten noch deutliches Verbesserungspotenzial.'
+          : 'Bochum steht vor großen Herausforderungen. Beim nächsten Versuch wird es besser.';
 
   return (
     <div className="endscreen-overlay" data-testid="endscreen-overlay">
       <div className="endscreen-container">
         <header className="endscreen-header">
-          <p className="endscreen-eyebrow">Simulation Beendet</p>
-          <h1>Bochum Smart City</h1>
+          <p className="endscreen-eyebrow">{isLost ? 'Runde beendet' : 'Simulation beendet'}</p>
+          <h1>{isLost ? lossTitle : 'Bochum Smart City'}</h1>
         </header>
 
         <div className="endscreen-main-score">
@@ -39,19 +50,19 @@ export const EndScreen: React.FC<EndScreenProps> = ({ finalScore, onRestart }) =
         <div className="endscreen-breakdown">
           <div className="breakdown-card">
             <span className="breakdown-label">Energieautarkie</span>
-            <span className="breakdown-value">{breakdown.energyAutarky}%</span>
+            <span className="breakdown-value">+{breakdown.energyAutarkyPoints} Punkte</span>
           </div>
           <div className="breakdown-card">
-            <span className="breakdown-label">Budgeteffizienz</span>
-            <span className="breakdown-value">{breakdown.budgetEfficiency}%</span>
+            <span className="breakdown-label">Budgetpunkte</span>
+            <span className="breakdown-value">+{breakdown.budgetPoints} Punkte</span>
           </div>
           <div className="breakdown-card">
             <span className="breakdown-label">Bürgerzufriedenheit</span>
-            <span className="breakdown-value">{breakdown.citizenSatisfaction}%</span>
+            <span className="breakdown-value">+{breakdown.citizenSatisfactionPoints} Punkte</span>
           </div>
           <div className="breakdown-card">
             <span className="breakdown-label">Versorgungssicherheit</span>
-            <span className="breakdown-value">{breakdown.supplySecurity}%</span>
+            <span className="breakdown-value">+{breakdown.supplySecurityPoints} Punkte</span>
           </div>
         </div>
 

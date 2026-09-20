@@ -7,6 +7,7 @@ import type { EnergyStatusProps } from './KpiDashboard';
 import { WeatherForecast } from './WeatherForecast';
 import { BuyableItemList } from './BuyableItemList';
 import { SubsidyPanel } from './SubsidyPanel';
+import type { QuickStartTarget } from '../components/QuickStart';
 
 export interface SidebarProps {
   budget: number;
@@ -27,6 +28,7 @@ export interface SidebarProps {
   onSelectItemType?: (itemType: ItemType | null) => void;
   onSetSubsidyLevel?: (program: SubsidyProgram, level: SubsidyLevel) => void;
   onRequestReset?: () => void;
+  onboardingTarget?: QuickStartTarget | null;
   onPointerDragStart?: (
     itemType: ItemType,
     pointer: {
@@ -54,6 +56,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectItemType,
   onSetSubsidyLevel,
   onRequestReset,
+  onboardingTarget,
   onPointerDragStart,
 }) => {
   const monthNum = currentMonthIndex + 1;
@@ -84,7 +87,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   return (
     <aside className="app-sidebar" aria-label="Spielstatus und Aktionen">
-      <header className="sidebar-header">
+      <header
+        className={`sidebar-header${onboardingTarget === 'status' ? ' onboarding-highlight' : ''}`}
+        data-onboarding="status"
+        data-testid="onboarding-target-status"
+      >
         <div className="sidebar-title-row">
           <span className="mvp-badge">MVP 1</span>
           <span className="simulation-kicker">Energiewende-Simulation</span>
@@ -95,27 +102,55 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </p>
       </header>
 
-      <KpiDashboard budget={budget} kpis={kpis} energyStatus={energyStatus} deltas={deltas} />
+      <div
+        className={onboardingTarget === 'kpis' ? 'onboarding-highlight' : ''}
+        data-onboarding="kpis"
+        data-testid="onboarding-target-kpis"
+      >
+        <KpiDashboard budget={budget} kpis={kpis} energyStatus={energyStatus} deltas={deltas} />
+      </div>
 
-      <WeatherForecast forecast={forecast} />
+      <div
+        className={onboardingTarget === 'weather' ? 'onboarding-highlight' : ''}
+        data-onboarding="weather"
+        data-testid="onboarding-target-weather"
+      >
+        <WeatherForecast forecast={forecast} />
+      </div>
 
-      <SubsidyPanel
-        subsidies={subsidies}
-        subsidyCosts={subsidyCosts}
-        privateSolarProduction={privateSolarProduction}
-        privateStorageDischarge={privateStorageDischarge}
-        onSetSubsidyLevel={onSetSubsidyLevel}
-      />
+      <div
+        className={onboardingTarget === 'subsidies' ? 'onboarding-highlight' : ''}
+        data-onboarding="subsidies"
+        data-testid="onboarding-target-subsidies"
+      >
+        <SubsidyPanel
+          subsidies={subsidies}
+          subsidyCosts={subsidyCosts}
+          privateSolarProduction={privateSolarProduction}
+          privateStorageDischarge={privateStorageDischarge}
+          onSetSubsidyLevel={onSetSubsidyLevel}
+        />
+      </div>
 
-      <BuyableItemList
-        budget={budget}
-        selectedItemType={selectedItemType ?? null}
-        onSelectItemType={handleSelectItemTypeWrapper}
-        onPointerDragStart={handlePointerDragStartWrapper}
-      />
+      <div
+        className={onboardingTarget === 'build' ? 'onboarding-highlight' : ''}
+        data-onboarding="build"
+        data-testid="onboarding-target-build"
+      >
+        <BuyableItemList
+          budget={budget}
+          selectedItemType={selectedItemType ?? null}
+          onSelectItemType={handleSelectItemTypeWrapper}
+          onPointerDragStart={handlePointerDragStartWrapper}
+        />
+      </div>
 
       {onRequestReset && (
-        <div className="sidebar-reset-area">
+        <div
+          className={`sidebar-reset-area${onboardingTarget === 'controls' ? ' onboarding-highlight' : ''}`}
+          data-onboarding="controls"
+          data-testid="onboarding-target-controls"
+        >
           <button
             type="button"
             className="sidebar-reset-button"

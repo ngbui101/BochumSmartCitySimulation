@@ -72,6 +72,21 @@ describe('gameReducer', () => {
     expect(next).toBe(state);
   });
 
+  it('ends the game as bankrupt when a placement uses the final budget euro', () => {
+    const state = { ...createInitialGameState(), budget: solarCost };
+    const next = gameReducer(state, {
+      type: 'PLACE_ASSET',
+      itemType: 'solar',
+      zoneId: 'mitte',
+      position: { lat: 51.48, lng: 7.21 }
+    });
+
+    expect(next.budget).toBe(0);
+    expect(next.status).toBe('lost');
+    expect(next.lossReason).toBe('bankrupt');
+    expect(next.finalScore?.totalScore).toBeDefined();
+  });
+
   it('sells a player asset for 60 percent of the purchase price', () => {
     const asset = makeAsset({ id: 'asset-to-sell', purchasePrice: 1_000_000 });
     const state = withPlayerAssets(createInitialGameState(), [asset]);

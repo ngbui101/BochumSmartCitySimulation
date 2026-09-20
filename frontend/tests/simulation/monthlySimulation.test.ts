@@ -200,4 +200,28 @@ describe('advanceMonth', () => {
     expect(next.currentMonthIndex).toBe(60);
     expect(next.status).toBe('finished');
   });
+
+  it('ends the game as bankrupt when the monthly result reaches zero budget', () => {
+    const state = { ...createInitialGameState(), budget: 1 };
+
+    const next = advanceMonth(state);
+
+    expect(next.budget).toBe(0);
+    expect(next.status).toBe('lost');
+    expect(next.lossReason).toBe('bankrupt');
+    expect(next.finalScore?.totalScore).toBeDefined();
+  });
+
+  it('ends the game as voted out when citizen satisfaction is zero', () => {
+    const state = {
+      ...createInitialGameState(),
+      kpis: { ...createInitialGameState().kpis, citizenSatisfaction: 0 }
+    };
+
+    const next = advanceMonth(state);
+
+    expect(next.status).toBe('lost');
+    expect(next.lossReason).toBe('voted_out');
+    expect(next.finalScore?.totalScore).toBeDefined();
+  });
 });
