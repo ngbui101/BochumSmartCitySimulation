@@ -194,9 +194,12 @@ function calculateEnergyBalance(
 function calculateNextKpis(
   state: GameState,
   activeAssets: PlayerAsset[],
-  subsidies: NonNullable<GameState['subsidies']>
+  subsidies: NonNullable<GameState['subsidies']>,
+  energyBalance: {
+    demand: number;
+    saldo: number;
+  }
 ): GameKpis {
-  const production = calculateTotalProduction(activeAssets, state.currentMonthIndex, state.weatherSeed);
   const storageValue = activeAssets.reduce((sum, asset) => {
     const itemDefinition = getItemDefinition(asset.itemType);
     return sum + (itemDefinition?.storageValue ?? 0);
@@ -215,13 +218,17 @@ function calculateNextKpis(
   };
   const subsidyCitizenBonus = currentSubsidies.solar.level * 0.4 + currentSubsidies.storage.level * 0.25;
   const privateSecurityBonus = Math.min(4, subsidies.storage.privateCapacity * 0.08);
+  const importedEnergy = Math.max(0, -energyBalance.saldo);
+  const coveredDemand = Math.max(0, energyBalance.demand - importedEnergy);
+  const monthlyEnergyAutarky = energyBalance.demand > 0
+    ? (coveredDemand / energyBalance.demand) * 100
+    : 0;
+  const currentSupplySecurity = storageValue * 0.5 + mixedGenerationBonus + privateSecurityBonus;
 
   return {
-    energyAutarky: clampScore(state.kpis.energyAutarky + production * 0.35),
+    energyAutarky: clampScore(monthlyEnergyAutarky),
     citizenSatisfaction: clampScore(state.kpis.citizenSatisfaction + citizenImpact + subsidyCitizenBonus),
-    supplySecurity: clampScore(
-      state.kpis.supplySecurity + storageValue * 0.5 + mixedGenerationBonus + privateSecurityBonus
-    )
+    supplySecurity: clampScore(currentSupplySecurity)
   };
 }
 
@@ -262,7 +269,7 @@ export function advanceMonth(state: GameState): GameState {
     ...state,
     currentMonthIndex: nextMonthIndex,
     budget: calculateNextBudget(state, netMonthlyDelta),
-    kpis: calculateNextKpis(state, activeAssets, subsidies),
+    kpis: calculateNextKpis(state, activeAssets, subsidies, energyBalance),
     playerAssets,
     privateAssets: subsidyResult.privateAssets,
     subsidies,

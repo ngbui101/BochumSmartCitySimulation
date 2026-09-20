@@ -33,6 +33,12 @@ class StartValueSweepTests(unittest.TestCase):
         self.assertEqual(result.history[0].month_index, 1)
         self.assertIn(result.status, {"finished", "lost"})
 
+    def test_kpis_are_recalculated_from_current_month_not_accumulated(self):
+        result = simulate_session(DEFAULT_START_VALUES, "solar_first", weather_seed=1)
+
+        self.assertLess(result.history[0].energy_autarky, DEFAULT_START_VALUES.energy_autarky)
+        self.assertEqual(result.history[0].supply_security, 0)
+
     def test_comparison_returns_one_summary_per_profile_and_strategy(self):
         report = compare_start_values(
             weather_seeds=[1, 2],

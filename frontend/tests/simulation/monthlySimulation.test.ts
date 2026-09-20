@@ -70,6 +70,17 @@ describe('advanceMonth', () => {
     expect(next.kpis.energyAutarky).toBeGreaterThan(state.kpis.energyAutarky);
   });
 
+  it('recalculates energy autarky from current monthly coverage instead of accumulating it', () => {
+    const state = {
+      ...createInitialGameState(0),
+      kpis: { energyAutarky: 80, citizenSatisfaction: 50, supplySecurity: 0 }
+    };
+
+    const next = advanceMonth(state);
+
+    expect(next.kpis.energyAutarky).toBe(0);
+  });
+
   it('improves supply security from storage and mixed generation', () => {
     const state = withAssets(createInitialGameState(), [
       activeAsset({ id: 'solar', itemType: 'solar', zoneId: 'mitte' }),
@@ -80,6 +91,17 @@ describe('advanceMonth', () => {
     const next = advanceMonth(state);
 
     expect(next.kpis.supplySecurity).toBeGreaterThan(state.kpis.supplySecurity);
+  });
+
+  it('recalculates supply security from current assets instead of accumulating it', () => {
+    const state = {
+      ...createInitialGameState(0),
+      kpis: { energyAutarky: 0, citizenSatisfaction: 50, supplySecurity: 80 }
+    };
+
+    const next = advanceMonth(state);
+
+    expect(next.kpis.supplySecurity).toBe(0);
   });
 
   it('can reduce citizen satisfaction for wind in high-sensitivity zones', () => {

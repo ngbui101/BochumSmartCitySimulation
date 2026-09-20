@@ -34,6 +34,9 @@ Zusätzliche Challenge-Regeln:
   mit 10 Reserveeinheiten je Anlage – jeweils wie die öffentliche Entsprechung.
 - Private Energie senkt den von der Stadt versorgten Restbedarf und erzeugt für diesen
   privaten Anteil keine städtischen Einnahmen.
+- Energieautarkie und Versorgungssicherheit werden jeden Monat aus der aktuellen
+  Energiedeckung, Speicherstruktur und Erzeugungsmischung neu berechnet; sie steigen
+  nicht allein durch Zeitablauf.
 
 Zusätzlich führt der Standardlauf einen Verbrauchs-Sweep mit den Endwerten 125 %,
 130 %, 135 %, 140 %, 145 %, 150 %, 160 %, 175 % und 200 % durch. Die zusammengefassten Ergebnisse stehen in

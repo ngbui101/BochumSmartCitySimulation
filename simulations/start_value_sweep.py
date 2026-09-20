@@ -427,16 +427,16 @@ def simulate_session(
         subsidy_citizen_bonus = subsidy_levels.solar * 0.4 + subsidy_levels.storage * 0.25
         private_security_bonus = min(4, private_storage_capacity * 0.08)
         mixed_generation_bonus = 2 if has_solar and has_wind else 0
+        imported_energy = max(0, -energy_balance)
+        covered_demand = max(0, demand - imported_energy)
+        monthly_energy_autarky = covered_demand / demand * 100 if demand > 0 else 0
         state["kpis"] = {
-            "energy_autarky": _clamp_score(state["kpis"]["energy_autarky"] + production * 0.35),
+            "energy_autarky": _clamp_score(monthly_energy_autarky),
             "citizen_satisfaction": _clamp_score(
                 state["kpis"]["citizen_satisfaction"] + citizen_impact + subsidy_citizen_bonus
             ),
             "supply_security": _clamp_score(
-                state["kpis"]["supply_security"]
-                + storage_capacity * 0.5
-                + mixed_generation_bonus
-                + private_security_bonus
+                storage_capacity * 0.5 + mixed_generation_bonus + private_security_bonus
             ),
         }
 
