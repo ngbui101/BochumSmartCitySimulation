@@ -1,4 +1,5 @@
 import type { GameState } from '../types/game';
+import { createForecast, deriveWeatherSeed } from '../simulation/weatherSimulation';
 
 export const GAME_STATE_STORAGE_KEY = 'bochum-smart-city:mvp1:v1';
 
@@ -39,6 +40,8 @@ function isStoredGameState(value: unknown): value is StoredGameState {
 }
 
 function withStateDefaults(state: GameState): GameState {
+  const hasWeatherSeed = typeof state.weatherSeed === 'number';
+  const weatherSeed = hasWeatherSeed ? state.weatherSeed : deriveWeatherSeed(state.gameId);
   const subsidies = state.subsidies ?? {
     solar: { level: 0, privateCapacity: 0 },
     storage: { level: 0, privateCapacity: 0 }
@@ -46,6 +49,8 @@ function withStateDefaults(state: GameState): GameState {
 
   return {
     ...state,
+    weatherSeed,
+    forecast: hasWeatherSeed ? state.forecast : createForecast(state.currentMonthIndex, weatherSeed),
     existingAssets: [],
     privateAssets: state.privateAssets ?? [],
     subsidies: {

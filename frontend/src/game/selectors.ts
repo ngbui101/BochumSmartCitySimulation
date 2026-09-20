@@ -2,11 +2,11 @@ import { itemDefinitions } from '../data/itemDefinitions';
 import { getEnergyDemandForMonth } from '../data/energyDemand';
 import { subsidyPrograms } from '../data/subsidyPrograms';
 import { getWeatherProfileForMonth } from '../simulation/weatherSimulation';
+import { IMPORT_COST_PER_UNIT, REVENUE_PER_UNIT } from '../data/gameBalance';
 import type { PlayerAsset } from '../types/assets';
 import type { GameState } from '../types/game';
 
 const SELL_REFUND_RATE = 0.6;
-const IMPORT_COST_PER_UNIT = 60_000;
 const PRIVATE_STORAGE_DISCHARGE_RATE = 0.25;
 
 export function getUndoTooltip(state: GameState): string {
@@ -31,9 +31,9 @@ function getSubsidies(state: GameState): NonNullable<GameState['subsidies']> {
 }
 
 /** Berechnet die Energieproduktion eines aktiven Assets für den aktuellen Monat. */
-function getAssetProduction(asset: PlayerAsset, monthIndex: number): number {
+function getAssetProduction(asset: PlayerAsset, monthIndex: number, weatherSeed?: number): number {
   const itemDefinition = getItemDefinition(asset.itemType);
-  const weatherProfile = getWeatherProfileForMonth(monthIndex);
+  const weatherProfile = getWeatherProfileForMonth(monthIndex, weatherSeed);
 
   if (!itemDefinition) return 0;
   if (asset.itemType === 'solar') return itemDefinition.productionValue * weatherProfile.solarFactor;
@@ -49,7 +49,10 @@ export function getCurrentEnergyDemand(state: GameState): number {
 /** Aktuelle Gesamtproduktion aller aktiven Anlagen (wetterabhängig). */
 export function getCurrentEnergyProduction(state: GameState): number {
   const activeAssets = state.playerAssets.filter((a) => a.status === 'active');
-  return activeAssets.reduce((sum, asset) => sum + getAssetProduction(asset, state.currentMonthIndex), 0);
+  return activeAssets.reduce(
+    (sum, asset) => sum + getAssetProduction(asset, state.currentMonthIndex, state.weatherSeed),
+    0
+  );
 }
 
 /** Maximale Speicherkapazität aller aktiven Speicher-Assets in Einheiten. */
@@ -72,7 +75,7 @@ export function getCurrentSubsidyCosts(state: GameState): number {
 }
 
 export function getCurrentPrivateSolarProduction(state: GameState): number {
-  const weatherProfile = getWeatherProfileForMonth(state.currentMonthIndex);
+  const weatherProfile = getWeatherProfileForMonth(state.currentMonthIndex, state.weatherSeed);
   return Math.round(getSubsidies(state).solar.privateCapacity * weatherProfile.solarFactor * 10) / 10;
 }
 
@@ -121,7 +124,7 @@ export function getCurrentImportCost(state: GameState): number {
 
 export function getCurrentRevenueFromSales(state: GameState): number {
   const demand = getCurrentEnergyDemand(state);
-  return demand * 40_000;
+  return demand * REVENUE_PER_UNIT;
 }
 
 export function getCurrentOperatingCosts(state: GameState): number {

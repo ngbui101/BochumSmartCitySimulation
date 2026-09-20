@@ -25,6 +25,15 @@ Dieses Protokoll hält die heute gemeinsam festgelegten Produkt- und Technikents
 - Die Beschriftungen liegen in einer eigenen Leaflet-Pane (`zone-labels`) mit `z-index: 350` unterhalb der Karten-Overlay-Pane (`z-index: 400`).
 - Die Labels sind nicht interaktiv, damit sie Platzierung, Hover und Klick nicht blockieren.
 - Ein Klick auf einen Stadtteil öffnet weiterhin die vorhandene Detailkarte; Hover bleibt für visuelles Feedback verfügbar.
+
+### Produktions-Sweet-Spot für Wetter und Wirtschaft
+
+- Jede neue Spielsitzung verwendet einen eigenen Wetter-Seed; dadurch ist das Wetter pro Sitzung unterschiedlich, innerhalb einer Sitzung aber reproduzierbar.
+- Das Wetterprofil nutzt 70 % sonnige Sommermonate und 20 % sonnige Wintermonate. Frühling und Herbst behalten gemischte saisonale Wahrscheinlichkeiten.
+- Alte Spielstände ohne Wetter-Seed erhalten aus ihrer `gameId` einen stabilen Seed und werden mit einer passenden Prognose weitergeführt.
+- Die für den Produktionskandidaten ausgewählten Wirtschaftsparameter sind: 70.000 € Importkosten je fehlender Einheit, 38.000 € Erlös je verkaufter Einheit und 400.000 € monatliche Betriebskosten für Kleinwindanlagen.
+- Förderprogramme erzeugen 0,1 private Kapazität je Förderstufe und Monat. Private Anlagen bleiben bei 600.000 € kumulierter Förderung sichtbar und nicht veränderbar.
+- Diese Kombination ist der aktuelle Balance-Kandidat aus dem Strategiesweep: 22 von 28 getesteten Wetterprofilen lagen im Sweet Spot; sechs Profile sind bewusst anspruchsvoll.
 - Der React-StrictMode-Lifecycle ist berücksichtigt: Die Label-Pane wird nicht beim Effect-Cleanup entfernt, weil Leaflet sie intern weiterverwaltet.
 
 ### Quick-Start-Anleitung

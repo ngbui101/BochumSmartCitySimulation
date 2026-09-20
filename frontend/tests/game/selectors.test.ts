@@ -5,9 +5,9 @@ import type { GameState } from '../../src/types/game';
 
 describe('energy finance selectors', () => {
   it('calculates initial revenue from sales and operating costs', () => {
-    const state = createInitialGameState();
-    // Month 0 demand is 95. Revenue should be 95 * 40,000 = 3,800,000.
-    expect(getCurrentRevenueFromSales(state)).toBe(3800000);
+    const state = createInitialGameState(0);
+    // Month 0 demand is 95. Revenue should be 95 * 38,000 = 3,610,000.
+    expect(getCurrentRevenueFromSales(state)).toBe(3610000);
     expect(getCurrentOperatingCosts(state)).toBe(0);
     // Net Delta: 3,800,000 (revenue) - 5,700,000 (import) - 0 (operating) = -1,900,000
     // Wait, getCurrentImportCost returns 0 in month 0 because of grace period.
@@ -27,15 +27,15 @@ describe('energy finance selectors', () => {
     // Wait, let's see how `getCurrentNetMonthlyDelta` is computed:
     // It should be based on actual monthly balance, not the grace-period-suppressed import cost!
     // Let's check:
-    // Actual import cost = saldo < 0 ? Math.abs(saldo) * 60_000 : 0.
+    // Actual import cost = saldo < 0 ? Math.abs(saldo) * 70_000 : 0.
     // If we use the raw import cost for delta, then in Month 0 the net delta will be -1.9M.
     // Let's write the test based on that:
-    expect(getCurrentNetMonthlyDelta(state)).toBe(-1900000);
+    expect(getCurrentNetMonthlyDelta(state)).toBe(-3040000);
   });
 
   it('includes subsidy costs and private solar import offsets in the current monthly preview', () => {
     const state: GameState = {
-      ...createInitialGameState(),
+      ...createInitialGameState(0),
       subsidies: {
         solar: { level: 2, privateCapacity: 4 },
         storage: { level: 1, privateCapacity: 3 }
@@ -44,6 +44,6 @@ describe('energy finance selectors', () => {
 
     expect(getCurrentSubsidyCosts(state)).toBe(680000);
     expect(getCurrentPrivateSolarProduction(state)).toBe(2.2);
-    expect(getCurrentNetMonthlyDelta(state)).toBe(-2403000);
+    expect(getCurrentNetMonthlyDelta(state)).toBe(-3513500);
   });
 });

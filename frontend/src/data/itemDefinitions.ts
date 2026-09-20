@@ -23,7 +23,7 @@ export const itemDefinitions: ItemDefinition[] = [
     buildTimeMonths: 1,
     productionValue: 14,
     storageValue: 0,
-    operatingCost: 80_000,
+    operatingCost: 400_000,
     citizenSatisfactionImpact: -3,
     balancingSource: 'mvp-playtest-value'
   },

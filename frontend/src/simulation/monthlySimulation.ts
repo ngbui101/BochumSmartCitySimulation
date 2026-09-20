@@ -8,9 +8,9 @@ import { calculateFinalScore } from './scoring';
 import { resolveLossReason } from '../game/lossRules';
 import { createPrivateAsset, PRIVATE_ASSET_THRESHOLD } from './privateAssets';
 import { createForecast, getWeatherProfileForMonth } from './weatherSimulation';
+import { IMPORT_COST_PER_UNIT, REVENUE_PER_UNIT } from '../data/gameBalance';
 
 /** Importkosten pro fehlender Energieeinheit in Euro. */
-const IMPORT_COST_PER_UNIT = 60_000;
 const PRIVATE_STORAGE_DISCHARGE_RATE = 0.25;
 
 function clampScore(value: number): number {
@@ -48,9 +48,9 @@ function activateCompletedAssets(state: GameState, nextMonthIndex: number): Play
   });
 }
 
-function calculateAssetProduction(asset: PlayerAsset, monthIndex: number): number {
+function calculateAssetProduction(asset: PlayerAsset, monthIndex: number, weatherSeed?: number): number {
   const itemDefinition = getItemDefinition(asset.itemType);
-  const weatherProfile = getWeatherProfileForMonth(monthIndex);
+  const weatherProfile = getWeatherProfileForMonth(monthIndex, weatherSeed);
 
   if (!itemDefinition) {
     return 0;
@@ -67,8 +67,11 @@ function calculateAssetProduction(asset: PlayerAsset, monthIndex: number): numbe
   return 0;
 }
 
-function calculateTotalProduction(activeAssets: PlayerAsset[], monthIndex: number): number {
-  return activeAssets.reduce((sum, asset) => sum + calculateAssetProduction(asset, monthIndex), 0);
+function calculateTotalProduction(activeAssets: PlayerAsset[], monthIndex: number, weatherSeed?: number): number {
+  return activeAssets.reduce(
+    (sum, asset) => sum + calculateAssetProduction(asset, monthIndex, weatherSeed),
+    0
+  );
 }
 
 function calculateStorageCapacity(activeAssets: PlayerAsset[]): number {
@@ -150,10 +153,10 @@ function calculateEnergyBalance(
   privateSolarProduction: number;
   privateStorageDischarge: number;
 } {
-  const production = calculateTotalProduction(activeAssets, monthIndex);
+  const production = calculateTotalProduction(activeAssets, monthIndex, state.weatherSeed);
   const demand = getEnergyDemandForMonth(monthIndex);
   const storageCapacity = calculateStorageCapacity(activeAssets);
-  const weatherProfile = getWeatherProfileForMonth(monthIndex);
+  const weatherProfile = getWeatherProfileForMonth(monthIndex, state.weatherSeed);
   const privateSolarProduction = Math.round(subsidies.solar.privateCapacity * weatherProfile.solarFactor * 10) / 10;
   const availableEnergy = production + state.storedEnergy;
   const rawSaldo = availableEnergy + privateSolarProduction - demand;
@@ -193,7 +196,7 @@ function calculateNextKpis(
   activeAssets: PlayerAsset[],
   subsidies: NonNullable<GameState['subsidies']>
 ): GameKpis {
-  const production = calculateTotalProduction(activeAssets, state.currentMonthIndex);
+  const production = calculateTotalProduction(activeAssets, state.currentMonthIndex, state.weatherSeed);
   const storageValue = activeAssets.reduce((sum, asset) => {
     const itemDefinition = getItemDefinition(asset.itemType);
     return sum + (itemDefinition?.storageValue ?? 0);
@@ -243,7 +246,7 @@ export function advanceMonth(state: GameState): GameState {
 
   const energyBalance = calculateEnergyBalance(state, activeAssets, state.currentMonthIndex, subsidies);
 
-  const revenueFromSales = energyBalance.demand * 40_000;
+  const revenueFromSales = energyBalance.demand * REVENUE_PER_UNIT;
   const subsidyCosts = calculateSubsidyCosts(state);
   const operatingCosts = activeAssets.reduce((sum, asset) => {
     const itemDefinition = getItemDefinition(asset.itemType);
@@ -280,7 +283,7 @@ export function advanceMonth(state: GameState): GameState {
         netMonthlyDelta
       }
     ],
-    forecast: createForecast(nextMonthIndex),
+    forecast: createForecast(nextMonthIndex, state.weatherSeed),
     status
   };
 

@@ -127,8 +127,8 @@ describe('AssetDetailsPanel component', () => {
     expect(screen.getByTestId('asset-status')).toHaveTextContent(/under_construction/i);
     expect(screen.getByTestId('asset-production-capacity')).toHaveTextContent('14 MW');
     
-    // Operating costs (80.000 €/Monat)
-    expect(screen.getByTestId('asset-operating-costs')).toHaveTextContent('80.000');
+    // Operating costs (400.000 €/Monat)
+    expect(screen.getByTestId('asset-operating-costs')).toHaveTextContent('400.000');
     
     // Sell value (2.800.000 * 0.6 = 1.680.000 €)
     expect(screen.getByTestId('asset-sell-value')).toHaveTextContent('1.680.000');
