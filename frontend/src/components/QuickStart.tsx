@@ -12,32 +12,32 @@ const GUIDE_STEPS: GuideStep[] = [
   {
     target: 'status',
     title: 'Spielstatus und Monat',
-    body: 'Hier siehst du, in welchem Monat und Jahr du bist. Plane Schritt für Schritt und behalte Bochums Entwicklung im Blick.'
+    body: 'Du startest ohne bestehende Anlagen in Monat 1 von 60. Der saisonale Verbrauch wächst im Spielverlauf bis auf 135 % des Startverbrauchs.'
   },
   {
     target: 'kpis',
     title: 'Budget und Kennzahlen',
-    body: 'Das Budget bezahlt deine Entscheidungen. Energieautarkie, Bürgerzufriedenheit und Versorgungssicherheit zeigen, wie gut deine Stadt läuft.'
+    body: 'Du startest mit 18 Mio. € Budget, 0 % Energieautarkie, 50 % Bürgerzufriedenheit und 0 % Versorgungssicherheit. Sinkt die Bürgerzufriedenheit auf 0, verlierst du.'
   },
   {
     target: 'weather',
     title: 'Wetter im Blick behalten',
-    body: 'Die Wetterprognose hilft dir bei der Planung. Sonne und Wind beeinflussen, wie viel Energie deine Anlagen erzeugen.'
+    body: 'Das Wetter wird für jede Session zufällig erzeugt und beeinflusst, wie viel Energie Sonne und Wind liefern. Die Prognose hilft dir bei der Planung.'
   },
   {
     target: 'subsidies',
     title: 'Förderungen einsetzen',
-    body: 'Mit Förderungen unterstützt du private Anlagen. Wähle eine Stufe und beobachte, wie sich die monatlichen Kosten entwickeln.'
+    body: 'Mit Förderungen unterstützt du private Anlagen. Sobald je Programm 600.000 € kumuliert sind, entsteht automatisch eine unveränderbare Anlage: Solar entlastet das Netz mit 7, Speicher mit 10 Einheiten. Private Anlagen kosten 0 € Betrieb und bringen der Stadt keine Einnahmen.'
   },
   {
     target: 'build',
     title: 'Neue Anlagen bauen',
-    body: 'Wähle eine Bauoption und ziehe sie auf eine passende Zone der Karte. Jede Anlage hat eigene Stärken und Kosten.'
+    body: 'Wähle eine Bauoption und ziehe sie auf eine passende Zone der Karte. Jede öffentliche Anlage hat eigene Kosten und Stärken. Ab der dritten öffentlichen Anlage in einem Stadtteil kostet jedes weitere Bauwerk 1 Punkt Bürgerzufriedenheit.'
   },
   {
     target: 'controls',
     title: 'Monat spielen und zurücksetzen',
-    body: 'Mit „Nächster Monat“ simulierst du die nächste Runde. Unten findest du auch Rückgängig und – nach Bestätigung – das Zurücksetzen.'
+    body: 'Mit „Nächster Monat“ simulierst du Wetter, Verbrauch, Energie, Einnahmen und Kosten der nächsten Runde. Unten findest du Rückgängig und – nach Bestätigung – das Zurücksetzen.'
   }
 ];
 
@@ -179,6 +179,10 @@ export const QuickStart: React.FC<QuickStartProps> = ({
             <p>
               Baue eine sichere und nachhaltige Energieversorgung auf. Treffe gute Entscheidungen,
               halte die Bürger zufrieden und entwickle Bochum Monat für Monat weiter.
+            </p>
+            <p>
+              Du startest mit 18 Mio. € Budget, 0 % Energieautarkie, 50 % Bürgerzufriedenheit und
+              0 % Versorgungssicherheit – ohne bestehende Anlagen.
             </p>
             <p className="quick-start-goal">Dein Ziel: möglichst viele Punkte sammeln, bevor Monat 60 endet.</p>
             <div className="quick-start-actions">

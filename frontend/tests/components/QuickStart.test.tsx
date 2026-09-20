@@ -25,6 +25,8 @@ describe('QuickStart', () => {
     });
 
     expect(screen.getByRole('dialog', { name: 'Willkommen in Bochum' })).toBeInTheDocument();
+    expect(screen.getByText(/18 Mio\. € Budget/i)).toBeInTheDocument();
+    expect(screen.getByText(/ohne bestehende Anlagen/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Anleitung starten' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Anleitung überspringen' })).toBeInTheDocument();
 
@@ -46,6 +48,7 @@ describe('QuickStart', () => {
 
     expect(screen.getByText('Spielstatus und Monat')).toBeInTheDocument();
     expect(onTargetChange).toHaveBeenLastCalledWith('status');
+    expect(screen.getByText(/135 % des Startverbrauchs/i)).toBeInTheDocument();
 
     const expectedSteps = [
       ['Budget und Kennzahlen', 'kpis'],
@@ -59,6 +62,22 @@ describe('QuickStart', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Weiter' }));
       expect(screen.getByText(title)).toBeInTheDocument();
       expect(onTargetChange).toHaveBeenLastCalledWith(target);
+
+      if (target === 'kpis') {
+        expect(screen.getByText(/0 % Energieautarkie/i)).toBeInTheDocument();
+      }
+
+      if (target === 'weather') {
+        expect(screen.getByText(/für jede Session zufällig/i)).toBeInTheDocument();
+      }
+
+      if (target === 'subsidies') {
+        expect(screen.getByText(/600\.000/i)).toBeInTheDocument();
+      }
+
+      if (target === 'build') {
+        expect(screen.getByText(/dritten öffentlichen Anlage/i)).toBeInTheDocument();
+      }
     }
 
     fireEvent.click(screen.getByRole('button', { name: 'Viel Spaß!' }));
