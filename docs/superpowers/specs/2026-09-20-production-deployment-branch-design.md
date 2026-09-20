@@ -1,7 +1,7 @@
 # Production Deployment Branch Design
 
-**Date:** 2026-09-20  
-**Branch:** `production`  
+**Date:** 2026-09-20
+**Branch:** `production`
 **Status:** Approved conversational design; implementation pending plan review
 
 ## Goal
