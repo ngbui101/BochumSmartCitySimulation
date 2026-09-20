@@ -6,7 +6,7 @@ test('persists a real game action, resets it, and restarts the endscreen', async
   await page.goto('/');
 
   await expect(page.getByRole('main', { name: 'Bochum Smart City Simulation' })).toBeVisible();
-  await expect(page.getByTestId('dev-mock-harness')).not.toBeVisible();
+  await expect(page.getByTestId('dev-mock-harness')).toHaveCount(0);
   await expect(page.getByTestId('month-display')).toContainText('Monat 1 / 60');
 
   await page.getByRole('button', { name: 'Nächster Monat' }).click();

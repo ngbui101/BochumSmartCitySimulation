@@ -150,20 +150,11 @@ describe('App integrated game flow', () => {
     expect(storedState()?.playerAssets).toHaveLength(1);
   });
 
-  it('shows a dev-only state mode selector with Real-State as the default', () => {
+  it('does not render the development state harness', () => {
     render(<App />);
 
-    const harness = screen.getByTestId('dev-mock-harness');
-    const selector = screen.getByLabelText(/Dev State-Modus/i);
-
-    expect(harness).toBeInTheDocument();
-    expect(selector).toHaveValue('real');
-
-    fireEvent.change(selector, { target: { value: 'midgame' } });
-    expect(screen.getByTestId('player-asset-count')).toHaveTextContent('2');
-
-    fireEvent.change(selector, { target: { value: 'real' } });
-    expect(screen.getByTestId('player-asset-count')).toHaveTextContent('0');
+    expect(screen.queryByTestId('dev-mock-harness')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/Dev State-Modus/i)).not.toBeInTheDocument();
   });
 
   it('uses real undo and month actions from the bottom controls', () => {
