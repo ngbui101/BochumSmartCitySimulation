@@ -37,9 +37,9 @@ export const SubsidyPanel: React.FC<SubsidyPanelProps> = ({
   };
 
   return (
-    <section className="subsidy-panel" data-testid="subsidy-panel" aria-label="Foerderung">
+    <section className="subsidy-panel" data-testid="subsidy-panel" aria-label="Förderung">
       <div className="subsidy-panel__header">
-        <h3>Foerderung</h3>
+        <h3>Förderung</h3>
         <span>{formatEuro(subsidyCosts)} Euro/Monat</span>
       </div>
 

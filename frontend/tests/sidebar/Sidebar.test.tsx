@@ -105,7 +105,7 @@ describe('Sidebar component', () => {
     expect(screen.getByText('Bauoptionen')).toBeInTheDocument();
     expect(screen.getByTestId('buyable-item-solar')).toBeInTheDocument();
 
-    expect(screen.getByTestId('subsidy-panel')).toHaveTextContent('Foerderung');
+    expect(screen.getByTestId('subsidy-panel')).toHaveTextContent('Förderung');
     expect(screen.getByTestId('subsidy-panel')).toHaveTextContent('250.000');
     fireEvent.click(screen.getByRole('button', { name: 'Spiel zurücksetzen' }));
     expect(handleRequestReset).toHaveBeenCalledTimes(1);
