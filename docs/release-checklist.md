@@ -17,7 +17,9 @@
 ## Inhaltliche Abnahme
 
 - [ ] Projektlizenz bewusst festlegen oder den offenen Lizenzstand beibehalten.
-- [ ] Nutzungsrechte der Bilder und des externen Antragstexts klären.
+- [ ] Lizenz zur Weiterverwendung der Illustrationen bei einer entsprechenden Freigabe festlegen.
+- [ ] Sicherstellen, dass vertrauliches Begleitmaterial nicht in Commit, Release-Archiv
+  oder Deployment enthalten ist; lokale Dateien nicht pauschal als Archiv veröffentlichen.
 - [ ] Spielregeln, Parameter und Python-Vergleichsmodell auf Konsistenz prüfen.
 - [ ] Modellannahmen nicht als reale Bochumer Messwerte darstellen.
 - [ ] Gewünschten Commitumfang einschließlich bislang lokaler Begleitdateien prüfen.

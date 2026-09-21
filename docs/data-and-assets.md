@@ -18,8 +18,9 @@ Standorte bilden keine verifizierte kommunale Anlageninventur ab.
 `frontend/public/icons/` enthält Anlagenillustrationen mit Bau- und Auswahlzustand.
 `frontend/public/photos/` enthält illustrative Zonenbilder. Aus dem Verzeichnisnamen
 folgt keine Zusicherung, dass es sich um dokumentarische Aufnahmen handelt.
-Ein vollständiges Quellen- und Rechteverzeichnis dieser Bilddateien liegt derzeit
-nicht bei; es muss vor einer Weiterlizenzierung geklärt werden.
+Die Bilder dienen der spielerischen Darstellung von Anlagen und Zonen; sie sind
+keine Belege für reale Standorte, Gebäude oder technische Ausführungen.
+Eine Lizenz zur Weiterverwendung der Illustrationen ist bislang nicht festgelegt.
 
 `frontend/public/strategy-sweep.png` ist eine Kopie einer Modellauswertung aus
 `simulations/results/`. Die reproduzierbare Erzeugung ist im Simulations-README
@@ -30,9 +31,10 @@ Versorgungssicherheit.
 
 Die beiden Word-Dokumente im Repository-Stamm sind frühere Spezifikationen.
 Bei abweichenden Parametern gelten Implementierung und aktuelle Spielregeln.
-Der lokal vorhandene Antragstext unter `docs/` ist externes Begleitmaterial.
-Er ist über `.gitignore` von der Versionierung ausgeschlossen, solange seine
-Weitergaberechte ungeklärt sind. Build und Laufzeit benötigen ihn nicht.
+Vertrauliches Begleitmaterial bleibt ausschließlich lokal und ist von der
+Versionierung ausgeschlossen. Es darf weder in Commits noch in Release-Archiven
+oder öffentlich bereitgestellten Dateien enthalten sein. Build und Laufzeit
+benötigen dieses Material nicht.
 
 ## Lizenzstand
 

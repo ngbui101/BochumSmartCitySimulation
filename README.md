@@ -110,6 +110,6 @@ Bei abweichenden Angaben gelten Implementierung und aktuelle Spielregeln.
 
 ## Lizenzstand
 
-Eine Projektlizenz ist **noch nicht festgelegt**. Die Nutzungsrechte von Bildern
-und externem Begleitmaterial sind gesondert zu klären. Das Projekt ist damit
+Eine Projektlizenz ist **noch nicht festgelegt**. Auch die Weiterverwendung der
+Illustrationen ist nicht pauschal freigegeben. Das Projekt ist damit
 derzeit nicht ausdrücklich unter einer Open-Source-Lizenz freigegeben.
