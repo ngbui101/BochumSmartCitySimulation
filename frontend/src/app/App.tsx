@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { BochumMap } from '../map/BochumMap';
 import { BottomControls } from '../components/BottomControls';
@@ -6,42 +6,22 @@ import { ResetConfirmationModal } from '../components/ResetConfirmationModal';
 import { QuickStart } from '../components/QuickStart';
 import type { QuickStartTarget } from '../components/QuickStart';
 import { EndScreen } from '../sidebar/EndScreen';
-import { bochumZonesGeoJson } from '../data/bochumZones';
-import { itemDefinitions } from '../data/itemDefinitions';
-import { getUndoTooltip, getCurrentEnergySaldo, getStorageCapacity, getCurrentImportCost, getCurrentNetMonthlyDelta, getCurrentRevenueFromSales, getCurrentSubsidyCosts, getCurrentPrivateSolarProduction, getCurrentPrivateStorageDischarge } from '../game/selectors';
-import { canPlaceItem } from '../simulation/placementRules';
+import { getUndoTooltip, getCurrentMonthlyBalance } from '../game/selectors';
 import { calculateFinalScore } from '../simulation/scoring';
-import { findZoneForPoint } from '../simulation/zoneDetection';
 import { useAppState } from './appState';
 import {
   completeQuickStart,
   hasCompletedQuickStart
 } from '../persistence/quickStartStore';
 import { AssetIconImage } from '../ui/gameAssetIcons';
-import type { ItemType, LatLngPosition } from '../types/assets';
 import type {
   FinalScore,
-  GameAction,
   GameKpis,
   GameState,
   SubsidyLevel,
   SubsidyProgram
 } from '../types/game';
-import type { ZoneId } from '../types/zones';
-import type { PlacementFeedback, ZoneFeedback } from '../map/BochumMap';
-
-type PlacementDragState = {
-  itemType: ItemType;
-  clientX: number;
-  clientY: number;
-  startX: number;
-  startY: number;
-  startTime: number;
-  hasMoved: boolean;
-  currentLatLng?: LatLngPosition;
-  currentZoneId?: ZoneId | null;
-  placementResult?: ReturnType<typeof canPlaceItem>;
-};
+import { getItemLabel, usePlacement } from './usePlacement';
 
 function getKpiDeltas(state: GameState):
   | {
@@ -63,14 +43,6 @@ function getKpiDeltas(state: GameState):
   };
 }
 
-function getItemLabel(itemType: ItemType): string {
-  return itemDefinitions.find((item) => item.itemType === itemType)?.label ?? itemType;
-}
-
-function getItemIcon(itemType: ItemType): React.ReactNode {
-  return <AssetIconImage itemType={itemType} size={64} />;
-}
-
 function hasCurrentScoreFormat(score: FinalScore | undefined): score is FinalScore {
   if (!score) {
     return false;
@@ -84,206 +56,52 @@ function hasCurrentScoreFormat(score: FinalScore | undefined): score is FinalSco
   ].every((value) => typeof value === 'number');
 }
 
-function getPlacementMessage(itemType: ItemType, result: ReturnType<typeof canPlaceItem>): string {
-  const itemLabel = getItemLabel(itemType);
-
-  if (result.allowed) {
-    return `Gute Wahl! ${itemLabel} ist hier möglich. Noch ${result.remaining} Plätze frei.`;
-  }
-
-  if (result.capacity === 0) {
-    return `${itemLabel} ist hier nicht möglich. Diese Zone hat dafür keine Kapazität.`;
-  }
-
-  if (result.remaining <= 0) {
-    return `Hier ist kein Platz mehr für ${itemLabel}.`;
-  }
-
-  return `${itemLabel} kann hier gerade nicht gebaut werden. ${result.reason}`;
-}
-
-function validateDropPosition(
-  state: GameState,
-  itemType: ItemType,
-  position: LatLngPosition
-):
-  | {
-      zoneId: ZoneId;
-      zoneFeedback: ZoneFeedback;
-      placementFeedback: PlacementFeedback;
-    }
-  | {
-      zoneId: null;
-      zoneFeedback: undefined;
-      placementFeedback: PlacementFeedback;
-    } {
-  const zoneId = findZoneForPoint(position, bochumZonesGeoJson);
-
-  if (!zoneId) {
-    return {
-      zoneId: null,
-      zoneFeedback: undefined,
-      placementFeedback: {
-        status: 'blocked',
-        message: 'Hier liegt keine Bochum-Spielzone.'
-      }
-    };
-  }
-
-  const placementResult = canPlaceItem(state, itemType, zoneId);
-  const status = placementResult.allowed ? 'allowed' : 'blocked';
-  const message = getPlacementMessage(itemType, placementResult);
-
-  return {
-    zoneId,
-    zoneFeedback: {
-      zoneId,
-      status,
-      message
-    },
-    placementFeedback: {
-      status,
-      message
-    }
-  };
-}
-
 export function App() {
   const {
-    state: realState,
-    dispatch: realDispatch,
+    state,
+    dispatch,
     resetGame,
     storageStatus
   } = useAppState();
-  const [placementDrag, setPlacementDrag] = useState<PlacementDragState | null>(null);
-  const [selectedItemType, setSelectedItemType] = useState<ItemType | null>(null);
-  const [zoneFeedback, setZoneFeedback] = useState<ZoneFeedback | undefined>(undefined);
-  const [placementFeedback, setPlacementFeedback] = useState<PlacementFeedback | undefined>(
-    undefined
-  );
+  const {
+    placementDrag, selectedItemType, setSelectedItemType, zoneFeedback,
+    placementFeedback, placeableZones, clearPlacementFeedback, cancelDrag,
+    resetPlacement, handlePointerDragStart, handleDragPosition, handleDropAsset,
+    handleDropOutside, handleDragLeave
+  } = usePlacement(state, dispatch);
   const [resetVersion, setResetVersion] = useState(0);
   const [isResetConfirmationOpen, setIsResetConfirmationOpen] = useState(false);
   const [isQuickStartOpen, setIsQuickStartOpen] = useState(
-    () => realState.status === 'running' && !hasCompletedQuickStart()
+    () => state.status === 'running' && !hasCompletedQuickStart()
   );
   const [onboardingTarget, setOnboardingTarget] = useState<QuickStartTarget | null>(null);
 
-  const state = realState;
-
-  const dispatchToActiveState = (action: GameAction) => {
-    realDispatch(action);
-  };
-
-  const clearPlacementFeedback = () => {
-    setZoneFeedback(undefined);
-    setPlacementFeedback(undefined);
-  };
-
   const handleSelectAsset = (id: string | undefined) => {
-    dispatchToActiveState(id ? { type: 'SELECT_ASSET', assetId: id } : { type: 'CLEAR_SELECTION' });
+    dispatch(id ? { type: 'SELECT_ASSET', assetId: id } : { type: 'CLEAR_SELECTION' });
   };
 
   const handleSellAsset = (id: string) => {
     clearPlacementFeedback();
-    dispatchToActiveState({ type: 'SELL_ASSET', assetId: id });
+    dispatch({ type: 'SELL_ASSET', assetId: id });
   };
 
   const handleUndo = () => {
     clearPlacementFeedback();
-    dispatchToActiveState({ type: 'UNDO_LAST_ACTION' });
+    dispatch({ type: 'UNDO_LAST_ACTION' });
   };
 
   const handleNextMonth = () => {
     clearPlacementFeedback();
-    setPlacementDrag(null);
-    dispatchToActiveState({ type: 'ADVANCE_MONTH' });
+    cancelDrag();
+    dispatch({ type: 'ADVANCE_MONTH' });
   };
 
   const handleSetSubsidyLevel = (program: SubsidyProgram, level: SubsidyLevel) => {
-    dispatchToActiveState({ type: 'SET_SUBSIDY_LEVEL', program, level });
-  };
-
-  const handlePointerDragStart = (
-    itemType: ItemType,
-    pointer: {
-      clientX: number;
-      clientY: number;
-    }
-  ) => {
-    setPlacementDrag({
-      itemType,
-      clientX: pointer.clientX,
-      clientY: pointer.clientY,
-      startX: pointer.clientX,
-      startY: pointer.clientY,
-      startTime: Date.now(),
-      hasMoved: false
-    });
-    setSelectedItemType(null);
-    clearPlacementFeedback();
-  };
-
-  const handleDragPosition = (position: LatLngPosition) => {
-    if (!placementDrag) {
-      return;
-    }
-
-    const validation = validateDropPosition(state, placementDrag.itemType, position);
-    setZoneFeedback(validation.zoneFeedback);
-    setPlacementFeedback(validation.placementFeedback);
-    setPlacementDrag((currentDrag) =>
-      currentDrag
-        ? {
-            ...currentDrag,
-            currentLatLng: position,
-            currentZoneId: validation.zoneId,
-            placementResult:
-              validation.zoneId === null
-                ? undefined
-                : canPlaceItem(state, currentDrag.itemType, validation.zoneId)
-          }
-        : null
-    );
-  };
-
-  const handleDropAsset = (position: LatLngPosition) => {
-    if (!placementDrag) {
-      return;
-    }
-
-    const itemType = placementDrag.itemType;
-    const validation = validateDropPosition(state, itemType, position);
-    setZoneFeedback(validation.zoneFeedback);
-    setPlacementFeedback(validation.placementFeedback);
-    setPlacementDrag(null);
-    setSelectedItemType(null); // Deselect the item on drop
-
-    if (!validation.zoneId || validation.placementFeedback.status === 'blocked') {
-      return;
-    }
-
-    dispatchToActiveState({
-      type: 'PLACE_ASSET',
-      itemType,
-      zoneId: validation.zoneId,
-      position
-    });
-  };
-
-  const handleDropOutside = () => {
-    setZoneFeedback(undefined);
-    setPlacementFeedback({
-      status: 'blocked',
-      message: 'Hier liegt keine Bochum-Spielzone.'
-    });
-    setPlacementDrag(null);
-    setSelectedItemType(null);
+    dispatch({ type: 'SET_SUBSIDY_LEVEL', program, level });
   };
 
   const handleRestart = () => {
-    clearPlacementFeedback();
-    setPlacementDrag(null);
-    setSelectedItemType(null);
+    resetPlacement();
     setResetVersion((version) => version + 1);
     setOnboardingTarget(null);
     setIsQuickStartOpen(true);
@@ -310,74 +128,6 @@ export function App() {
     handleRestart();
   };
 
-  const handleDragLeave = () => {
-    setZoneFeedback(undefined);
-
-    if (placementDrag) {
-      setPlacementFeedback({
-        status: 'blocked',
-        message: 'Hier liegt keine Bochum-Spielzone.'
-      });
-      setPlacementDrag((currentDrag) =>
-        currentDrag
-          ? {
-              ...currentDrag,
-              currentLatLng: undefined,
-              currentZoneId: null,
-              placementResult: undefined
-            }
-          : null
-      );
-    }
-  };
-
-  useEffect(() => {
-    if (!placementDrag) {
-      return undefined;
-    }
-
-    const handlePointerMove = (event: PointerEvent) => {
-      setPlacementDrag((currentDrag) => {
-        if (!currentDrag) return null;
-        const distance = Math.sqrt(
-          (event.clientX - currentDrag.startX) ** 2 +
-          (event.clientY - currentDrag.startY) ** 2
-        );
-        return {
-          ...currentDrag,
-          clientX: event.clientX,
-          clientY: event.clientY,
-          hasMoved: currentDrag.hasMoved || distance > 10
-        };
-      });
-    };
-
-    const handlePointerUp = () => {
-      setPlacementDrag((currentDrag) => {
-        if (currentDrag?.hasMoved) {
-          setSelectedItemType(null); // Aborted drag: deselect the option
-        }
-        return null;
-      });
-    };
-
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
-
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-    };
-  }, [placementDrag]);
-
-  const selectedAsset = useMemo(
-    () =>
-      state.playerAssets.find((asset) => asset.id === state.selectedAssetId) ||
-      state.privateAssets?.find((asset) => asset.id === state.selectedAssetId) ||
-      state.existingAssets.find((asset) => asset.id === state.selectedAssetId),
-    [state.existingAssets, state.playerAssets, state.privateAssets, state.selectedAssetId]
-  );
-
   const canUndo = state.undoStack.length > 0;
   const undoTooltip = getUndoTooltip(state);
   const deltas: Partial<GameKpis> | undefined = getKpiDeltas(state);
@@ -388,23 +138,7 @@ export function App() {
         : calculateFinalScore(state)
       : undefined;
 
-  const placeableZones = useMemo(() => {
-    const itemType = placementDrag?.itemType ?? selectedItemType;
-
-    if (!itemType) {
-      return null;
-    }
-
-    const zones: Record<string, boolean> = {};
-    for (const feature of bochumZonesGeoJson.features) {
-      const zoneId = feature.properties?.zoneId;
-      if (zoneId) {
-        zones[zoneId] = canPlaceItem(state, itemType, zoneId as ZoneId).allowed;
-      }
-    }
-    return zones;
-  }, [placementDrag, selectedItemType, state]);
-
+  const balance = useMemo(() => getCurrentMonthlyBalance(state), [state]);
 
   return (
     <main className="app-shell" aria-label="Bochum Smart City Simulation">
@@ -413,20 +147,20 @@ export function App() {
         currentMonthIndex={state.currentMonthIndex}
         kpis={state.kpis}
         energyStatus={{
-          energySaldo: getCurrentEnergySaldo(state),
-          importCost: getCurrentImportCost(state),
+          energySaldo: balance.saldo,
+          importCost: state.currentMonthIndex === 0 ? 0 : balance.importCost,
           storedEnergy: state.storedEnergy,
-          storageCapacity: getStorageCapacity(state),
+          storageCapacity: balance.storageCapacity,
           isGracePeriod: state.currentMonthIndex === 0,
-          netMonthlyDelta: getCurrentNetMonthlyDelta(state),
-          revenueFromSales: getCurrentRevenueFromSales(state)
+          netMonthlyDelta: balance.netMonthlyDelta,
+          revenueFromSales: balance.revenueFromSales
         }}
         deltas={deltas}
         forecast={state.forecast}
         subsidies={state.subsidies}
-        subsidyCosts={getCurrentSubsidyCosts(state)}
-        privateSolarProduction={getCurrentPrivateSolarProduction(state)}
-        privateStorageDischarge={getCurrentPrivateStorageDischarge(state)}
+        subsidyCosts={balance.subsidyCosts}
+        privateSolarProduction={balance.privateSolarProduction}
+        privateStorageDischarge={balance.privateStorageDischarge}
         selectedItemType={selectedItemType}
         onSelectItemType={setSelectedItemType}
         onSetSubsidyLevel={handleSetSubsidyLevel}
@@ -477,7 +211,7 @@ export function App() {
             }px)`
           }}
         >
-          <span className="placement-drag-preview-icon">{getItemIcon(placementDrag.itemType)}</span>
+          <span className="placement-drag-preview-icon"><AssetIconImage itemType={placementDrag.itemType} size={64} /></span>
           <span>{getItemLabel(placementDrag.itemType)}</span>
         </div>
       )}

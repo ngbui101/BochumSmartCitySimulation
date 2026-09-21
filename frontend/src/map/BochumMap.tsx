@@ -1,5 +1,5 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { MapContainer, TileLayer, GeoJSON, useMap, useMapEvents } from 'react-leaflet';
+import React, { useRef, useState } from 'react';
+import { MapContainer, TileLayer, GeoJSON } from 'react-leaflet';
 import { bochumBounds, minZoom, maxZoom } from './mapBounds';
 import { bochumCityBoundaryGeoJson } from '../data/bochumCityBoundary';
 import { bochumPostalBoundariesGeoJson } from '../data/bochumPostalBoundaries';
@@ -7,21 +7,20 @@ import { bochumZonesGeoJson } from '../data/bochumZones';
 import { zoneRules } from '../data/zoneRules';
 import type { ItemType, LatLngPosition, PlayerAsset, ExistingAsset, PrivateAsset } from '../types/assets';
 import type { ZoneId } from '../types/zones';
-import { ZoneProfileMedia } from '../ui/ZoneProfileMedia';
-import L, { type PathOptions } from 'leaflet';
+import L, { type Layer, type LeafletMouseEvent, type PathOptions } from 'leaflet';
+import type { Feature, Geometry } from 'geojson';
 import { AssetMarkers } from './AssetMarkers';
 import { getMapTileLayerConfig } from './mapTiles';
 
-export type ZoneFeedback = {
-  zoneId: ZoneId;
-  status: 'allowed' | 'blocked';
-  message: string;
-};
+import type { PlacementFeedback, ZoneFeedback } from './placementTypes';
+export type { PlacementFeedback, ZoneFeedback } from './placementTypes';
+import { MapEventsHandler, PointerPlacementHandler, ZoneLabelPane } from './mapInteractions';
+import type { ZoneClickEvent } from './mapInteractions';
+import { getZoneClickAnchor, getMapRenderSize, getZoneInfoPosition } from './zoneInfoPosition';
+import type { ZoneInfoSelection } from './zoneInfoPosition';
+import { ZoneInfoCard } from './ZoneInfoCard';
 
-export type PlacementFeedback = {
-  status: 'allowed' | 'blocked';
-  message: string;
-};
+type ZoneMapFeature = Feature<Geometry, { zoneId?: ZoneId; label?: string }>;
 
 export interface BochumMapProps {
   playerAssets: PlayerAsset[];
@@ -44,142 +43,6 @@ export interface BochumMapProps {
   placeableZones?: Record<string, boolean> | null;
 }
 
-interface MapEventsHandlerProps {
-  onSelectAsset: (id: string | undefined) => void;
-  onClearZoneInfo: () => void;
-}
-
-const MapEventsHandler: React.FC<MapEventsHandlerProps> = ({
-  onSelectAsset,
-  onClearZoneInfo
-}) => {
-  useMapEvents({
-    click: (e) => {
-      const originalEvent = (e as any).originalEvent;
-      if (originalEvent?.__bochumZoneClickHandled) {
-        originalEvent.__bochumZoneClickHandled = false;
-        return;
-      }
-
-      onClearZoneInfo();
-      onSelectAsset(undefined);
-    }
-  });
-  return null;
-};
-
-interface DragDropHandlerProps {
-  placementDrag?: {
-    itemType: ItemType;
-    clientX: number;
-    clientY: number;
-  } | null;
-  onDragPosition?: (position: LatLngPosition) => void;
-  onDropAsset?: (position: LatLngPosition) => void;
-  onDropOutside?: () => void;
-  onDragLeave?: () => void;
-}
-
-const PointerPlacementHandler: React.FC<DragDropHandlerProps> = ({
-  placementDrag,
-  onDragPosition,
-  onDropAsset,
-  onDropOutside,
-  onDragLeave
-}) => {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!placementDrag) {
-      return undefined;
-    }
-
-    const container = map.getContainer();
-
-    const isPointerInsideMap = (event: PointerEvent): boolean => {
-      const rect = container.getBoundingClientRect();
-
-      return (
-        event.clientX >= rect.left &&
-        event.clientX <= rect.right &&
-        event.clientY >= rect.top &&
-        event.clientY <= rect.bottom
-      );
-    };
-
-    const eventToLatLng = (event: PointerEvent): LatLngPosition => {
-      const rect = container.getBoundingClientRect();
-      const point = L.point(event.clientX - rect.left, event.clientY - rect.top);
-      const latLng = map.containerPointToLatLng(point);
-
-      return {
-        lat: latLng.lat,
-        lng: latLng.lng
-      };
-    };
-
-    const handlePointerMove = (event: PointerEvent) => {
-      if (!isPointerInsideMap(event)) {
-        onDragLeave?.();
-        return;
-      }
-
-      onDragPosition?.(eventToLatLng(event));
-    };
-
-    const handlePointerUp = (event: PointerEvent) => {
-      if (!isPointerInsideMap(event)) {
-        onDropOutside?.();
-        return;
-      }
-
-      onDropAsset?.(eventToLatLng(event));
-    };
-
-    window.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointerup', handlePointerUp);
-
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-    };
-  }, [placementDrag, map, onDragLeave, onDragPosition, onDropAsset, onDropOutside]);
-
-  return null;
-};
-
-const ZoneLabelPane: React.FC = () => {
-  const map = useMap();
-
-  useLayoutEffect(() => {
-    const pane = map.getPane('zone-labels') ?? map.createPane('zone-labels');
-    pane.style.zIndex = '350';
-    pane.style.pointerEvents = 'none';
-  }, [map]);
-
-  return null;
-};
-
-const itemTypeLabels: Record<ItemType, string> = {
-  solar: 'Solar',
-  wind: 'Wind',
-  storage: 'Speicher'
-};
-
-const demandProfileLabels = {
-  commercial_core: 'Gewerbezentrum',
-  mixed: 'Gemischt',
-  campus: 'Campus',
-  residential: 'Wohnen',
-  suburban: 'Vorstadt'
-} as const;
-
-const acceptanceSensitivityLabels = {
-  low: 'Niedrig',
-  medium: 'Mittel',
-  high: 'Hoch'
-} as const;
-
 const cityBoundaryStyle: PathOptions = {
   color: '#ef4444',
   weight: 2.5,
@@ -196,97 +59,6 @@ const postalBoundaryStyle: PathOptions = {
   fillOpacity: 0,
   interactive: false,
   className: 'bochum-postal-boundary'
-};
-
-type ZoneInfoPlacement = 'top' | 'right' | 'bottom' | 'left';
-
-type ZoneInfoSelection = {
-  zoneId: ZoneId;
-  anchor: {
-    x: number;
-    y: number;
-  };
-};
-
-const zoneInfoCardWidth = 320;
-const zoneInfoCardHeight = 360;
-const zoneInfoCardOffset = 16;
-const fallbackMapSize = {
-  width: 1000,
-  height: 1000
-};
-
-const clamp = (value: number, min: number, max: number): number => {
-  if (max < min) {
-    return min;
-  }
-
-  return Math.min(Math.max(value, min), max);
-};
-
-const getZoneClickAnchor = (event: any): ZoneInfoSelection['anchor'] => {
-  const point = event.containerPoint ?? event.layerPoint;
-
-  if (point && Number.isFinite(point.x) && Number.isFinite(point.y)) {
-    return {
-      x: point.x,
-      y: point.y
-    };
-  }
-
-  return {
-    x: fallbackMapSize.width / 2,
-    y: fallbackMapSize.height / 2
-  };
-};
-
-const getMapRenderSize = (element: HTMLDivElement | null) => {
-  const rect = element?.getBoundingClientRect();
-
-  return {
-    width: rect?.width || fallbackMapSize.width,
-    height: rect?.height || fallbackMapSize.height
-  };
-};
-
-const getZoneInfoPosition = (
-  anchor: ZoneInfoSelection['anchor'],
-  mapSize: { width: number; height: number }
-): { placement: ZoneInfoPlacement; left: number; top: number } => {
-  const horizontalEdgeThreshold = mapSize.width / 3;
-  const verticalEdgeThreshold = mapSize.height / 2;
-  const maxLeft = mapSize.width - zoneInfoCardWidth - zoneInfoCardOffset;
-  const maxTop = mapSize.height - zoneInfoCardHeight - zoneInfoCardOffset;
-
-  if (anchor.x < horizontalEdgeThreshold) {
-    return {
-      placement: 'right',
-      left: clamp(anchor.x + zoneInfoCardOffset, zoneInfoCardOffset, maxLeft),
-      top: clamp(anchor.y - zoneInfoCardHeight / 2, zoneInfoCardOffset, maxTop)
-    };
-  }
-
-  if (anchor.x > mapSize.width - horizontalEdgeThreshold) {
-    return {
-      placement: 'left',
-      left: clamp(anchor.x - zoneInfoCardWidth - zoneInfoCardOffset, zoneInfoCardOffset, maxLeft),
-      top: clamp(anchor.y - zoneInfoCardHeight / 2, zoneInfoCardOffset, maxTop)
-    };
-  }
-
-  if (anchor.y > verticalEdgeThreshold) {
-    return {
-      placement: 'top',
-      left: clamp(anchor.x - zoneInfoCardWidth / 2, zoneInfoCardOffset, maxLeft),
-      top: clamp(anchor.y - zoneInfoCardHeight - zoneInfoCardOffset, zoneInfoCardOffset, maxTop)
-    };
-  }
-
-  return {
-    placement: 'bottom',
-    left: clamp(anchor.x - zoneInfoCardWidth / 2, zoneInfoCardOffset, maxLeft),
-    top: clamp(anchor.y + zoneInfoCardOffset, zoneInfoCardOffset, maxTop)
-  };
 };
 
 export const BochumMap: React.FC<BochumMapProps> = ({
@@ -309,8 +81,8 @@ export const BochumMap: React.FC<BochumMapProps> = ({
   const [selectedZoneInfo, setSelectedZoneInfo] = useState<ZoneInfoSelection | null>(null);
   const tileLayerConfig = getMapTileLayerConfig(import.meta.env.CARTO_API_KEY);
 
-  const getZoneStyle = (feature: any, hoveredZoneId?: string): PathOptions => {
-    if (!feature || !feature.properties) return {};
+  const getZoneStyle = (feature?: ZoneMapFeature, hoveredZoneId?: string): PathOptions => {
+    if (!feature?.properties?.zoneId) return {};
     const zoneId = feature.properties.zoneId;
     const isFeedback = zoneFeedback && zoneFeedback.zoneId === zoneId;
     const isHovered = hoveredZoneId === zoneId;
@@ -350,7 +122,7 @@ export const BochumMap: React.FC<BochumMapProps> = ({
     };
   };
 
-  const onEachFeature = (feature: any, layer: any) => {
+  const onEachFeature = (feature: ZoneMapFeature, layer: Layer) => {
     const zoneId = feature.properties?.zoneId;
     const label = feature.properties?.label || zoneId;
     const tooltipText =
@@ -358,7 +130,7 @@ export const BochumMap: React.FC<BochumMapProps> = ({
         ? `${label}\n${zoneFeedback.message}`
         : label;
 
-    layer.bindTooltip(tooltipText, {
+    layer.bindTooltip(tooltipText ?? '', {
       permanent: true,
       direction: 'center',
       className: 'zone-label-tooltip',
@@ -368,17 +140,17 @@ export const BochumMap: React.FC<BochumMapProps> = ({
 
     layer.on({
       mouseover: () => {
-        layer.setStyle(getZoneStyle(feature, zoneId));
+        (layer as L.Path).setStyle(getZoneStyle(feature, zoneId));
       },
       mouseout: () => {
-        layer.setStyle(getZoneStyle(feature));
+        (layer as L.Path).setStyle(getZoneStyle(feature));
       },
-      click: (event: any) => {
+      click: (event: LeafletMouseEvent) => {
         if (!zoneId) {
           return;
         }
 
-        const originalEvent = event.originalEvent;
+        const originalEvent = event.originalEvent as ZoneClickEvent | undefined;
         if (originalEvent) {
           originalEvent.__bochumZoneClickHandled = true;
           originalEvent.stopPropagation?.();
@@ -465,57 +237,11 @@ export const BochumMap: React.FC<BochumMapProps> = ({
         </div>
       )}
       {selectedZoneRule && selectedZonePosition && (
-        <div
-          className="zone-info-card"
-          data-testid="zone-info-card"
-          data-placement={selectedZonePosition.placement}
-          role="status"
-          style={{
-            position: 'absolute',
-            left: `${selectedZonePosition.left}px`,
-            top: `${selectedZonePosition.top}px`,
-            zIndex: 1000,
-            width: 'min(320px, calc(100% - 48px))',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px'
-          }}
-        >
-          <button
-            type="button"
-            className="zone-info-card__close"
-            aria-label="Zone-Information schliessen"
-            onClick={(event) => {
-              event.stopPropagation();
-              setSelectedZoneInfo(null);
-            }}
-          >
-            &times;
-          </button>
-          <ZoneProfileMedia
-            zoneId={selectedZoneRule.zoneId}
-            label={selectedZoneRule.label}
-            className="zone-info-card__media"
-          />
-          <div className="zone-info-card__header">
-            <strong>{selectedZoneRule.label}</strong>
-            <span>{demandProfileLabels[selectedZoneRule.demandProfile]}</span>
-          </div>
-          <div className="zone-info-card__meta">
-            <span>
-              Akzeptanzsensibilitaet:{' '}
-              {acceptanceSensitivityLabels[selectedZoneRule.acceptanceSensitivity]}
-            </span>
-            <span>
-              Erlaubt:{' '}
-              {selectedZoneRule.allowedItemTypes.map((itemType) => itemTypeLabels[itemType]).join(', ')}
-            </span>
-            <span>
-              Kapazität: Solar {selectedZoneRule.capacity.solar}, Wind{' '}
-              {selectedZoneRule.capacity.wind}, Speicher {selectedZoneRule.capacity.storage}
-            </span>
-          </div>
-        </div>
+        <ZoneInfoCard
+          zone={selectedZoneRule}
+          position={selectedZonePosition}
+          onClose={() => setSelectedZoneInfo(null)}
+        />
       )}
     </div>
   );

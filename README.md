@@ -1,132 +1,115 @@
 # Bochum Smart City Simulation
 
-Frontend-only MVP fuer ein Smart-City-/Energiewende-Simulationsspiel in Bochum.
+Ein browserbasiertes Planspiel zur kommunalen Energieversorgung. Über 60 Monate
+werden Solar- und Windanlagen, Speicher und Förderprogramme eingesetzt. Budget,
+Wetter, Nachfrage und Bürgerzufriedenheit bestimmen den Verlauf.
 
-Spieler platzieren Solaranlagen, Windmuehlen und Energiespeicher auf einer vereinfachten Bochum-Karte. Ziel ist ein guter Mix aus Energieautarkie, Budgeteffizienz, Buergerzufriedenheit und Versorgungssicherheit ueber 60 Monate.
+Die Anwendung verwendet bewusst vereinfachte Spielwerte. Sie ist keine reale
+Netzsimulation oder kommunale Potenzialanalyse. Die vollständigen Regeln und
+Modellgrenzen stehen in den [Spielregeln](docs/game-rules.md).
 
-## Aktueller MVP-Umfang
+## Schnellstart
 
-- React + TypeScript + Vite Single Page App
-- Leaflet-Karte mit begrenztem Bochum-Ausschnitt
-- Vereinfachte MVP-Spielzonen als statische Daten
-- Cozy-Kartenstil mit CARTO-Light-Kacheln und OpenStreetMap-Fallback
-- Sichtbare Stadtgrenze und dauerhaft sichtbare Stadtteilgrenzen
-- Dauerhaft sichtbare Stadtteilnamen unterhalb der Karten-Overlay-Layer
-- Keine vorplatzierten Bestandsanlagen; alle Anlagen werden im Spiel platziert
-- Platzierung per Pointer-Drag mit eigener Drag Preview
-- Live-Zonenfeedback fuer erlaubte und blockierte Platzierungen
-- Budget-, Zonen- und Kapazitaetsvalidierung im Reducer
-- Spieleranlagen mit Bau- und Aktivstatus
-- Undo fuer Aktionen im aktuellen Monat
-- Monatswechsel mit Curtain-Effekt, Wetter, KPI-Deltas und Aktivierung von Anlagen
-- Verkauf von Spieleranlagen mit Undo
-- Endscreen mit Gesamt-Score und vier Einzelwerten
-- Lokale Persistenz ueber `localStorage`
-- Keine eigene API, kein Backend, keine Datenbank
+Voraussetzungen: **Node.js 22 oder neuer und npm**.
 
-## Voraussetzungen
-
-- Node.js
-- npm
-
-## Setup
-
-```bash
+```sh
 cd frontend
-npm install
-```
-
-Optional kann im Projektroot eine `.env` mit einem CARTO-Key angelegt werden:
-
-```text
-CARTO_API_KEY=dein-carto-api-key
-```
-
-Die `.env` ist in `.gitignore` eingetragen und darf nicht committed werden. Ohne Key nutzt die Karte den OpenStreetMap-Fallback.
-
-## Entwicklung
-
-```bash
-cd frontend
+npm ci
 npm run dev
 ```
 
-Die App laeuft standardmaessig unter:
+Vite zeigt die lokale Adresse an, normalerweise `http://localhost:5173`.
+Ohne API-Key verwendet die Karte OpenStreetMap. Optional `.env.example` im
+Repository-Stamm nach `.env` kopieren und `CARTO_API_KEY` setzen. Dieser Key
+wird im Browser-Build sichtbar; nur dafür vorgesehene öffentliche Schlüssel
+verwenden. Nach Konfigurationsänderungen neu starten beziehungsweise neu bauen.
 
-```text
-http://localhost:5173
+Alternativ mit Docker im Repository-Stamm:
+
+```sh
+docker compose up -d --build
 ```
 
-## Tests und Build
+Die Anwendung läuft dann unter `http://localhost:8080`.
+Details: [Docker-Betrieb](docs/deployment-docker.md).
 
-```bash
-cd frontend
+## Entwicklung und Prüfungen
+
+In `frontend/`:
+
+```sh
+npm run typecheck
 npm run test:run
 npm run build
+npx playwright install chromium
+npm run test:e2e
 ```
 
-Die heutigen Architektur- und UI-Entscheidungen sind in [docs/DECISIONS-2026-09-20.md](docs/DECISIONS-2026-09-20.md) dokumentiert. Die daraus abgeleiteten Entscheidungswege und Spielstrategien stehen in [docs/strategy-guide.md](docs/strategy-guide.md); das editierbare Abhängigkeitsdiagramm liegt in [docs/decision-dependencies.drawio](docs/decision-dependencies.drawio).
+Der Build erzeugt `frontend/dist/`. `npm run preview` zeigt ihn lokal an.
+Der Browser-Test baut selbst und benötigt Port 4174. Die CI prüft das Frontend
+unter Windows und Linux sowie die Python-Simulation unter Linux.
 
-Production Preview nach erfolgreichem Build:
+Anleitung für neue Mitwirkende: [CONTRIBUTING.md](CONTRIBUTING.md).
 
-```bash
-cd frontend
-npm run preview
-```
-
-## Projektstruktur
+## Projektaufbau
 
 ```text
 frontend/
-  src/
-    app/          App-Komposition und State-Integration
-    components/   Wiederverwendbare UI-Komponenten
-    data/         Statische MVP-Daten
-    game/         Actions, Reducer, Selectors, initialer State
-    map/          Leaflet-Karte, Zonen und Marker
-    persistence/  localStorage-Store
-    sidebar/      Sidebar, KPIs, Bauoptionen, Details, Endscreen
-    simulation/   Placement, Wetter, Monatssimulation, Scoring
-    types/        Gemeinsame TypeScript-Typen
-    ui/           Icons und Animationen
-  tests/          Unit- und Integrationstests
+  src/app/          App-Komposition, Zustand und Platzierungssteuerung
+  src/game/         Reducer, Selectors, Startzustand und Verlustregeln
+  src/simulation/   Energie, Wirtschaft, Wetter, Förderung und KPIs
+  src/map/          Leaflet-Karte, Pointer-Eingaben und Zoneninformationen
+  src/persistence/  Browser-Speicher und Kompatibilitätsdefaults
+  src/data/         Spielparameter und GeoJSON
+  src/types/        Gemeinsame TypeScript-Typen
+  src/components/   Einführung, Kennzahlen und Steuerung
+  src/sidebar/      Spielinformationen und Bauoptionen
+  src/ui/           Icons und Medien
+  tests/            Unit-, Integrations- und Browser-Tests
+  public/           Illustrationen und Strategieauswertung
+simulations/        Eigenständiges Python-Vergleichsmodell
+docs/               Architektur, Regeln und Begleitmaterial
+docker/             Webserver-Konfiguration
 ```
 
-## Wichtige Schnittstellen
+React 18, TypeScript, Vite und Leaflet bilden eine clientseitige Anwendung.
+Es gibt kein eigenes Backend, Login oder Datenbank. Spielstände liegen im
+`localStorage` des jeweiligen Browsers. Kartenkacheln kommen von externen Diensten.
 
-- `createInitialGameState()`
-- `loadGameState()`
-- `saveGameState(state)`
-- `clearGameState()`
-- `canPlaceItem(state, itemType, zoneId)`
-- `getRemainingCapacity(state, itemType, zoneId)`
-- `findZoneForPoint(latLng, zonesGeoJson)`
-- `gameReducer(state, action)`
-- `getUndoTooltip(state)`
-- `createForecast(currentMonthIndex)`
-- `advanceMonth(state)`
-- `calculateFinalScore(state)`
+## Simulation und Balancing
 
-## Datenhinweis
+Die Python-Auswertung läuft unabhängig von der Anwendung:
 
-Die Zonen und Balancing-Werte sind MVP-Spielwerte und duerfen nicht als reale Tatsachenbehauptung verstanden werden.
+```sh
+python -m pip install -r simulations/requirements.txt
+python -m unittest discover -s simulations -p "test_*.py"
+python simulations/start_value_sweep.py --seeds 100
+python simulations/plot_sweep.py
+```
 
-## QA-Status
+Das Profil `challenge` entspricht den Start-KPIs der Anwendung; `current`
+bezeichnet ältere Vergleichswerte. Für den aktuellen Produktionsvergleich gilt
+ein Endbedarfsfaktor von **1,35**. Ergebnisse und Modellgrenzen beschreibt das
+[Simulations-README](simulations/README.md).
 
-Der integrierte MVP-Flow wurde auf `main` technisch und manuell geprueft:
+## Dokumentation
 
-- `npm run test:run`: bestanden
-- `npm run build`: bestanden
-- Production Preview: bestanden
-- Pointer-Drag-Platzierung: bestanden
-- Mock Harness im Production Preview: nicht sichtbar
+- [Architektur und Datenfluss](docs/architecture.md)
+- [Mitwirken und Entwicklungsablauf](CONTRIBUTING.md)
+- [Spielregeln und Modellgrenzen](docs/game-rules.md)
+- [Abhängigkeiten der Spielelemente](docs/element-dependencies.md)
+- [Strategiehilfe](docs/strategy-guide.md)
+- [Entscheidungsdiagramm](docs/decision-dependencies.drawio)
+- [Vercel-Deployment](docs/deployment-vercel.md) und [Docker-Betrieb](docs/deployment-docker.md)
+- [Checkliste für die Veröffentlichung](docs/release-checklist.md)
+- [Daten, Medien und Nutzungsrechte](docs/data-and-assets.md)
+- [Präsentationsaufbau](docs/presentation-outline.md) und [Literaturrecherche](docs/literature-research.md)
 
-## Deployment
+Datierte Statusdokumente und die Word-Spezifikationen beschreiben frühere Stände.
+Bei abweichenden Angaben gelten Implementierung und aktuelle Spielregeln.
 
-Die App ist statisch baubar. Fuer Vercel oder vergleichbares Static Hosting:
+## Lizenzstand
 
-- Build Command: `npm run build`
-- Output Directory: `dist`
-- Project Root: `frontend`
-
-Für ein Deployment muss `CARTO_API_KEY` als Client-Build-Variable gesetzt sein, wenn CARTO statt des OpenStreetMap-Fallbacks verwendet werden soll. Der Key sollte beim Anbieter auf die erlaubte Domain bzw. Nutzung eingeschränkt werden.
+Eine Projektlizenz ist **noch nicht festgelegt**. Die Nutzungsrechte von Bildern
+und externem Begleitmaterial sind gesondert zu klären. Das Projekt ist damit
+derzeit nicht ausdrücklich unter einer Open-Source-Lizenz freigegeben.

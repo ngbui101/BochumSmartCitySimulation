@@ -1,0 +1,128 @@
+<mxfile host="app.diagrams.net" modified="2026-09-20T00:00:00.000Z" version="24.7.17" type="device">
+  <diagram id="decision-dependencies" name="Entscheidungsabhängigkeiten">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title" value="Bochum Smart City Simulation – Entscheidungsabhängigkeiten" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=22;fontStyle=1;fontColor=#1f4f3a;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="900" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="subtitle" value="Wie Technologie-, Standort-, Förder- und Timing-Entscheidungen die Monatsbilanz und den Endscore beeinflussen" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=13;fontColor=#5b6b63;" vertex="1" parent="1">
+          <mxGeometry x="40" y="58" width="1000" height="28" as="geometry" />
+        </mxCell>
+
+        <mxCell id="lane_decisions" value="1 · Entscheidungen" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef7f1;strokeColor=#b8d7c2;fontColor=#1f4f3a;fontSize=16;fontStyle=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=14;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="230" height="690" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_rules" value="2 · Regeln &amp; Grenzen" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e8;strokeColor=#e7c77b;fontColor=#6d5312;fontSize=16;fontStyle=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=14;" vertex="1" parent="1">
+          <mxGeometry x="300" y="100" width="230" height="690" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_effects" value="3 · Monatswirkung" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#eef4fb;strokeColor=#b9cee6;fontColor=#23466a;fontSize=16;fontStyle=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=14;" vertex="1" parent="1">
+          <mxGeometry x="560" y="100" width="260" height="690" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_results" value="4 · Ergebnis &amp; Strategie" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f7f0fb;strokeColor=#d4b9e1;fontColor=#5a3769;fontSize=16;fontStyle=1;align=left;verticalAlign=top;spacingTop=10;spacingLeft=14;" vertex="1" parent="1">
+          <mxGeometry x="850" y="100" width="430" height="690" as="geometry" />
+        </mxCell>
+
+        <mxCell id="tech" value="&lt;b&gt;Technologie wählen&lt;/b&gt;&lt;br&gt;Solar · Wind · Speicher&lt;br&gt;&lt;font color=&quot;#5b6b63&quot;&gt;Erzeugung, Robustheit, Akzeptanz&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7bb58d;fontColor=#1f4f3a;" vertex="1" parent="1">
+          <mxGeometry x="60" y="145" width="190" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="zone" value="&lt;b&gt;Standort wählen&lt;/b&gt;&lt;br&gt;Zone + verfügbare Kapazität&lt;br&gt;&lt;font color=&quot;#5b6b63&quot;&gt;Mitte, Wattenscheid, Nord, Ost, Süd, Südwest&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7bb58d;fontColor=#1f4f3a;" vertex="1" parent="1">
+          <mxGeometry x="60" y="265" width="190" height="92" as="geometry" />
+        </mxCell>
+        <mxCell id="subsidy" value="&lt;b&gt;Förderung setzen&lt;/b&gt;&lt;br&gt;Solar- oder Speicherförderung, Level 0–3&lt;br&gt;&lt;font color=&quot;#5b6b63&quot;&gt;monatliche Kosten gegen privaten Ausbau&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7bb58d;fontColor=#1f4f3a;" vertex="1" parent="1">
+          <mxGeometry x="60" y="400" width="190" height="92" as="geometry" />
+        </mxCell>
+        <mxCell id="timing" value="&lt;b&gt;Zeitpunkt wählen&lt;/b&gt;&lt;br&gt;Jetzt bauen oder Monatswechsel abwarten&lt;br&gt;&lt;font color=&quot;#5b6b63&quot;&gt;Bauzeit: 1 Monat&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7bb58d;fontColor=#1f4f3a;" vertex="1" parent="1">
+          <mxGeometry x="60" y="535" width="190" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="forecast" value="&lt;b&gt;Wetterprognose lesen&lt;/b&gt;&lt;br&gt;Solar stark Mai–Aug.&lt;br&gt;Wind stark Winter/Storm&lt;br&gt;Nachfrage im Winter höher" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7bb58d;fontColor=#1f4f3a;" vertex="1" parent="1">
+          <mxGeometry x="60" y="650" width="190" height="90" as="geometry" />
+        </mxCell>
+
+        <mxCell id="budget_rules" value="&lt;b&gt;Budgetgrenze&lt;/b&gt;&lt;br&gt;Start: 18 Mio. €&lt;br&gt;Kosten werden sofort abgezogen" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffdf6;strokeColor=#d6b45b;fontColor=#6d5312;" vertex="1" parent="1">
+          <mxGeometry x="320" y="145" width="190" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="zone_rules" value="&lt;b&gt;Zonenregeln&lt;/b&gt;&lt;br&gt;Erlaubte Technologien + Kapazität&lt;br&gt;Akzeptanz: hoch 1,5 · mittel 1 · niedrig 0,5" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffdf6;strokeColor=#d6b45b;fontColor=#6d5312;" vertex="1" parent="1">
+          <mxGeometry x="320" y="285" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="weather_rules" value="&lt;b&gt;Wetter &amp; Nachfrage&lt;/b&gt;&lt;br&gt;Solarfaktor 0,5–1,4&lt;br&gt;Windfaktor 0,7–1,35&lt;br&gt;Nachfrage 60–100 Einh." style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffdf6;strokeColor=#d6b45b;fontColor=#6d5312;" vertex="1" parent="1">
+          <mxGeometry x="320" y="455" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="build_rules" value="&lt;b&gt;Bau &amp; Betrieb&lt;/b&gt;&lt;br&gt;Aktiv ab nächstem Monat&lt;br&gt;laufende Betriebskosten je aktiver Anlage" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fffdf6;strokeColor=#d6b45b;fontColor=#6d5312;" vertex="1" parent="1">
+          <mxGeometry x="320" y="625" width="190" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="production" value="&lt;b&gt;Produktion&lt;/b&gt;&lt;br&gt;Solar: 7 × Wetterfaktor&lt;br&gt;Wind: 14 × Wetterfaktor" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7da7d2;fontColor=#23466a;" vertex="1" parent="1">
+          <mxGeometry x="580" y="145" width="220" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="storage_effect" value="&lt;b&gt;Speicherwirkung&lt;/b&gt;&lt;br&gt;10 Einh. Kapazität je Speicher&lt;br&gt;private Speicherhilfe reduziert Defizite" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7da7d2;fontColor=#23466a;" vertex="1" parent="1">
+          <mxGeometry x="580" y="285" width="220" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="citizen_effect" value="&lt;b&gt;Bürgerzufriedenheit&lt;/b&gt;&lt;br&gt;Solar: +1 Basiswirkung&lt;br&gt;Wind: −3 Basiswirkung × Akzeptanzfaktor&lt;br&gt;Förderung gibt Bonus" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7da7d2;fontColor=#23466a;" vertex="1" parent="1">
+          <mxGeometry x="580" y="435" width="220" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="energy_balance" value="&lt;b&gt;Energiebilanz&lt;/b&gt;&lt;br&gt;Produktion + Speicher + private Kapazität − Nachfrage&lt;br&gt;Defizit → Importkosten 60.000 €/Einh.&lt;br&gt;Überschuss → Speicher auffüllen" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#7da7d2;fontColor=#23466a;" vertex="1" parent="1">
+          <mxGeometry x="580" y="610" width="220" height="120" as="geometry" />
+        </mxCell>
+
+        <mxCell id="monthly_budget" value="&lt;b&gt;Monatsbudget&lt;/b&gt;&lt;br&gt;Stromverkauf − Importe − Betrieb − Förderung&lt;br&gt;Budgeteffizienz zählt im Endscore" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b88cc9;fontColor=#5a3769;" vertex="1" parent="1">
+          <mxGeometry x="870" y="145" width="190" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="kpis" value="&lt;b&gt;KPI-Entwicklung&lt;/b&gt;&lt;br&gt;Energieautarkie + Produktion × 0,35&lt;br&gt;Versorgungssicherheit + Speicher + Mixbonus&lt;br&gt;Bürgerzufriedenheit + Akzeptanzwirkung" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b88cc9;fontColor=#5a3769;" vertex="1" parent="1">
+          <mxGeometry x="870" y="315" width="190" height="115" as="geometry" />
+        </mxCell>
+        <mxCell id="private_growth" value="&lt;b&gt;Privater Ausbau&lt;/b&gt;&lt;br&gt;Solarförderung: +2 private Solar-Einh./Level/Monat&lt;br&gt;Speicherförderung: +3 private Speicher-Einh./Level/Monat" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#b88cc9;fontColor=#5a3769;" vertex="1" parent="1">
+          <mxGeometry x="870" y="500" width="190" height="105" as="geometry" />
+        </mxCell>
+        <mxCell id="score" value="&lt;b&gt;Endscore nach 60 Monaten&lt;/b&gt;&lt;br&gt;Energieautarkie 35 % · Versorgungssicherheit 25 %&lt;br&gt;Bürgerzufriedenheit 20 % · Budgeteffizienz 20 %" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f1e4f7;strokeColor=#9d6db2;fontColor=#5a3769;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="255" width="160" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="strategy" value="&lt;b&gt;Strategische Konsequenz&lt;/b&gt;&lt;br&gt;1. Wetter lesen&lt;br&gt;2. Kapazität &amp; Akzeptanz prüfen&lt;br&gt;3. Produktion + Speicher balancieren&lt;br&gt;4. Liquidität für Folgemonat halten" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ead9f1;strokeColor=#9d6db2;fontColor=#5a3769;fontSize=14;" vertex="1" parent="1">
+          <mxGeometry x="1090" y="490" width="160" height="130" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend_title" value="Legende" style="text;html=1;strokeColor=none;fillColor=none;fontStyle=1;fontColor=#40504a;" vertex="1" parent="1">
+          <mxGeometry x="40" y="835" width="70" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="legend_positive" value="positive Wirkung" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#2f7a55;strokeWidth=2;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="115" y="847" as="sourcePoint" /><mxPoint x="170" y="847" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="legend_negative" value="Kosten / Zielkonflikt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#c85c5c;strokeWidth=2;dashed=1;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="270" y="847" as="sourcePoint" /><mxPoint x="325" y="847" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="legend_constraint" value="Regel / Grenze" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#c8962e;strokeWidth=2;dashed=1;endArrow=block;" edge="1" parent="1">
+          <mxGeometry relative="1" as="geometry"><mxPoint x="425" y="847" as="sourcePoint" /><mxPoint x="480" y="847" as="targetPoint" /></mxGeometry>
+        </mxCell>
+        <mxCell id="legend_note" value="Alle Zahlen sind aktuelle MVP-Balancingwerte und keine realen Prognosen." style="text;html=1;strokeColor=none;fillColor=none;fontColor=#6b7771;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="560" y="837" width="500" height="24" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e_tech_budget" value="Kosten" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c8962e;dashed=1;endArrow=block;" edge="1" parent="1" source="tech" target="budget_rules"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_tech_prod" value="Erzeugung" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2f7a55;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="tech" target="production"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_tech_storage" value="Speicher" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2f7a55;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="tech" target="storage_effect"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_tech_citizen" value="Akzeptanzwirkung" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c85c5c;dashed=1;endArrow=block;" edge="1" parent="1" source="tech" target="citizen_effect"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_zone_rules" value="erlaubt / Kapazität" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c8962e;dashed=1;endArrow=block;" edge="1" parent="1" source="zone" target="zone_rules"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_zone_citizen" value="Sensitivität" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c8962e;dashed=1;endArrow=block;" edge="1" parent="1" source="zone" target="citizen_effect"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_sub_budget" value="250k / 180k je Level / Monat" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c85c5c;dashed=1;endArrow=block;" edge="1" parent="1" source="subsidy" target="monthly_budget"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_sub_private" value="Adoption" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2f7a55;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="subsidy" target="private_growth"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_sub_kpi" value="Bonus" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2f7a55;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="subsidy" target="kpis"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_timing_build" value="aktiv ab Folgemonat" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c8962e;dashed=1;endArrow=block;" edge="1" parent="1" source="timing" target="build_rules"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_forecast_weather" value="Faktoren" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c8962e;dashed=1;endArrow=block;" edge="1" parent="1" source="forecast" target="weather_rules"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_weather_prod" value="Solar / Wind" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2f7a55;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="weather_rules" target="production"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_prod_balance" value="Energie" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2f7a55;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="production" target="energy_balance"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_storage_balance" value="Puffer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2f7a55;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="storage_effect" target="energy_balance"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_private_balance" value="Privatpuffer" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2f7a55;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="private_growth" target="energy_balance"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_demand_balance" value="Nachfrage" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c8962e;dashed=1;endArrow=block;" edge="1" parent="1" source="weather_rules" target="energy_balance"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_balance_budget" value="Importkosten / Überschuss" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c85c5c;dashed=1;endArrow=block;" edge="1" parent="1" source="energy_balance" target="monthly_budget"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_balance_kpi" value="Autarkie" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2f7a55;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="energy_balance" target="kpis"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_citizen_kpi" value="Zufriedenheit" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#c85c5c;dashed=1;endArrow=block;" edge="1" parent="1" source="citizen_effect" target="kpis"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_budget_score" value="20 %" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2f7a55;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="monthly_budget" target="score"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_kpi_score" value="35 / 25 / 20 %" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#2f7a55;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="kpis" target="score"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_score_strategy" value="Prioritäten" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9d6db2;strokeWidth=2;endArrow=block;" edge="1" parent="1" source="score" target="strategy"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="e_choices_strategy" value="nächste Entscheidung" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9d6db2;dashed=1;endArrow=block;" edge="1" parent="1" source="strategy" target="tech"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

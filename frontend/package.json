@@ -3,12 +3,16 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "test:run": "vitest run --passWithNoTests",
+    "test:run": "vitest run",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
     "test:e2e": "npm run build && playwright test"
   },
   "dependencies": {
@@ -21,6 +25,7 @@
     "@playwright/test": "^1.63.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.1.0",
+    "@types/geojson": "^7946.0.16",
     "@types/leaflet": "^1.9.15",
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
