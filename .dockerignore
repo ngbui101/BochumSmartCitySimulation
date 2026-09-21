@@ -1,0 +1,30 @@
+# Only send the application sources and container configuration to the builder.
+**
+!Dockerfile
+!docker/
+!docker/nginx.conf
+!frontend/
+!frontend/package.json
+!frontend/package-lock.json
+!frontend/index.html
+!frontend/tsconfig*.json
+!frontend/vite.config.ts
+!frontend/src/
+!frontend/src/**
+!frontend/public/
+!frontend/public/**
+
+# Keep these exclusions after all allow rules: allowing a parent directory can
+# also allow its descendants. Host dependencies must never enter the image.
+**/node_modules
+**/node_modules/**
+**/dist
+**/dist/**
+**/.git
+**/.git/**
+**/test-results
+**/playwright-report
+
+# Local environment files must never be copied into the build context.
+**/.env
+**/.env.*

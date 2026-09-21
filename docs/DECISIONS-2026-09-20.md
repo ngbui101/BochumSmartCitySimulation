@@ -1,5 +1,9 @@
 # Entscheidungsprotokoll – 20. September 2026
 
+> Historisches Dokument. Aktuelle Regeln stehen in [Spielregeln](game-rules.md),
+> technische Abläufe in [Architektur](architecture.md). Frühere Prüfzahlen und
+> Parameter beschreiben ausschließlich den damaligen Stand.
+
 Dieses Protokoll hält die heute gemeinsam festgelegten Produkt- und Technikentscheidungen für die Bochum Smart City Simulation fest.
 
 ## Produktentscheidungen

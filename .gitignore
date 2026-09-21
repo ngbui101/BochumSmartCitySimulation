@@ -1,1 +1,17 @@
 .env
+.env.*
+!.env.example
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+.venv/
+__pycache__/
+*.py[cod]
+*.tsbuildinfo
+.DS_Store
+Thumbs.db
+
+# Private reference material; must not be published.
+docs/BMBF-Antragstext als Input für Seminar-Projektarbeit.pdf

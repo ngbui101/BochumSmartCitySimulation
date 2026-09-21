@@ -1,5 +1,9 @@
 # Projektstatus – 20. September 2026
 
+> Historisches Dokument. Aktuelle Regeln stehen in [Spielregeln](game-rules.md),
+> technische Abläufe in [Architektur](architecture.md). Frühere Prüfzahlen und
+> Parameter beschreiben ausschließlich den damaligen Stand.
+
 ## Kurzfassung
 
 Das Bochum-Smart-City-Projekt ist ein spielbares, clientseitiges MVP. Der aktuelle `main`-Branch ist für ein statisches Vercel-Deployment vorbereitet und enthält den vollständigen Spielablauf ohne Login, eigenes Backend oder Datenbank.

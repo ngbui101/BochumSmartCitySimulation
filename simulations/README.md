@@ -4,7 +4,7 @@ Dieses Verzeichnis simuliert die aktuelle MVP-Spielökonomie unabhängig von der
 
 ## Ausführen
 
-Mit der gebündelten Python-Laufzeit oder einer lokalen Python-Installation:
+Mit Python 3.12 (CI-Referenz) oder einer kompatiblen neueren Version:
 
 ```text
 python simulations/start_value_sweep.py --seeds 100
@@ -15,17 +15,19 @@ Die Ergebnisse werden nach `simulations/results/` geschrieben:
 - `start-value-sweep.json` enthält vollständige Monatsverläufe.
 - `start-value-sweep.csv` enthält eine Zeile pro Sitzung.
 
-Getestet werden das aktuelle Startprofil und das Challenge-Profil:
+Verglichen werden ein historisches Startprofil (`current`) und die aktuellen Start-KPIs (`challenge`):
 
 ```text
-Aktuell:   Budget 18.000.000 €, Autarkie 18, Zufriedenheit 72, Sicherheit 58
-Challenge: Budget 18.000.000 €, Autarkie 0,  Zufriedenheit 50, Sicherheit 0
+Historisch (current): Budget 18.000.000 €, Autarkie 18, Zufriedenheit 72, Sicherheit 58
+Produktionsstart (challenge): Budget 18.000.000 €, Autarkie 0,  Zufriedenheit 50, Sicherheit 0
 ```
 
 Die Simulation verwendet reproduzierbare Wetter-Seeds und die Strategien `solar_first`,
 `wind_first`, `balanced`, `storage_first`, `subsidy_first` und `adaptive`.
 
-Zusätzliche Challenge-Regeln:
+**Abgleich mit der Webanwendung:** Im Verbrauchs-Sweep entspricht `challenge` mit Endfaktor **1,35** den aktuellen Start- und Nachfrageparametern. Der einfache Startwertvergleich verwendet weiterhin einen Endfaktor von 2,0 als Belastungsszenario.
+
+Regeln des Vergleichs:
 
 - Der Monatsverbrauch wächst linear von 100 % auf 200 % im 60. Monat.
 - Ab dem dritten öffentlichen Bauwerk in einem Stadtteil wird einmalig je weiterem
